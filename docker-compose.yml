@@ -1,0 +1,13 @@
+services:
+  loyal-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: loyal-yoga-pass:latest
+    container_name: loyal-yoga-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
