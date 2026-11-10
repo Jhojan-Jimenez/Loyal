@@ -29,7 +29,7 @@ function getCredentials(): GoogleWalletCredentials | null {
     if (fs.existsSync(secretsPath)) {
       const fileData = JSON.parse(fs.readFileSync(secretsPath, 'utf8'));
       return {
-        issuerId: envIssuer || 'BCR2DN6DWL4PZTCV',
+        issuerId: envIssuer || '3388000000023224674',
         clientEmail: fileData.client_email,
         privateKey: fileData.private_key,
       };
