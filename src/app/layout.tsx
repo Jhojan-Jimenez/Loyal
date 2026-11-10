@@ -43,9 +43,9 @@ export default function RootLayout({
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gradient-to-b from-[#FDF8FF] via-[#FAF5FF] to-[#F3E8FF] font-sans selection:bg-purple-200 selection:text-purple-950">
+      <body className="min-h-full flex flex-col bg-white text-[#4A154B] font-sans selection:bg-[#F3E8FF] selection:text-[#4A154B]">
         <LoyalProvider>
-          <Suspense fallback={<div className="h-16 border-b border-purple-100 bg-white/80" />}>
+          <Suspense fallback={<div className="h-20 border-b border-[#F5E8FF] bg-white" />}>
             <Navigation />
           </Suspense>
           <main className="flex-1">{children}</main>
