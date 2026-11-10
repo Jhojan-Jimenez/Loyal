@@ -72,4 +72,4 @@ El proyecto incluye un `Dockerfile` standalone de producción y `docker-compose.
 1. En **Coolify**, crea una nueva aplicación seleccionando **Git Repository**: `https://github.com/Jhojan-Jimenez/Loyal.git`.
 2. Tipo de compilación: **Dockerfile**.
 3. Puerto expuesto: `3000`.
-4. Asigna tu subdominio (ej: `https://yoga.jhojan.cloud`) con SSL automático vía Let's Encrypt.
+4. Asigna tu subdominio oficial: `https://loyal.jhojan.cloud` con SSL automático vía Let's Encrypt / Traefik.
