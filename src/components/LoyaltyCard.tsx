@@ -12,10 +12,11 @@ import {
   Share,
   Smartphone,
   Info,
-  Calendar,
   CheckCircle2,
   Gift,
   ExternalLink,
+  Wallet,
+  Loader2,
 } from 'lucide-react';
 
 interface LoyaltyCardProps {
@@ -26,6 +27,8 @@ interface LoyaltyCardProps {
 export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
   const [activeTab, setActiveTab] = useState<'card' | 'details' | 'install'>('card');
   const [showShareModal, setShowShareModal] = useState(false);
+  const [isGeneratingWallet, setIsGeneratingWallet] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   const totalRequired = config.totalStampsRequired;
   const currentStamps = Math.min(student.stamps, totalRequired);
@@ -35,6 +38,32 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
 
   // Generate slots array (1 to totalRequired)
   const slots = Array.from({ length: totalRequired }, (_, i) => i + 1);
+
+  const handleSaveToGoogleWallet = async () => {
+    setIsGeneratingWallet(true);
+    setWalletError(null);
+
+    try {
+      const res = await fetch('/api/wallet/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student, config }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.saveUrl) {
+        // Open Google Wallet save link
+        window.open(data.saveUrl, '_blank');
+      } else {
+        setWalletError(data.error || 'No se pudo generar el enlace de Google Wallet');
+      }
+    } catch (err: any) {
+      console.error('Error saving to Google Wallet:', err);
+      setWalletError('Error de conexión al generar el pase de Google Wallet');
+    } finally {
+      setIsGeneratingWallet(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -70,8 +99,8 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
               : 'text-purple-900/60 hover:text-purple-950'
           }`}
         >
-          <Smartphone className="w-4 h-4 text-purple-600" />
-          <span>Instalar PWA</span>
+          <Wallet className="w-4 h-4 text-purple-600" />
+          <span>Google Wallet & PWA</span>
         </button>
       </div>
 
@@ -236,7 +265,37 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
               </span>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-purple-100 flex items-center justify-around text-xs text-purple-700">
+            {/* Google Wallet Native Button */}
+            <div className="mt-5 pt-4 border-t border-purple-100">
+              <button
+                onClick={handleSaveToGoogleWallet}
+                disabled={isGeneratingWallet}
+                className="w-full py-3 px-4 rounded-2xl bg-neutral-900 hover:bg-black text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 active:scale-98"
+              >
+                {isGeneratingWallet ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                    <span>Firmando pase de Google Wallet...</span>
+                  </>
+                ) : (
+                  <>
+                    {/* Google Wallet Icon */}
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                      <path d="M21 18V6C21 4.89543 20.1046 4 19 4H5C3.89543 4 3 4.89543 3 6V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18Z" stroke="white" strokeWidth="1.5" />
+                      <path d="M3 10H21" stroke="#4285F4" strokeWidth="1.5" />
+                      <circle cx="16.5" cy="15" r="1.5" fill="#34A853" />
+                    </svg>
+                    <span>Guardar en Google Wallet (Android)</span>
+                  </>
+                )}
+              </button>
+
+              {walletError && (
+                <p className="text-[11px] text-rose-600 mt-2 font-medium">{walletError}</p>
+              )}
+            </div>
+
+            <div className="mt-4 pt-3 flex items-center justify-around text-xs text-purple-700">
               <a
                 href={`https://wa.me/${config.whatsappNumber.replace(/\D/g, '')}?text=Hola!%20Tengo%20una%20consulta%20sobre%20mi%20pase%20de%20clases`}
                 target="_blank"
@@ -322,66 +381,66 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
         </div>
       )}
 
-      {/* Tab: How to Install PWA */}
+      {/* Tab: How to Install PWA / Wallet */}
       {activeTab === 'install' && (
         <div className="bg-white rounded-3xl p-6 shadow-xl shadow-purple-900/5 border border-purple-100 space-y-4">
           <div className="flex items-center gap-3 border-b border-purple-100 pb-4">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-fuchsia-600 flex items-center justify-center text-white">
-              <Smartphone className="w-5 h-5" />
+              <Wallet className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-purple-950">Guarda tu Tarjeta en tu Móvil</h3>
-              <p className="text-xs text-purple-600">Ábrela como una app sin ocupar espacio</p>
+              <h3 className="text-base font-bold text-purple-950">Guarda tu Pase en tu Móvil</h3>
+              <p className="text-xs text-purple-600">En Google Wallet o Pantalla de Inicio</p>
             </div>
           </div>
 
-          {/* iOS Instructions */}
+          {/* Option 1: Native Google Wallet (Android) */}
+          <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 text-white rounded-2xl p-4 shadow-md">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold flex items-center gap-1.5">
+                <Wallet className="w-4 h-4 text-emerald-400" />
+                Opción 1: Google Wallet (Android Oficial)
+              </span>
+              <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                1 Clic
+              </span>
+            </div>
+            <p className="text-[11px] text-neutral-300 mb-3">
+              Guarda tu pase oficial directamente en la aplicación Google Wallet de tu teléfono junto a tus tarjetas.
+            </p>
+            <button
+              onClick={handleSaveToGoogleWallet}
+              disabled={isGeneratingWallet}
+              className="w-full py-2.5 px-3 rounded-xl bg-white text-neutral-900 text-xs font-bold hover:bg-neutral-100 transition-all flex items-center justify-center gap-2"
+            >
+              {isGeneratingWallet ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-600" />
+              ) : (
+                <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
+              )}
+              <span>Añadir a Google Wallet Ahora</span>
+            </button>
+          </div>
+
+          {/* Option 2: iOS Instructions */}
           <div className="bg-gradient-to-br from-purple-50 to-pink-50/50 rounded-2xl p-4 border border-purple-200/60">
             <div className="flex items-center gap-2 font-bold text-xs text-purple-950">
               <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px]">
-                1
-              </span>
-              En iPhone (Safari)
-            </div>
-            <ol className="text-xs text-purple-900/80 space-y-1.5 mt-2 pl-2">
-              <li className="flex items-start gap-2">
-                <span>1.</span>
-                <span>
-                  Toca el botón <strong>Compartir</strong> <Share className="w-3 h-3 inline mx-0.5 text-purple-600" /> en la barra inferior de Safari.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span>2.</span>
-                <span>
-                  Baja y selecciona <strong>"Añadir a la pantalla de inicio"</strong>.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span>3.</span>
-                <span>
-                  ¡Listo! Quedará como un icono con la flor de loto en tu pantalla principal.
-                </span>
-              </li>
-            </ol>
-          </div>
-
-          {/* Android Instructions */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50/50 rounded-2xl p-4 border border-purple-200/60">
-            <div className="flex items-center gap-2 font-bold text-xs text-purple-950">
-              <span className="w-5 h-5 rounded-full bg-fuchsia-600 text-white flex items-center justify-center text-[10px]">
                 2
               </span>
-              En Android (Chrome)
+              En iPhone (Safari) — Pantalla de Inicio
             </div>
             <ol className="text-xs text-purple-900/80 space-y-1.5 mt-2 pl-2">
               <li className="flex items-start gap-2">
                 <span>1.</span>
-                <span>Toca los <strong>tres puntos (⋮)</strong> arriba a la derecha.</span>
+                <span>
+                  Toca el botón <strong>Compartir</strong> <Share className="w-3 h-3 inline mx-0.5 text-purple-600" /> en Safari.
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <span>2.</span>
                 <span>
-                  Elige <strong>"Instalar aplicación"</strong> o <strong>"Añadir a pantalla principal"</strong>.
+                  Baja y toca <strong>"Añadir a la pantalla de inicio"</strong>.
                 </span>
               </li>
             </ol>
