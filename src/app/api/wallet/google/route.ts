@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateGoogleWalletSaveUrl } from '@/lib/google-wallet';
-import { INITIAL_STUDENTS, DEFAULT_STUDIO_CONFIG } from '@/lib/store';
+import { getStudentByToken, getDbData } from '@/lib/server-db';
+import { DEFAULT_STUDIO_CONFIG } from '@/lib/store';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -10,10 +13,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Token is required' }, { status: 400 });
   }
 
-  // Find student in initial list or fallback
-  const student = INITIAL_STUDENTS.find(
-    (s) => s.token.toLowerCase() === token.toLowerCase().trim()
-  ) || {
+  const db = getDbData();
+  // Find student in server DB or fallback
+  const student = getStudentByToken(token) || {
     id: `std_${token}`,
     token,
     name: 'Alumno Samyama Yoga',
@@ -25,7 +27,7 @@ export async function GET(request: NextRequest) {
     lastVisitAt: null,
   };
 
-  const res = generateGoogleWalletSaveUrl(student, DEFAULT_STUDIO_CONFIG);
+  const res = generateGoogleWalletSaveUrl(student, db.config || DEFAULT_STUDIO_CONFIG);
 
   if (res.success && res.saveUrl) {
     // If request has accept text/html or browser direct click, redirect to Google Wallet save URL

@@ -159,3 +159,86 @@ export function generateGoogleWalletSaveUrl(
     return { success: false, error: err.message || 'Error signing JWT' };
   }
 }
+
+/**
+ * Updates an existing Google Wallet pass over-the-air with real-time balance and push notification
+ */
+export async function updateGoogleWalletPass(
+  token: string,
+  stamps: number,
+  totalRequired: number = 10,
+  studentName?: string
+): Promise<{ success: boolean; error?: string }> {
+  const creds = getCredentials();
+  if (!creds || !creds.privateKey) {
+    return { success: false, error: 'Google Wallet credentials not configured' };
+  }
+
+  const sanitizedToken = token.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+  const objectId = `${creds.issuerId}.${sanitizedToken}`;
+
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const assertion = jwt.sign(
+      {
+        iss: creds.clientEmail,
+        scope: 'https://www.googleapis.com/auth/wallet_object.issuer',
+        aud: 'https://oauth2.googleapis.com/token',
+        exp: now + 3600,
+        iat: now,
+      },
+      creds.privateKey,
+      { algorithm: 'RS256' }
+    );
+
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion,
+      }),
+    });
+
+    if (!tokenRes.ok) {
+      const errText = await tokenRes.text();
+      console.warn('Failed to obtain Google OAuth token for Wallet update:', errText);
+      return { success: false, error: 'OAuth failure' };
+    }
+
+    const tokenData = await tokenRes.json();
+    const accessToken = tokenData.access_token;
+
+    const patchRes = await fetch(
+      `https://walletobjects.googleapis.com/walletobjects/v1/loyaltyObject/${objectId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          loyaltyPoints: {
+            label: 'Clases Asistidas',
+            balance: {
+              string: `${stamps} de ${totalRequired} sellos`,
+            },
+          },
+        }),
+      }
+    );
+
+    if (!patchRes.ok) {
+      const errData = await patchRes.text();
+      console.warn(`[Google Wallet] Patch status ${patchRes.status} for ${objectId}:`, errData);
+      return { success: false, error: `Patch status ${patchRes.status}` };
+    }
+
+    console.log(`[Google Wallet] Successfully updated pass ${objectId} to ${stamps}/${totalRequired} stamps`);
+    return { success: true };
+  } catch (err: any) {
+    console.warn('[Google Wallet] Over-the-air update error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+

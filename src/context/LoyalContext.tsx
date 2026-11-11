@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useTransition } from 'react';
+import React, { createContext, useContext, useEffect, useState, useTransition, useCallback } from 'react';
 import { Student, StampTransaction, StudioConfig, YogaClass } from '@/lib/types';
 import {
   DEFAULT_STUDIO_CONFIG,
@@ -22,6 +22,7 @@ interface LoyalContextType {
   redeemReward: (token: string, cashierName?: string) => { success: boolean; student?: Student; error?: string };
   updateConfig: (newConfig: Partial<StudioConfig>) => void;
   resetDemoData: () => void;
+  refreshFromServer: () => Promise<void>;
 }
 
 const LoyalContext = createContext<LoyalContextType | undefined>(undefined);
@@ -41,7 +42,33 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [, startTransition] = useTransition();
 
-  // Load from localStorage on mount
+  // Function to pull latest state from central server DB
+  const refreshFromServer = useCallback(async () => {
+    try {
+      const res = await fetch('/api/db', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          if (Array.isArray(data.students)) {
+            setStudents(data.students);
+          }
+          if (Array.isArray(data.transactions)) {
+            setTransactions(data.transactions);
+          }
+          if (data.config) {
+            setConfig(data.config);
+          }
+          if (Array.isArray(data.classes)) {
+            setClasses(data.classes);
+          }
+        }
+      }
+    } catch (e) {
+      // Offline fallback
+    }
+  }, []);
+
+  // 1. Initial Load: Read from localStorage first (for instant paint), then sync with server
   useEffect(() => {
     try {
       const savedStudents = localStorage.getItem(STORAGE_KEYS.STUDENTS);
@@ -58,9 +85,27 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoaded(true);
     }
-  }, []);
 
-  // Save changes to localStorage
+    // Immediately fetch fresh truth from server
+    refreshFromServer();
+
+    // 2. Poll server every 3.5s for real-time multi-device sync (e.g. phone registers, laptop sees it)
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        refreshFromServer();
+      }
+    }, 3500);
+
+    const onFocus = () => refreshFromServer();
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [refreshFromServer]);
+
+  // Save changes to localStorage as local cache
   useEffect(() => {
     if (!isLoaded) return;
     try {
@@ -108,6 +153,18 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
     startTransition(() => {
       setStudents((prev) => [newStudent, ...prev]);
     });
+
+    // Send to server DB to persist across all devices
+    fetch('/api/students/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: newStudent.name,
+        phone: newStudent.phone,
+        email: newStudent.email,
+        token: newStudent.token,
+      }),
+    }).catch((err) => console.warn('[LoyalContext] Server register sync error:', err));
 
     return newStudent;
   };
@@ -167,6 +224,13 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
       } catch {}
     }
 
+    // Sync with server DB AND update Google Wallet over-the-air in real-time
+    fetch('/api/students/stamp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, note, cashierName }),
+    }).catch((err) => console.warn('[LoyalContext] Server stamp sync warning:', err));
+
     return {
       success: true,
       student: updatedStudent,
@@ -209,6 +273,17 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
     setStudents((prev) => prev.map((s) => (s.id === student.id ? updatedStudent : s)));
     setTransactions((prev) => [newTx, ...prev]);
 
+    // Sync with server DB AND reset Google Wallet over-the-air
+    fetch('/api/students/redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token,
+        notes: `Recompensa canjeada: ${config.currentRewardTitle}`,
+        cashierName,
+      }),
+    }).catch((err) => console.warn('[LoyalContext] Server redeem sync warning:', err));
+
     return { success: true, student: updatedStudent };
   };
 
@@ -244,6 +319,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
         redeemReward,
         updateConfig,
         resetDemoData,
+        refreshFromServer,
       }}
     >
       {children}

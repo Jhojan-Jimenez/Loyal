@@ -8,9 +8,15 @@ import { LotusIcon } from '@/components/MandalaBackground';
 import { ArrowLeft, UserX, Sparkles } from 'lucide-react';
 
 export function StudentCardView({ token }: { token: string }) {
-  const { getStudentByToken, config, isLoaded } = useLoyal();
+  const { getStudentByToken, config, isLoaded, refreshFromServer } = useLoyal();
 
   const student = getStudentByToken(token);
+
+  React.useEffect(() => {
+    if (!student) {
+      refreshFromServer();
+    }
+  }, [student, refreshFromServer]);
 
   if (!isLoaded) {
     return (

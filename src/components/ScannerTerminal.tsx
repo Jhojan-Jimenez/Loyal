@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export function ScannerTerminal() {
-  const { students, config, getStudentByToken, addStamp, redeemReward, transactions } = useLoyal();
+  const { students, config, getStudentByToken, addStamp, redeemReward, transactions, refreshFromServer } = useLoyal();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>('camila-restrepo-yoga');
@@ -97,10 +97,14 @@ export function ScannerTerminal() {
       await html5QrCode.start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 220, height: 220 } },
-        (decodedText) => {
+        async (decodedText) => {
           // Scanned successfully!
-          const cleanToken = decodedText.trim();
+          const cleanToken = decodedText.trim().replace(/^https?:\/\/[^\/]+\/card\//, '');
           setSelectedToken(cleanToken);
+          // If not in local list, refresh from server
+          if (!getStudentByToken(cleanToken)) {
+            await refreshFromServer();
+          }
           setMessage({ type: 'info', text: `¡Código detectado! Alumno identificado.` });
           playChime(true);
         },
