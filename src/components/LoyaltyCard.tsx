@@ -114,20 +114,16 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
             <MandalaBackground className="left-[-60px] bottom-[-60px] w-72 h-72" opacity="opacity-10" />
 
             {/* Studio Header */}
-            <div className="relative z-10 flex items-start justify-between border-b border-purple-100/80 pb-4">
+            <div className="relative z-10 flex items-start justify-between border-b border-purple-100/80 pb-3">
               <div>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase bg-purple-100 text-purple-800">
-                  <Sparkles className="w-3 h-3 text-purple-600" />
-                  Pase Oficial de Clases
-                </span>
-                <h2 className="text-xl font-bold text-purple-950 mt-1 tracking-tight">
+                <h2 className="text-xl font-bold text-purple-950 tracking-tight">
                   {config.studioName}
                 </h2>
-                <p className="text-xs text-purple-600/80 italic">{config.tagline}</p>
+                <p className="text-xs text-purple-600/80 italic mt-0.5">{config.tagline}</p>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-fuchsia-600 p-0.5 shadow-md shadow-purple-600/20">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-fuchsia-600 p-0.5 shadow-md shadow-purple-600/20">
                 <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center">
-                  <LotusIcon className="w-7 h-7 text-purple-600" />
+                  <LotusIcon className="w-5 h-5 text-purple-600" />
                 </div>
               </div>
             </div>

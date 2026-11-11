@@ -11,8 +11,6 @@ import {
   QrCode,
   ShieldCheck,
   Calendar,
-  Gift,
-  ArrowRight,
   CheckCircle2,
   X,
   CreditCard,
@@ -196,17 +194,6 @@ export default function HomePage() {
                 priority
                 className="object-contain drop-shadow-sm select-none hover:scale-[1.02] transition-transform duration-500"
               />
-
-              {/* Floating SwiftPieces Info Chip */}
-              <div className="absolute -bottom-4 right-2 sm:right-6 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-purple-100 shadow-md flex items-center gap-3 animate-float-slow">
-                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700">
-                  <Gift className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-purple-600">Recompensa</p>
-                  <p className="text-xs font-semibold text-neutral-900">10 Clases = 1 Taller Gratis</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -218,9 +205,6 @@ export default function HomePage() {
       <section className="py-16 px-6 sm:px-10 lg:px-16 bg-white border-y border-purple-100/70">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-xl mx-auto mb-10 space-y-2">
-            <span className="text-[11px] font-bold tracking-widest text-fuchsia-600 uppercase bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
-              Pase Digital Oficial
-            </span>
             <h3 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
               Tu Tarjeta de 10 Sellos en el Celular
             </h3>
@@ -237,101 +221,7 @@ export default function HomePage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. EVENTS & HORARIOS (Simple, Breathing Section)
-      ───────────────────────────────────────────────────────────── */}
-      <section id="about" className="py-16 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-          <div>
-            <h3 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
-              Próximas Clases & Horarios
-            </h3>
-            <p className="text-xs sm:text-sm text-neutral-600 mt-1">
-              Encuentra la práctica ideal para tu nivel en nuestro estudio de Chapinero Alto.
-            </p>
-          </div>
-          <Link
-            href="/schedule"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-fuchsia-600 hover:text-fuchsia-700 transition-colors"
-          >
-            <span>Ver horario semanal completo</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Class 1 */}
-          <div className="bg-white rounded-3xl p-6 border border-purple-100/80 shadow-xs hover:shadow-md transition-shadow">
-            <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-fuchsia-50 text-fuchsia-700 mb-3">
-              Vinyasa Flow
-            </span>
-            <h4 className="text-base font-bold text-neutral-900">Despertar Consciente</h4>
-            <p className="text-xs text-neutral-500 mt-1">Andrea Salgar · 06:45 AM</p>
-            <p className="text-xs text-neutral-600 mt-3 leading-relaxed">
-              Secuencia dinámica y enérgica para iniciar tu día conectando respiración ujjayi con movimiento.
-            </p>
-            <div className="mt-4 pt-4 border-t border-purple-50 flex items-center justify-between text-xs">
-              <span className="font-semibold text-neutral-900">Lun, Mié, Vie</span>
-              <a
-                href={`https://wa.me/573203282014?text=Hola!%20Quiero%20reservar%20mi%20cupo%20para%20Vinyasa%20Flow`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-fuchsia-600 font-bold hover:underline"
-              >
-                Reservar
-              </a>
-            </div>
-          </div>
-
-          {/* Class 2 */}
-          <div className="bg-white rounded-3xl p-6 border border-purple-100/80 shadow-xs hover:shadow-md transition-shadow">
-            <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-amber-50 text-amber-700 mb-3">
-              Hatha Yoga
-            </span>
-            <h4 className="text-base font-bold text-neutral-900">Alineación & Pranayama</h4>
-            <p className="text-xs text-neutral-500 mt-1">Felipe Osorio · 07:30 AM</p>
-            <p className="text-xs text-neutral-600 mt-3 leading-relaxed">
-              Permanencia consciente en asanas fundamentales y técnicas de respiración para calmar la mente.
-            </p>
-            <div className="mt-4 pt-4 border-t border-purple-50 flex items-center justify-between text-xs">
-              <span className="font-semibold text-neutral-900">Mar, Jue</span>
-              <a
-                href={`https://wa.me/573203282014?text=Hola!%20Quiero%20reservar%20mi%20cupo%20para%20Hatha%20Yoga`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-fuchsia-600 font-bold hover:underline"
-              >
-                Reservar
-              </a>
-            </div>
-          </div>
-
-          {/* Class 3 */}
-          <div className="bg-white rounded-3xl p-6 border border-purple-100/80 shadow-xs hover:shadow-md transition-shadow">
-            <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-purple-50 text-purple-700 mb-3">
-              Yin Restaurativo
-            </span>
-            <h4 className="text-base font-bold text-neutral-900">Liberación Fascial</h4>
-            <p className="text-xs text-neutral-500 mt-1">Valentina Restrepo · 06:15 PM</p>
-            <p className="text-xs text-neutral-600 mt-3 leading-relaxed">
-              Posturas suaves en el suelo sostenidas por varios minutos para soltar tensiones profundas.
-            </p>
-            <div className="mt-4 pt-4 border-t border-purple-50 flex items-center justify-between text-xs">
-              <span className="font-semibold text-neutral-900">Lun, Mié</span>
-              <a
-                href={`https://wa.me/573203282014?text=Hola!%20Quiero%20reservar%20mi%20cupo%20para%20Yin%20Yoga`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-fuchsia-600 font-bold hover:underline"
-              >
-                Reservar
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          4. MODAL DE REGISTRO RÁPIDO (SwiftPieces Pill Style)
+          3. MODAL DE REGISTRO RÁPIDO (SwiftPieces Pill Style)
       ───────────────────────────────────────────────────────────── */}
       {isRegisterOpen && (
         <div className="fixed inset-0 z-50 bg-neutral-900/40 backdrop-blur-xs flex items-center justify-center p-4">
