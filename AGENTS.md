@@ -19,27 +19,36 @@ Este documento es la **Memoria Maestra y Guía Operativa** para Antigravity y cu
 
 ---
 
-## 📜 Metodología Obligatoria: Spec-Driven Development (SDD)
+## 🧠 Orquestación Autónoma Multi-Agente (Swarm & Subagents)
 
-En este repositorio **NO SE PROGRAMA NADA SIN UNA ESPECIFICACIÓN**:
+En este proyecto, **el usuario actúa como Product Owner / Director** y NO tiene que microgestionar a cada agente manualmente. 
 
-1. Toda nueva funcionalidad debe iniciar creando o editando un archivo en `specs/00X-<nombre>.md` siguiendo la plantilla `specs/SPEC-TEMPLATE.md`.
-2. Las especificaciones definen los contratos TypeScript, rutas de API, esquemas de payload, estados de UI y matriz de pruebas.
-3. Antes de dar por terminado cualquier cambio, el agente debe verificar que `npm run build` compile con 0 errores y que los criterios de aceptación se cumplan.
+Cuando el usuario pide una funcionalidad o cambio en lenguaje natural:
+1. **El Coordinador (Antigravity)** asume la dirección técnica y redacta/actualiza la especificación en `specs/00X-<nombre>.md`.
+2. **Despliegue Autónomo de Agentes:** El coordinador convoca y activa a los agentes especializados en paralelo o secuencia.
+3. **Diálogo y Negociación Inter-Agente (Swarm Board / Messages):**
+   - El agente de **Frontend** y el de **Backend** se comunican entre sí.
+   - **Frontend** solicita contratos de datos: *"@backend necesito que el endpoint `/api/students/stamp` me retorne también si este sello desbloqueó el premio intermedio"*.
+   - **Backend** responde con la firma de tipos: *"@frontend listo, he actualizado `src/lib/types.ts` con `intermediateRewardUnlocked: boolean` y el endpoint ya lo calcula"*.
+   - Ambos agentes ajustan la SPEC colaborativamente si surgen casos borde.
+4. **Verificación y Entrega:** El coordinador ejecuta `npm run build`, valida que ambos agentes hayan terminado sus tareas sin colisiones, hace commit + push y reporta el resultado en vivo al usuario.
 
 ---
 
-## 🤖 Los Dos Agentes Especializados
+## 🤖 Los Dos Agentes Especializados y sus Límites Estrictos
 
-Para mantener el código limpio y sin contaminación de responsabilidades, el trabajo se divide en dos roles estrictos:
+| Agente | Nombre | Jurisdicción Exclusiva | Qué NO puede tocar |
+| :--- | :--- | :--- | :--- |
+| **Backend & Sistemas** | `loyal-backend-engineer` | `src/lib/server-db.ts`, `src/lib/google-wallet.ts`, `src/app/api/**`, contratos TypeScript en `src/lib/types.ts`. Seguridad, criptografía, OAuth2 y llamadas REST a Google Wallet. | Componentes visuales (`src/components/**`), estilos CSS, animaciones. |
+| **Frontend & UI/UX** | `loyal-frontend-artisan` | `src/components/**`, `src/app/**/page.tsx`, `src/context/LoyalContext.tsx`, Tailwind CSS, animaciones, sonidos Web Audio API y vibración. | Base de datos en disco (`server-db.ts`), claves privadas ni secrets. |
 
-### 1. `loyal-backend-engineer` (Backend, Datos y Sistemas)
-* **Jurisdicción:** `src/lib/server-db.ts`, `src/lib/google-wallet.ts`, `src/app/api/**`, `src/lib/types.ts`.
-* **Responsabilidad:** Lógica de negocio, base de datos en servidor, emisión de pases firmados, llamadas REST a Google Wallet, autenticación OAuth2 y seguridad.
+---
 
-### 2. `loyal-frontend-artisan` (Frontend, UI/UX y PWA)
-* **Jurisdicción:** `src/components/**`, `src/app/**/page.tsx`, `src/context/LoyalContext.tsx`, estilos Tailwind, animaciones, sonidos Web Audio API y vibración.
-* **Responsabilidad:** Diseño anti-slop, experiencia táctil móvil, escáner de cámara, feedback visual y consistencia estética zen.
+## 📜 Metodología: Spec-Driven Development (SDD)
+
+1. Toda funcionalidad se diseña primero en `specs/` antes de escribir código ejecutable.
+2. Las especificaciones definen contratos TypeScript, rutas de API, esquemas de payload, estados de UI y criterios de aceptación.
+3. Antes de dar por terminado cualquier cambio, se verifica que `npm run build` compile con 0 errores y 0 warnings.
 
 ---
 

@@ -1,6 +1,47 @@
 # Spec-Driven Development (SDD) — Loyal Platform
 
-Bienvenido al sistema de desarrollo guiado por especificaciones (**Spec-Driven Development**) de **Loyal**.
+Bienvenido al sistema de desarrollo guiado por especificaciones (**Spec-Driven Development**) y **Orquestación Autónoma Multi-Agente** de **Loyal**.
+
+---
+
+## 🎯 ¿Cómo Funciona la Autonomía Multi-Agente?
+
+Tú eres el **Director / Product Owner**. Solo tienes que describir tu idea o requerimiento:
+
+```
+                          [ USUARIO (Tú) ]
+                                 │
+                   "Quiero que los alumnos puedan
+                    ver su ranking de clases y..."
+                                 │
+                                 ▼
+                     [ COORDINADOR AUTÓNOMO ]
+                                 │
+               1. Redacta la SPEC (specs/00X.md)
+               2. Divide el trabajo sin colisiones
+               3. Despliega a los agentes especializados
+                                 │
+                 ┌───────────────┴───────────────┐
+                 ▼                               ▼
+       [ loyal-backend-engineer ]     [ loyal-frontend-artisan ]
+                 │                               │
+                 │   ◄─── Diálogo Inter-Agente ──►│
+                 │   "@backend: necesito este     │
+                 │    campo en la respuesta"     │
+                 │   "@frontend: listo, añadido   │
+                 │    a src/lib/types.ts"        │
+                 ▼                               ▼
+       - Endpoints & DB                - Componentes & UI
+       - Google Wallet APIs            - Micro-interacciones
+                 │                               │
+                 └───────────────┬───────────────┘
+                                 │
+                                 ▼
+                     [ VERIFICACIÓN & ENTREGA ]
+                     - npm run build (0 errores)
+                     - Git commit + Push automático
+                     - Desplegado en loyal.jhojan.cloud
+```
 
 ---
 
@@ -24,28 +65,3 @@ Bienvenido al sistema de desarrollo guiado por especificaciones (**Spec-Driven D
 | :--- | :--- | :--- | :--- |
 | **[SPEC-001](file:///home/claude/Workspace/Portafolio/CV/Projects/loyal/specs/001-core-system.md)** | Arquitectura Base, Google Wallet & Sincronización Realtime | **Aprobado / Producción** | Backend & Frontend |
 | **[SPEC-TEMPLATE](file:///home/claude/Workspace/Portafolio/CV/Projects/loyal/specs/SPEC-TEMPLATE.md)** | Plantilla Oficial para Nuevas Especificaciones | **Estándar** | Todos |
-
----
-
-## 🔄 Flujo de Trabajo para Nuevas Funcionalidades
-
-```
-[Idea / Requerimiento]
-       │
-       ▼
-1. Crear specs/00X-<nombre>.md (usando SPEC-TEMPLATE.md)
-       │
-       ▼
-2. Revisar y validar contratos (Frontend & Backend)
-       │
-       ▼
-3. Implementación guiada por agentes especializados
-   ├─► Backend Agent: Endpoints, persistencia, validaciones
-   └─► Frontend Agent: UI pixel-perfect, feedback táctil, componentes
-       │
-       ▼
-4. Verificación local (npm run build)
-       │
-       ▼
-5. Commit + Push ➔ Despliegue automático en Coolify
-```
