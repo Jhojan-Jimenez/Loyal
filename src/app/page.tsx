@@ -184,17 +184,17 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right Column: Hero Illustration (King Pigeon Pose) */}
+          {/* Right Column: Hero Illustration (100% Original AI Vector Artwork) */}
           <div className="lg:col-span-6 relative flex justify-center items-center">
-            <div className="relative w-full max-w-[480px] aspect-[4/3.8] flex items-center justify-center">
-              {/* Main Artwork */}
+            <div className="relative w-full max-w-[540px] aspect-[4/3.6] flex items-center justify-center">
+              {/* Main Artwork - Original AI-generated editorial vector */}
               <Image
-                src="/images/yoga/hero_king_pigeon_transparent.png"
-                alt="Yogui en postura King Pigeon (Eka Pada Rajakapotasana)"
-                width={480}
-                height={460}
+                src="/images/yoga/hero_ai_pigeon_transparent.png"
+                alt="Yogui en postura King Pigeon (Eka Pada Rajakapotasana) - Samyama Yoga"
+                width={540}
+                height={480}
                 priority
-                className="object-contain drop-shadow-sm select-none"
+                className="object-contain drop-shadow-sm select-none hover:scale-[1.02] transition-transform duration-500"
               />
 
               {/* Floating SwiftPieces Info Chip */}
