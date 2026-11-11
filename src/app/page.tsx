@@ -78,11 +78,11 @@ export default function HomePage() {
   };
 
   return (
-    <div className="bg-[#FFF5F5] text-neutral-900 min-h-screen flex flex-col justify-between selection:bg-purple-200 selection:text-purple-950">
+    <div className="bg-[#FFF5F5] text-neutral-900 flex flex-col selection:bg-purple-200 selection:text-purple-950">
       {/* ─────────────────────────────────────────────────────────────
-          1. HERO SECTION (1:1 with user reference image)
+          1. HERO SECTION (1:1 with user reference image - 100% Viewport)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-6 pb-16 lg:py-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full">
+      <section className="relative overflow-hidden w-full h-[calc(100vh-5rem)] supports-[height:100dvh]:h-[calc(100dvh-5rem)] max-h-[calc(100vh-5rem)] supports-[height:100dvh]:max-h-[calc(100dvh-5rem)] flex items-center justify-center bg-[#FFF5F5]">
         {/* Decorative Floating Starbursts & Wavy Curves */}
         <div className="absolute inset-0 pointer-events-none select-none z-0">
           {/* Top Blush Star */}
@@ -95,8 +95,8 @@ export default function HomePage() {
             <Starburst size={65} color="#F59E0B" />
           </div>
 
-          {/* Magenta Star near illustration */}
-          <div className="absolute top-1/2 right-1/2 -translate-y-12">
+          {/* Magenta Star near illustration (hidden on mobile to prevent text clash) */}
+          <div className="hidden lg:block absolute top-1/2 right-1/2 -translate-y-12">
             <Starburst size={60} color="#C026D3" className="animate-pulse-glow" />
           </div>
 
@@ -111,12 +111,12 @@ export default function HomePage() {
           </div>
 
           {/* Tiny Yellow Star far right */}
-          <div className="absolute top-1/2 right-4">
+          <div className="hidden sm:block absolute top-1/2 right-4">
             <Starburst size={35} color="#F59E0B" />
           </div>
 
           {/* Flowing Organic Lavender Curves with Beads */}
-          <svg className="w-full h-full absolute inset-0" viewBox="0 0 1000 600" fill="none">
+          <svg className="w-full h-full absolute inset-0" viewBox="0 0 1000 600" fill="none" preserveAspectRatio="none">
             <path
               d="M 50,480 C 220,440 320,530 460,380 C 600,230 740,140 950,80"
               stroke="#DDD6FE"
@@ -135,56 +135,56 @@ export default function HomePage() {
           </svg>
         </div>
 
-        {/* Hero Content Grid */}
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        {/* Hero Content Grid (Responsive for both Mobile & Desktop) */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 h-full flex flex-col lg:grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center justify-between lg:justify-center py-4 sm:py-6 lg:py-0">
           {/* Left Column: Minimalist Typography & CTA */}
-          <div className="lg:col-span-6 space-y-6 max-w-xl">
-            <div className="space-y-1">
-              <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black text-neutral-900 tracking-tight leading-none uppercase">
+          <div className="lg:col-span-6 space-y-3 sm:space-y-5 max-w-xl w-full">
+            <div className="space-y-0.5">
+              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-neutral-900 tracking-tight leading-none uppercase">
                 YOGA
               </h1>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-light text-neutral-800 tracking-wide uppercase">
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-light text-neutral-800 tracking-wide uppercase">
                 RETREAT
               </h2>
             </div>
 
-            <p className="text-neutral-600 text-sm sm:text-base leading-relaxed pr-4">
+            <p className="text-neutral-600 text-xs sm:text-base leading-relaxed pr-2 max-w-lg">
               Tu espacio sagrado de respiración, presencia y equilibrio. Acumula sellos en cada clase que asistas y canjea talleres de meditación o mats ecológicos directo en tu Google Wallet.
             </p>
 
             {/* SwiftPieces iOS-style Pill Button */}
-            <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="pt-1 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setIsRegisterOpen(true)}
-                className="px-9 py-3.5 rounded-full bg-[#C084FC] hover:bg-[#B370FC] text-white text-base font-bold shadow-lg shadow-purple-400/25 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+                className="px-7 sm:px-9 py-2.5 sm:py-3.5 rounded-full bg-[#C084FC] hover:bg-[#B370FC] text-white text-sm sm:text-base font-bold shadow-lg shadow-purple-400/25 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
               >
                 Join us
               </button>
 
               <Link
                 href="/scanner"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/90 border border-purple-200 text-neutral-800 text-sm font-semibold hover:bg-white hover:border-purple-300 transition-all active:scale-95 shadow-xs"
+                className="inline-flex items-center gap-1.5 px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-full bg-white/90 border border-purple-200 text-neutral-800 text-xs sm:text-sm font-semibold hover:bg-white hover:border-purple-300 transition-all active:scale-95 shadow-xs"
               >
-                <QrCode className="w-4 h-4 text-fuchsia-600" />
+                <QrCode className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-fuchsia-600" />
                 <span>Escanear en Recepción</span>
               </Link>
             </div>
 
-            <div className="pt-4 flex items-center gap-6 text-xs text-neutral-500">
+            <div className="pt-1 flex items-center gap-4 sm:gap-6 text-[11px] sm:text-xs text-neutral-500">
               <span className="flex items-center gap-1.5 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
                 100% Gratis sin descargas
               </span>
               <span className="flex items-center gap-1.5 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-purple-600" />
+                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600" />
                 Google Wallet (Android)
               </span>
             </div>
           </div>
 
           {/* Right Column: Hero Illustration (100% Original AI Vector Artwork) */}
-          <div className="lg:col-span-6 relative flex justify-center items-center">
-            <div className="relative w-full max-w-[540px] aspect-[4/3.6] flex items-center justify-center">
+          <div className="lg:col-span-6 relative flex-1 lg:flex-none min-h-0 w-full flex items-center justify-center my-auto lg:my-0">
+            <div className="relative w-full max-w-[540px] h-full max-h-[36dvh] sm:max-h-[42dvh] lg:max-h-[min(500px,calc(100dvh-12rem))] flex items-center justify-center">
               {/* Main Artwork - Original AI-generated editorial vector */}
               <Image
                 src="/images/yoga/hero_ai_pigeon_transparent.png"
@@ -192,7 +192,7 @@ export default function HomePage() {
                 width={540}
                 height={480}
                 priority
-                className="object-contain drop-shadow-sm select-none hover:scale-[1.02] transition-transform duration-500"
+                className="h-full w-auto max-h-[36dvh] sm:max-h-[42dvh] lg:max-h-[500px] object-contain drop-shadow-sm select-none hover:scale-[1.02] transition-transform duration-500"
               />
             </div>
           </div>
