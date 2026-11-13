@@ -1,19 +1,19 @@
 import { Student, StampTransaction, StudioConfig, YogaClass } from './types';
 
 export const DEFAULT_STUDIO_CONFIG: StudioConfig = {
-  studioName: 'Samyama Yoga & Wellness',
-  tagline: 'Tu espacio sagrado de respiración, presencia y equilibrio',
+  studioName: 'Loyal Club & Retail',
+  tagline: 'Pase digital de fidelización y beneficios exclusivos',
   totalStampsRequired: 10,
-  currentRewardTitle: 'Taller de Meditación Sonora o Mat de Yoga Eco-Friendly',
-  currentRewardDescription: '¡Completaste tu ciclo de 10 clases! Reclama acceso gratuito a un Taller Especial de Cuencos Tibetanos de 90 min o un Mat de Yoga de caucho natural.',
-  intermediateRewardTitle: 'Pase de Invitado + Infusión Ayurvédica',
+  currentRewardTitle: 'Producto o Servicio Gratis (10 Sellos)',
+  currentRewardDescription: '¡Completaste tu ciclo de 10 visitas! Muestra este pase en caja para canjear tu beneficio exclusivo de cliente frecuente.',
+  intermediateRewardTitle: '20% de Descuento en tu próxima visita',
   intermediateRewardStamps: 5,
-  address: 'Calle 70A # 9-45, Zona Rosa / Chapinero Alto, Bogotá',
+  address: 'Calle 72 # 10-34, Zona Financiera, Bogotá',
   googleMapsUrl: 'https://maps.google.com',
-  wifiSsid: 'Samyama_Yoga_Guest',
-  wifiPassword: 'namaste_en_presencia',
+  wifiSsid: 'Loyal_Guest_WiFi',
+  wifiPassword: 'cliente_frecuente',
   whatsappNumber: '+57 320 328 2014',
-  instagramHandle: '@samyama.yogabogota',
+  instagramHandle: '@loyalpass.cloud',
 };
 
 export const INITIAL_STUDENTS: Student[] = [
@@ -22,13 +22,13 @@ export const INITIAL_STUDENTS: Student[] = [
     token: 'camila-restrepo-yoga',
     name: 'Camila Restrepo',
     phone: '+57 312 458 9012',
-    email: 'camila.yoga@gmail.com',
+    email: 'camila.restrepo@gmail.com',
     registeredAt: '2026-10-12T09:30:00Z',
     stamps: 7,
     totalCompletedCycles: 1,
     totalVisits: 17,
     lastVisitAt: '2026-11-08T18:30:00Z',
-    notes: 'Prefiere Hatha Yoga por las mañanas',
+    notes: 'Cliente frecuente VIP',
   },
   {
     id: 'std_02',
@@ -41,7 +41,7 @@ export const INITIAL_STUDENTS: Student[] = [
     totalCompletedCycles: 0,
     totalVisits: 9,
     lastVisitAt: '2026-11-07T07:15:00Z',
-    notes: '¡A solo 1 clase de su recompensa!',
+    notes: '¡A solo 1 sello de su recompensa!',
   },
   {
     id: 'std_03',
@@ -54,7 +54,7 @@ export const INITIAL_STUDENTS: Student[] = [
     totalCompletedCycles: 0,
     totalVisits: 3,
     lastVisitAt: '2026-11-09T19:00:00Z',
-    notes: 'Iniciando en Vinyasa suave',
+    notes: 'Miembro nuevo',
   },
   {
     id: 'std_04',
@@ -66,7 +66,7 @@ export const INITIAL_STUDENTS: Student[] = [
     totalCompletedCycles: 2,
     totalVisits: 30,
     lastVisitAt: '2026-11-10T08:00:00Z',
-    notes: '¡Listo para canjear premio de 10 clases!',
+    notes: '¡Listo para canjear premio de 10 sellos!',
   },
 ];
 

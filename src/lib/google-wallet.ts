@@ -62,8 +62,8 @@ export function generateGoogleWalletSaveUrl(
   // 1. Define LoyaltyClass (Template)
   const loyaltyClass = {
     id: classId,
-    issuerName: config.studioName || 'Samyama Yoga & Wellness',
-    programName: 'Pase de Clases de Yoga & Bienestar',
+    issuerName: config.studioName || 'Loyal Business Club',
+    programName: 'Pase Digital de Fidelización',
     programLogo: {
       sourceUri: {
         uri: `${appUrl}/icon-512.png`,
@@ -71,11 +71,11 @@ export function generateGoogleWalletSaveUrl(
       contentDescription: {
         defaultValue: {
           language: 'es',
-          value: 'Logo Samyama Yoga',
+          value: 'Logo Loyal',
         },
       },
     },
-    hexBackgroundColor: '#7E22CE',
+    hexBackgroundColor: '#09090B',
     reviewStatus: 'UNDER_REVIEW',
   };
 
@@ -87,7 +87,7 @@ export function generateGoogleWalletSaveUrl(
     accountName: student.name,
     accountId: student.id,
     loyaltyPoints: {
-      label: 'Clases Asistidas',
+      label: 'Sellos Acumulados',
       balance: {
         string: `${student.stamps} de ${config.totalStampsRequired} sellos`,
       },
@@ -104,12 +104,12 @@ export function generateGoogleWalletSaveUrl(
         id: 'reward_module',
       },
       {
-        header: 'Wi-Fi Alumnos',
+        header: 'Wi-Fi Clientes',
         body: `Red: ${config.wifiSsid} · Clave: ${config.wifiPassword}`,
         id: 'wifi_module',
       },
       {
-        header: 'Ubicación Estudio',
+        header: 'Ubicación Local',
         body: config.address,
         id: 'location_module',
       },
@@ -122,13 +122,8 @@ export function generateGoogleWalletSaveUrl(
           id: 'web_card_link',
         },
         {
-          uri: `${appUrl}/schedule`,
-          description: 'Horario de Clases Semanal',
-          id: 'schedule_link',
-        },
-        {
           uri: `https://wa.me/${config.whatsappNumber.replace(/\D/g, '')}`,
-          description: 'Contactar Recepción por WhatsApp',
+          description: 'Contactar Establecimiento por WhatsApp',
           id: 'whatsapp_link',
         },
       ],

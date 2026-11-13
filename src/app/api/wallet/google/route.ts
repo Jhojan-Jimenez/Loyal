@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const student = getStudentByToken(token) || {
     id: `std_${token}`,
     token,
-    name: 'Alumno Samyama Yoga',
+    name: 'Cliente Loyal',
     phone: '',
     registeredAt: new Date().toISOString(),
     stamps: 0,

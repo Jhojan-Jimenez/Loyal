@@ -6,12 +6,11 @@ import { usePathname } from 'next/navigation';
 import {
   QrCode,
   ShieldCheck,
-  Calendar,
-  Sparkles,
   Menu,
   X,
   CreditCard,
   ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 
 export function Navigation() {
@@ -20,69 +19,71 @@ export function Navigation() {
 
   const isHome = pathname === '/';
 
-  // Navigation matching reference screenshot: Home | Events | About us | Contact us
   const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Events', href: '/schedule' },
-    { label: 'About us', href: isHome ? '#about' : '/#about' },
-    { label: 'Contact us', href: isHome ? '#contact' : '/#contact' },
+    { label: 'Producto', href: isHome ? '#producto' : '/#producto' },
+    { label: 'Cómo Funciona', href: isHome ? '#como-funciona' : '/#como-funciona' },
+    { label: 'Planes', href: isHome ? '#planes' : '/#planes' },
+    { label: 'Contacto', href: isHome ? '#contacto' : '/#contacto' },
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#FFF5F5]/90 backdrop-blur-md transition-all">
+    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-neutral-200/80 transition-all">
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 h-20 flex items-center justify-between">
-        {/* Left: Brand Logo exact to reference */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          {/* 8-pointed golden star icon from reference */}
-          <svg className="w-7 h-7 text-amber-500 transition-transform group-hover:rotate-45 duration-300" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
-          </svg>
+        {/* Left: Sober Minimalist Brand Logo */}
+        <Link href="/" className="flex items-center gap-3 group">
+          {/* Geometric Black Monogram / Loyalty Mark */}
+          <div className="w-9 h-9 rounded-xl bg-neutral-950 flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform duration-200">
+            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="4" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </div>
           <div className="flex items-baseline">
-            <span className="text-xl sm:text-2xl font-black tracking-tight text-neutral-900">
-              Samyama
+            <span className="text-xl sm:text-2xl font-black tracking-tight text-neutral-950">
+              Loyal
             </span>
-            <span className="text-xl sm:text-2xl font-light text-fuchsia-600 ml-1">
-              Yoga
+            <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest ml-2 px-1.5 py-0.5 rounded-sm bg-neutral-100 border border-neutral-200">
+              SaaS
             </span>
           </div>
         </Link>
 
-        {/* Center/Right Nav: Editorial Minimalist Links */}
-        <nav className="hidden md:flex items-center gap-8 text-[15px] font-medium text-neutral-800">
+        {/* Center Nav: Editorial Sober Links */}
+        <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-neutral-600">
           {navLinks.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className="hover:text-fuchsia-600 transition-colors"
+              className="hover:text-neutral-950 transition-colors"
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        {/* Right Actions: SwiftPieces iOS-style Pill Dock */}
+        {/* Right Actions: High-contrast B2B Button Dock */}
         <div className="hidden sm:flex items-center gap-3">
           <Link
             href="/scanner"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/80 border border-neutral-200/80 text-xs font-semibold text-neutral-800 shadow-xs hover:bg-white hover:border-neutral-300 transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200/80 border border-neutral-200 text-xs font-semibold text-neutral-800 transition-all active:scale-95"
           >
-            <QrCode className="w-3.5 h-3.5 text-fuchsia-600" />
+            <QrCode className="w-3.5 h-3.5 text-neutral-700" />
             <span>Escáner</span>
           </Link>
 
           <Link
             href="/card/camila-restrepo-yoga"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-purple-100/80 hover:bg-purple-100 text-xs font-semibold text-purple-900 transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-neutral-50 border border-neutral-300 text-xs font-semibold text-neutral-900 transition-all active:scale-95 shadow-2xs"
           >
-            <CreditCard className="w-3.5 h-3.5 text-purple-700" />
-            <span>Ver Tarjeta</span>
+            <CreditCard className="w-3.5 h-3.5 text-neutral-600" />
+            <span>Ver Tarjeta Demo</span>
           </Link>
 
           <Link
             href="/admin"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-neutral-900 text-white text-xs font-semibold hover:bg-black transition-all active:scale-95 shadow-xs"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-950 text-white text-xs font-semibold hover:bg-black transition-all active:scale-95 shadow-xs"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+            <ShieldCheck className="w-3.5 h-3.5 text-neutral-300" />
             <span>Admin</span>
           </Link>
         </div>
@@ -91,14 +92,14 @@ export function Navigation() {
         <div className="flex md:hidden items-center gap-2">
           <Link
             href="/scanner"
-            className="p-2 rounded-full bg-white border border-neutral-200 text-neutral-800"
+            className="p-2 rounded-xl bg-neutral-100 border border-neutral-200 text-neutral-800"
             title="Escáner"
           >
-            <QrCode className="w-4 h-4 text-fuchsia-600" />
+            <QrCode className="w-4 h-4 text-neutral-900" />
           </Link>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-full bg-white border border-neutral-200 text-neutral-800 focus:outline-hidden"
+            className="p-2 rounded-xl bg-neutral-100 border border-neutral-200 text-neutral-800 focus:outline-hidden"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -108,52 +109,52 @@ export function Navigation() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-purple-100/60 bg-[#FFF5F5] px-6 py-6 space-y-4 shadow-lg animate-in slide-in-from-top-2 duration-200">
+        <div className="md:hidden border-t border-neutral-200 bg-white px-6 py-6 space-y-4 shadow-xl animate-in slide-in-from-top-2 duration-200">
           <nav className="flex flex-col space-y-3">
             {navLinks.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-base font-semibold text-neutral-800 hover:text-fuchsia-600 py-1"
+                className="text-sm font-semibold text-neutral-700 hover:text-neutral-950 py-1"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div className="pt-4 border-t border-purple-100 flex flex-col gap-2.5">
+          <div className="pt-4 border-t border-neutral-200 flex flex-col gap-2.5">
             <Link
               href="/card/camila-restrepo-yoga"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3 rounded-2xl bg-white border border-purple-100 font-semibold text-xs text-purple-950"
+              className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 border border-neutral-200 font-semibold text-xs text-neutral-900"
             >
               <div className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-purple-600" />
-                <span>Mi Pase Digital</span>
+                <CreditCard className="w-4 h-4 text-neutral-600" />
+                <span>Ver Tarjeta Demo</span>
               </div>
-              <ArrowRight className="w-4 h-4 text-purple-400" />
+              <ArrowRight className="w-4 h-4 text-neutral-400" />
             </Link>
 
             <Link
               href="/scanner"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3 rounded-2xl bg-purple-600 text-white font-semibold text-xs"
+              className="flex items-center justify-between p-3 rounded-xl bg-neutral-100 border border-neutral-300 font-semibold text-xs text-neutral-900"
             >
               <div className="flex items-center gap-2">
-                <QrCode className="w-4 h-4" />
+                <QrCode className="w-4 h-4 text-neutral-800" />
                 <span>Recepción (Escáner QR)</span>
               </div>
-              <ArrowRight className="w-4 h-4 text-purple-200" />
+              <ArrowRight className="w-4 h-4 text-neutral-400" />
             </Link>
 
             <Link
               href="/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3 rounded-2xl bg-neutral-900 text-white font-semibold text-xs"
+              className="flex items-center justify-between p-3 rounded-xl bg-neutral-950 text-white font-semibold text-xs"
             >
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
+                <ShieldCheck className="w-4 h-4 text-neutral-300" />
                 <span>Panel de Administración</span>
               </div>
               <ArrowRight className="w-4 h-4 text-neutral-400" />

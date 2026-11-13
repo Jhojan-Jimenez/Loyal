@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Samyama Yoga · Pase Digital de Clases & Lealtad',
-  description: 'Pase digital PWA de clases de yoga, acumulación de sellos y recompensas exclusivas.',
+  title: 'Loyal · Tarjetas de Sellos Digitales & Pases para Negocios',
+  description: 'Plataforma SaaS de fidelización digital para comercios. Pases de sellos en Google Wallet, escáner QR en mostrador y recompensas de recurrencia sin apps pesadas.',
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#7e22ce',
+  themeColor: '#09090B',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -43,9 +43,9 @@ export default function RootLayout({
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-[#4A154B] font-sans selection:bg-[#F3E8FF] selection:text-[#4A154B]">
+      <body className="min-h-full flex flex-col bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white">
         <LoyalProvider>
-          <Suspense fallback={<div className="h-20 border-b border-[#F5E8FF] bg-white" />}>
+          <Suspense fallback={<div className="h-20 border-b border-neutral-200 bg-white" />}>
             <Navigation />
           </Suspense>
           <main className="flex-1">{children}</main>
