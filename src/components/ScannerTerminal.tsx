@@ -18,6 +18,7 @@ import {
   Check,
   ShieldCheck,
   Store,
+  Upload,
 } from 'lucide-react';
 
 export function ScannerTerminal() {
@@ -30,6 +31,8 @@ export function ScannerTerminal() {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const scannerRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isProcessingScan = useRef(false);
   const scannerContainerId = 'qr-reader-container';
 
   const currentStudent = getStudentByToken(selectedToken);
@@ -79,10 +82,33 @@ export function ScannerTerminal() {
     });
   };
 
+  // Process decoded token from QR (supports full URL or plain token)
+  const processDecodedToken = async (decodedText: string, sourceLabel: string) => {
+    let cleanToken = decodedText.trim();
+    const cardUrlMatch = cleanToken.match(/\/card\/([a-zA-Z0-9_-]+)/);
+    if (cardUrlMatch && cardUrlMatch[1]) {
+      cleanToken = cardUrlMatch[1];
+    } else {
+      cleanToken = cleanToken.replace(/^https?:\/\/[^\/]+\/(?:style\/[^\/]+\/)?card\//, '').replace(/[?#].*$/, '');
+    }
+
+    setSelectedToken(cleanToken);
+    if (!getStudentByToken(cleanToken)) {
+      await refreshFromServer();
+    }
+    setMessage({ type: 'info', text: `¡Pase detectado (${sourceLabel})! Cliente identificado: ${cleanToken}` });
+    playChime(true);
+    triggerCelebration();
+  };
+
   // Initialize html5-qrcode camera scanner
   const startCamera = async () => {
     setCameraError(null);
     setIsCameraActive(true);
+    isProcessingScan.current = false;
+
+    // Small delay to ensure container element is mounted and styled in DOM
+    await new Promise((resolve) => setTimeout(resolve, 150));
 
     try {
       const { Html5Qrcode } = await import('html5-qrcode');
@@ -93,26 +119,53 @@ export function ScannerTerminal() {
         } catch {}
       }
 
+      const containerEl = document.getElementById(scannerContainerId);
+      if (!containerEl) {
+        throw new Error('Contenedor visual de la cámara no encontrado.');
+      }
+
       const html5QrCode = new Html5Qrcode(scannerContainerId);
       scannerRef.current = html5QrCode;
 
+      // Select camera: prioritize back/environment camera
+      let cameraConfig: any = { facingMode: 'environment' };
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          const backCam = devices.find((d: any) => /back|rear|environment|trasera|posterior/i.test(d.label));
+          cameraConfig = backCam ? backCam.id : devices[devices.length - 1].id;
+        }
+      } catch (camErr) {
+        console.log('Using default camera facingMode: environment', camErr);
+      }
+
       await html5QrCode.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
+        cameraConfig,
+        {
+          fps: 10,
+          qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+            const edge = Math.min(viewfinderWidth, viewfinderHeight);
+            const boxSize = Math.max(160, Math.min(Math.floor(edge * 0.75), 250));
+            return { width: boxSize, height: boxSize };
+          },
+        },
         async (decodedText) => {
-          const cleanToken = decodedText.trim().replace(/^https?:\/\/[^\/]+\/card\//, '');
-          setSelectedToken(cleanToken);
-          if (!getStudentByToken(cleanToken)) {
-            await refreshFromServer();
-          }
-          setMessage({ type: 'info', text: `¡Código detectado! Cliente identificado.` });
-          playChime(true);
+          if (isProcessingScan.current) return;
+          isProcessingScan.current = true;
+
+          await processDecodedToken(decodedText, 'Cámara en vivo');
+
+          // Pause and close camera after successful scan for seamless POS UX
+          setTimeout(async () => {
+            await stopCamera();
+            isProcessingScan.current = false;
+          }, 700);
         },
         () => {}
       );
     } catch (err: any) {
       console.warn('Camera failed:', err);
-      setCameraError('No se pudo acceder a la cámara o no hay permisos. Usa el selector o búsqueda manual.');
+      setCameraError('No se pudo acceder a la cámara o no hay permisos concedidos en tu navegador. Puedes subir una captura de pantalla del QR o seleccionar el cliente manualmente.');
       setIsCameraActive(false);
     }
   };
@@ -125,6 +178,40 @@ export function ScannerTerminal() {
       } catch {}
     }
     setIsCameraActive(false);
+  };
+
+  // Upload QR image file fallback
+  const handleFileScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCameraError(null);
+
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode');
+      let qrEngine = scannerRef.current;
+      let createdTemp = false;
+
+      if (!qrEngine) {
+        qrEngine = new Html5Qrcode(scannerContainerId);
+        createdTemp = true;
+      }
+
+      const decodedText = await qrEngine.scanFile(file, true);
+      await processDecodedToken(decodedText, 'Archivo / Captura');
+
+      if (createdTemp) {
+        try {
+          await qrEngine.clear();
+        } catch {}
+      }
+    } catch (err: any) {
+      console.warn('File scan failed:', err);
+      setCameraError('No se encontró ningún código QR legible en la imagen seleccionada. Asegúrate de que la captura esté bien enfocada.');
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   useEffect(() => {
@@ -192,7 +279,23 @@ export function ScannerTerminal() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleFileScan}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-700 text-neutral-200 text-xs font-medium hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer"
+              title="Cargar foto o captura de un código QR"
+            >
+              <Upload className="w-4 h-4 text-neutral-300" />
+              <span>Subir Foto QR</span>
+            </button>
+
             {!isCameraActive ? (
               <button
                 onClick={startCamera}
@@ -214,21 +317,22 @@ export function ScannerTerminal() {
         </div>
       </div>
 
-      {/* Camera Live View Box (If Active) */}
-      {isCameraActive && (
-        <div className="bg-white rounded-3xl p-5 border border-neutral-200 shadow-xl text-center">
-          <div className="flex items-center justify-between pb-3 border-b border-neutral-200">
-            <span className="text-xs font-bold text-neutral-950 flex items-center gap-1.5">
-              <Camera className="w-4 h-4 text-neutral-950 animate-pulse" />
-              Cámara en Vivo: Apunta al QR del Cliente
-            </span>
-            <button onClick={stopCamera} className="text-xs font-medium text-neutral-600 hover:text-neutral-950 cursor-pointer">
-              Cerrar Cámara
-            </button>
-          </div>
-          <div id={scannerContainerId} className="w-full max-w-sm mx-auto my-3 overflow-hidden rounded-2xl" />
+      {/* Camera Live View Box (Permanently in DOM with display toggle to prevent race conditions) */}
+      <div className={`bg-white rounded-3xl p-5 border border-neutral-200 shadow-xl text-center ${isCameraActive ? 'block' : 'hidden'}`}>
+        <div className="flex items-center justify-between pb-3 border-b border-neutral-200">
+          <span className="text-xs font-bold text-neutral-950 flex items-center gap-1.5">
+            <Camera className="w-4 h-4 text-neutral-950 animate-pulse" />
+            Cámara en Vivo: Apunta al QR del Cliente
+          </span>
+          <button onClick={stopCamera} className="text-xs font-medium text-neutral-600 hover:text-neutral-950 cursor-pointer">
+            Cerrar Cámara
+          </button>
         </div>
-      )}
+        <div id={scannerContainerId} className="w-full max-w-sm mx-auto my-3 overflow-hidden rounded-2xl" />
+        <p className="text-[11px] text-neutral-500 mt-2">
+          Enfoca el código QR que tu cliente muestra en su pantalla o tarjeta impresa. Detección automática instantánea.
+        </p>
+      </div>
 
       {cameraError && (
         <div className="bg-neutral-50 border border-neutral-300 text-neutral-800 rounded-2xl p-4 text-xs flex items-start gap-2.5">

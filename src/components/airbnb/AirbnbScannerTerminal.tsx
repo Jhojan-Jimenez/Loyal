@@ -19,6 +19,7 @@ import {
   ArrowLeft,
   Phone,
   Heart,
+  Upload,
 } from 'lucide-react';
 
 export function AirbnbScannerTerminal() {
@@ -39,6 +40,8 @@ export function AirbnbScannerTerminal() {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const scannerRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isProcessingScan = useRef(false);
   const scannerContainerId = 'airbnb-qr-reader-container';
 
   const currentStudent = getStudentByToken(selectedToken) || students[0];
@@ -89,9 +92,32 @@ export function AirbnbScannerTerminal() {
     } catch {}
   };
 
+  // Process decoded token from QR (supports full URL or plain token)
+  const processDecodedToken = async (decodedText: string, sourceLabel: string) => {
+    let cleanToken = decodedText.trim();
+    const cardUrlMatch = cleanToken.match(/\/card\/([a-zA-Z0-9_-]+)/);
+    if (cardUrlMatch && cardUrlMatch[1]) {
+      cleanToken = cardUrlMatch[1];
+    } else {
+      cleanToken = cleanToken.replace(/^https?:\/\/[^\/]+\/(?:style\/[^\/]+\/)?card\//, '').replace(/[?#].*$/, '');
+    }
+
+    setSelectedToken(cleanToken);
+    if (!getStudentByToken(cleanToken)) {
+      await refreshFromServer();
+    }
+    setMessage({ type: 'info', text: `¡Pase detectado (${sourceLabel})! Cliente identificado: ${cleanToken}` });
+    playChime(true);
+    triggerCelebration();
+  };
+
   const startCamera = async () => {
     setCameraError(null);
     setIsCameraActive(true);
+    isProcessingScan.current = false;
+
+    // Small delay to ensure container element is mounted and styled in DOM
+    await new Promise((resolve) => setTimeout(resolve, 150));
 
     try {
       const { Html5Qrcode } = await import('html5-qrcode');
@@ -102,26 +128,53 @@ export function AirbnbScannerTerminal() {
         } catch {}
       }
 
+      const containerEl = document.getElementById(scannerContainerId);
+      if (!containerEl) {
+        throw new Error('Contenedor visual de la cámara no encontrado.');
+      }
+
       const html5QrCode = new Html5Qrcode(scannerContainerId);
       scannerRef.current = html5QrCode;
 
+      // Select camera: prioritize back/environment camera
+      let cameraConfig: any = { facingMode: 'environment' };
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          const backCam = devices.find((d: any) => /back|rear|environment|trasera|posterior/i.test(d.label));
+          cameraConfig = backCam ? backCam.id : devices[devices.length - 1].id;
+        }
+      } catch (camErr) {
+        console.log('Using default camera facingMode: environment', camErr);
+      }
+
       await html5QrCode.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
+        cameraConfig,
+        {
+          fps: 10,
+          qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+            const edge = Math.min(viewfinderWidth, viewfinderHeight);
+            const boxSize = Math.max(160, Math.min(Math.floor(edge * 0.75), 250));
+            return { width: boxSize, height: boxSize };
+          },
+        },
         async (decodedText) => {
-          const cleanToken = decodedText.trim().replace(/^https?:\/\/[^\/]+\/(?:style\/[^\/]+\/)?card\//, '');
-          setSelectedToken(cleanToken);
-          if (!getStudentByToken(cleanToken)) {
-            await refreshFromServer();
-          }
-          setMessage({ type: 'info', text: `¡Pase escaneado! Cliente identificado: ${cleanToken}` });
-          playChime(true);
+          if (isProcessingScan.current) return;
+          isProcessingScan.current = true;
+
+          await processDecodedToken(decodedText, 'Cámara en vivo');
+
+          // Pause and close camera after successful scan for seamless POS UX
+          setTimeout(async () => {
+            await stopCamera();
+            isProcessingScan.current = false;
+          }, 700);
         },
         () => {}
       );
     } catch (err: any) {
       console.warn('Camera failed:', err);
-      setCameraError('No se pudo acceder a la cámara. Revisa los permisos o usa la búsqueda manual.');
+      setCameraError('No se pudo acceder a la cámara o no hay permisos en tu navegador. Puedes subir una captura del QR o elegir el cliente del listado.');
       setIsCameraActive(false);
     }
   };
@@ -134,6 +187,40 @@ export function AirbnbScannerTerminal() {
       } catch {}
     }
     setIsCameraActive(false);
+  };
+
+  // Upload QR image file fallback
+  const handleFileScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCameraError(null);
+
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode');
+      let qrEngine = scannerRef.current;
+      let createdTemp = false;
+
+      if (!qrEngine) {
+        qrEngine = new Html5Qrcode(scannerContainerId);
+        createdTemp = true;
+      }
+
+      const decodedText = await qrEngine.scanFile(file, true);
+      await processDecodedToken(decodedText, 'Archivo / Captura');
+
+      if (createdTemp) {
+        try {
+          await qrEngine.clear();
+        } catch {}
+      }
+    } catch (err: any) {
+      console.warn('File scan failed:', err);
+      setCameraError('No se detectó ningún código QR en la imagen seleccionada. Intenta con una captura clara.');
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   useEffect(() => {
@@ -230,7 +317,24 @@ export function AirbnbScannerTerminal() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleFileScan}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 h-11 px-4 rounded-full bg-white hover:bg-[#F7F7F7] text-[#222222] border border-[#EBEBEB] text-xs font-semibold transition-all active:scale-95 cursor-pointer"
+              title="Cargar foto o captura de un código QR"
+            >
+              <Upload className="w-4 h-4 text-[#E61E4D]" />
+              <span>Subir Foto QR</span>
+            </button>
+
             {!isCameraActive ? (
               <button
                 type="button"
@@ -254,27 +358,25 @@ export function AirbnbScannerTerminal() {
         </div>
       </div>
 
-      {/* ── Camera Viewport If Active ── */}
-      {isCameraActive && (
-        <div className="bg-white rounded-[28px] p-5 border border-[#EBEBEB] shadow-[0_12px_32px_rgba(0,0,0,0.08)] text-center">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F2F2F2]">
-            <span className="text-xs font-bold text-[#222222] flex items-center gap-2">
-              <Camera className="w-4 h-4 text-[#E61E4D] animate-pulse" />
-              <span>Cámara en Vivo: Apunta al pase QR del cliente</span>
-            </span>
-            <button
-              onClick={stopCamera}
-              className="text-xs font-medium text-[#717171] hover:text-[#222222] cursor-pointer"
-            >
-              Cerrar visor
-            </button>
-          </div>
-          <div id={scannerContainerId} className="w-full max-w-xs mx-auto my-4 overflow-hidden rounded-2xl border border-[#EBEBEB]" />
-          <p className="text-[11px] text-[#717171]">
-            El código se detecta y sincroniza automáticamente
-          </p>
+      {/* ── Camera Viewport (Permanently in DOM to prevent race conditions) ── */}
+      <div className={`bg-white rounded-[28px] p-5 border border-[#EBEBEB] shadow-[0_12px_32px_rgba(0,0,0,0.08)] text-center transition-all ${isCameraActive ? 'block' : 'hidden'}`}>
+        <div className="flex items-center justify-between pb-3 border-b border-[#F2F2F2]">
+          <span className="text-xs font-bold text-[#222222] flex items-center gap-2">
+            <Camera className="w-4 h-4 text-[#E61E4D] animate-pulse" />
+            <span>Cámara en Vivo: Apunta al pase QR del cliente</span>
+          </span>
+          <button
+            onClick={stopCamera}
+            className="text-xs font-medium text-[#717171] hover:text-[#222222] cursor-pointer"
+          >
+            Cerrar visor
+          </button>
         </div>
-      )}
+        <div id={scannerContainerId} className="w-full max-w-xs mx-auto my-4 overflow-hidden rounded-2xl border border-[#EBEBEB]" />
+        <p className="text-[11px] text-[#717171]">
+          El código se detecta y sincroniza automáticamente
+        </p>
+      </div>
 
       {cameraError && (
         <div className="bg-white border border-rose-300 text-[#222222] rounded-2xl p-4 text-xs flex items-start gap-2.5 shadow-2xs">
