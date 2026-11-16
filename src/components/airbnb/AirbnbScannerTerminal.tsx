@@ -132,7 +132,16 @@ export function AirbnbScannerTerminal() {
       student = getStudentByToken(cleanToken);
     }
 
-    const studentName = student ? student.name : cleanToken;
+    if (!student) {
+      playChime(false);
+      setMessage({
+        type: 'error',
+        text: '❌ Este pase digital pertenece a otro establecimiento comercial.',
+      });
+      return;
+    }
+
+    const studentName = student.name;
 
     if (autoStamp && student) {
       if (student.stamps >= maxStamps) {

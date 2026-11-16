@@ -243,3 +243,20 @@ export function updateStudioConfigServer(configUpdate: Partial<StudioConfig>): S
   saveDb(db);
   return db.config;
 }
+
+export function deleteStudentServer(token: string): boolean {
+  const db = loadDb();
+  const clean = token.toLowerCase().trim();
+  const initialLen = db.students.length;
+  
+  db.students = db.students.filter((s) => s.token.toLowerCase().trim() !== clean);
+  db.transactions = db.transactions.filter(
+    (t) => t.studentId !== clean && !t.note?.includes(clean)
+  );
+
+  if (db.students.length !== initialLen) {
+    saveDb(db);
+    return true;
+  }
+  return false;
+}

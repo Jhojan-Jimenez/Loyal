@@ -18,6 +18,7 @@ interface LoyalContextType {
   getStudentByToken: (token: string) => Student | undefined;
   getStudentById: (id: string) => Student | undefined;
   registerStudent: (name: string, phone: string, email?: string) => Student;
+  deleteStudent: (token: string) => Promise<boolean>;
   addStamp: (token: string, note?: string, cashierName?: string) => { success: boolean; student?: Student; rewardUnlocked: boolean; error?: string };
   redeemReward: (token: string, cashierName?: string) => { success: boolean; student?: Student; error?: string };
   updateConfig: (newConfig: Partial<StudioConfig>) => void;
@@ -287,6 +288,24 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
     return { success: true, student: updatedStudent };
   };
 
+  const deleteStudent = async (token: string): Promise<boolean> => {
+    const clean = token.toLowerCase().trim();
+    setStudents((prev) => prev.filter((s) => s.token.toLowerCase().trim() !== clean));
+    setTransactions((prev) => prev.filter((t) => t.studentId !== clean && !t.note?.includes(clean)));
+
+    try {
+      const res = await fetch('/api/students/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: clean }),
+      });
+      const data = await res.json();
+      return !!data.success;
+    } catch {
+      return false;
+    }
+  };
+
   const updateConfig = (newConfig: Partial<StudioConfig>) => {
     setConfig((prev) => ({ ...prev, ...newConfig }));
   };
@@ -315,6 +334,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
         getStudentByToken,
         getStudentById,
         registerStudent,
+        deleteStudent,
         addStamp,
         redeemReward,
         updateConfig,
