@@ -18,9 +18,10 @@ import {
   Check,
   ShieldCheck,
   Store,
-  Upload,
   Zap,
+  ShieldAlert,
 } from 'lucide-react';
+import { validateQrTotp } from '@/lib/totp';
 
 export function ScannerTerminal() {
   const { students, config, getStudentByToken, addStamp, redeemReward, transactions, refreshFromServer } = useLoyal();
@@ -33,7 +34,6 @@ export function ScannerTerminal() {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const scannerRef = useRef<any>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const isProcessingScan = useRef(false);
   const scannerContainerId = 'qr-reader-container';
 
@@ -84,14 +84,36 @@ export function ScannerTerminal() {
     });
   };
 
-  // Process decoded token from QR (supports full URL or plain token)
+  // Process decoded token from QR (supports dynamic TOTP validation)
   const processDecodedToken = async (decodedText: string, sourceLabel: string) => {
     let cleanToken = decodedText.trim();
+    let totpCode: string | null = null;
+
+    try {
+      if (cleanToken.includes('?')) {
+        const urlObj = new URL(cleanToken.startsWith('http') ? cleanToken : `https://loyal.jhojan.cloud/${cleanToken}`);
+        totpCode = urlObj.searchParams.get('totp');
+      }
+    } catch {}
+
     const cardUrlMatch = cleanToken.match(/\/card\/([a-zA-Z0-9_-]+)/);
     if (cardUrlMatch && cardUrlMatch[1]) {
       cleanToken = cardUrlMatch[1];
     } else {
       cleanToken = cleanToken.replace(/^https?:\/\/[^\/]+\/(?:style\/[^\/]+\/)?card\//, '').replace(/[?#].*$/, '');
+    }
+
+    // Verify TOTP if provided (protects against stale screenshots)
+    if (totpCode) {
+      const totpCheck = validateQrTotp(cleanToken, totpCode);
+      if (!totpCheck.valid) {
+        playChime(false);
+        setMessage({
+          type: 'error',
+          text: `🛡️ ${totpCheck.reason || 'Código QR expirado o reenviado. Pide al cliente mostrar su pase digital en vivo.'}`,
+        });
+        return;
+      }
     }
 
     setSelectedToken(cleanToken);
@@ -112,7 +134,7 @@ export function ScannerTerminal() {
           text: `🎁 ¡${studentName} ya tiene sus ${maxStamps}/${maxStamps} sellos completos y listos para canjear premio!`,
         });
       } else {
-        const res = addStamp(cleanToken, `Auto-registro QR (${sourceLabel})`, 'Caja Principal');
+        const res = addStamp(cleanToken, `Auto-registro QR TOTP (${sourceLabel})`, 'Caja Principal');
         if (res.success) {
           playChime(true);
           triggerCelebration();
@@ -124,7 +146,7 @@ export function ScannerTerminal() {
           } else {
             setMessage({
               type: 'success',
-              text: `⚡ ¡Sello sumado automáticamente! ${studentName} ahora tiene ${res.student?.stamps}/${maxStamps} sellos.`,
+              text: `⚡ ¡Sello sumado automáticamente! ${studentName} ahora tiene ${res.student?.stamps}/${maxStamps} sellos. (QR Verificado)`,
             });
           }
         } else {
@@ -218,40 +240,6 @@ export function ScannerTerminal() {
     setIsCameraActive(false);
   };
 
-  // Upload QR image file fallback
-  const handleFileScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCameraError(null);
-
-    try {
-      const { Html5Qrcode } = await import('html5-qrcode');
-      let qrEngine = scannerRef.current;
-      let createdTemp = false;
-
-      if (!qrEngine) {
-        qrEngine = new Html5Qrcode(scannerContainerId);
-        createdTemp = true;
-      }
-
-      const decodedText = await qrEngine.scanFile(file, true);
-      await processDecodedToken(decodedText, 'Archivo / Captura');
-
-      if (createdTemp) {
-        try {
-          await qrEngine.clear();
-        } catch {}
-      }
-    } catch (err: any) {
-      console.warn('File scan failed:', err);
-      setCameraError('No se encontró ningún código QR legible en la imagen seleccionada. Asegúrate de que la captura esté bien enfocada.');
-    } finally {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
@@ -333,23 +321,7 @@ export function ScannerTerminal() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              onChange={handleFileScan}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-700 text-neutral-200 text-xs font-medium hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer"
-              title="Cargar foto o captura de un código QR"
-            >
-              <Upload className="w-4 h-4 text-neutral-300" />
-              <span>Subir Foto QR</span>
-            </button>
-
+          <div className="flex items-center gap-2">
             {!isCameraActive ? (
               <button
                 onClick={startCamera}

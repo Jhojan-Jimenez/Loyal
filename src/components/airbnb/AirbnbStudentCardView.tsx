@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { useLoyal } from '@/context/LoyalContext';
+import { generateQrTotp, getTotpSecondsRemaining } from '@/lib/totp';
 import {
   Gift,
   Share,
@@ -35,6 +36,19 @@ export function AirbnbStudentCardView({ token }: AirbnbStudentCardViewProps) {
   const [walletError, setWalletError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedWifi, setCopiedWifi] = useState(false);
+
+  // Dynamic TOTP for anti-screenshot protection
+  const [totp, setTotp] = useState(() => generateQrTotp(token));
+  const [secondsLeft, setSecondsLeft] = useState(() => getTotpSecondsRemaining());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const remaining = getTotpSecondsRemaining();
+      setSecondsLeft(remaining);
+      setTotp(generateQrTotp(token));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [token]);
 
   const student = getStudentByToken(token);
 
@@ -321,7 +335,7 @@ export function AirbnbStudentCardView({ token }: AirbnbStudentCardViewProps) {
 
             <div className="my-4 inline-block p-4 rounded-3xl bg-[#F7F7F7] border border-[#EBEBEB]">
               <QRCodeSVG
-                value={student.token}
+                value={`https://loyal.jhojan.cloud/style/airbnb/card/${student.token}?totp=${totp}`}
                 size={165}
                 level="H"
                 includeMargin={false}
@@ -329,9 +343,13 @@ export function AirbnbStudentCardView({ token }: AirbnbStudentCardViewProps) {
               />
             </div>
 
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-[11px] font-mono bg-[#F7F7F7] text-[#222222] px-3 py-1 rounded-full border border-[#EBEBEB]">
-                ID: {student.token}
+            <div className="flex flex-col items-center justify-center gap-1.5">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#E61E4D] bg-[#FFF8F8] px-3.5 py-1 rounded-full border border-[#FDE8EB] shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-[#E61E4D] animate-pulse" />
+                <span>QR Seguro · Se actualiza en <b className="font-mono font-bold text-[#E61E4D]">{secondsLeft}s</b></span>
+              </div>
+              <span className="text-[10px] text-[#717171] font-mono">
+                Token: {totp}
               </span>
             </div>
 

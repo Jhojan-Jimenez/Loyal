@@ -19,9 +19,9 @@ import {
   ArrowLeft,
   Phone,
   Heart,
-  Upload,
   Zap,
 } from 'lucide-react';
+import { validateQrTotp } from '@/lib/totp';
 
 export function AirbnbScannerTerminal() {
   const {
@@ -42,7 +42,6 @@ export function AirbnbScannerTerminal() {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const scannerRef = useRef<any>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const isProcessingScan = useRef(false);
   const scannerContainerId = 'airbnb-qr-reader-container';
 
@@ -94,14 +93,36 @@ export function AirbnbScannerTerminal() {
     } catch {}
   };
 
-  // Process decoded token from QR (supports full URL or plain token)
+  // Process decoded token from QR (supports dynamic TOTP validation)
   const processDecodedToken = async (decodedText: string, sourceLabel: string) => {
     let cleanToken = decodedText.trim();
+    let totpCode: string | null = null;
+
+    try {
+      if (cleanToken.includes('?')) {
+        const urlObj = new URL(cleanToken.startsWith('http') ? cleanToken : `https://loyal.jhojan.cloud/${cleanToken}`);
+        totpCode = urlObj.searchParams.get('totp');
+      }
+    } catch {}
+
     const cardUrlMatch = cleanToken.match(/\/card\/([a-zA-Z0-9_-]+)/);
     if (cardUrlMatch && cardUrlMatch[1]) {
       cleanToken = cardUrlMatch[1];
     } else {
       cleanToken = cleanToken.replace(/^https?:\/\/[^\/]+\/(?:style\/[^\/]+\/)?card\//, '').replace(/[?#].*$/, '');
+    }
+
+    // Verify TOTP if provided
+    if (totpCode) {
+      const totpCheck = validateQrTotp(cleanToken, totpCode);
+      if (!totpCheck.valid) {
+        playChime(false);
+        setMessage({
+          type: 'error',
+          text: `🛡️ ${totpCheck.reason || 'Código QR expirado o reenviado. Pide al cliente abrir su tarjeta en vivo.'}`,
+        });
+        return;
+      }
     }
 
     setSelectedToken(cleanToken);
@@ -122,7 +143,7 @@ export function AirbnbScannerTerminal() {
           text: `🎁 ¡${studentName} ya tiene sus ${maxStamps}/${maxStamps} sellos completos y listos para canjear premio!`,
         });
       } else {
-        const res = addStamp(cleanToken, `Auto-registro QR (${sourceLabel})`, 'Caja Airbnb');
+        const res = addStamp(cleanToken, `Auto-registro QR TOTP (${sourceLabel})`, 'Caja Airbnb');
         if (res.success) {
           playChime(true);
           triggerCelebration();
@@ -134,7 +155,7 @@ export function AirbnbScannerTerminal() {
           } else {
             setMessage({
               type: 'success',
-              text: `⚡ ¡Sello sumado automáticamente! ${studentName} ahora tiene ${res.student?.stamps}/${maxStamps} sellos acumulados.`,
+              text: `⚡ ¡Sello sumado automáticamente! ${studentName} ahora tiene ${res.student?.stamps}/${maxStamps} sellos acumulados. (QR Verificado)`,
             });
           }
         } else {
@@ -225,40 +246,6 @@ export function AirbnbScannerTerminal() {
       } catch {}
     }
     setIsCameraActive(false);
-  };
-
-  // Upload QR image file fallback
-  const handleFileScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCameraError(null);
-
-    try {
-      const { Html5Qrcode } = await import('html5-qrcode');
-      let qrEngine = scannerRef.current;
-      let createdTemp = false;
-
-      if (!qrEngine) {
-        qrEngine = new Html5Qrcode(scannerContainerId);
-        createdTemp = true;
-      }
-
-      const decodedText = await qrEngine.scanFile(file, true);
-      await processDecodedToken(decodedText, 'Archivo / Captura');
-
-      if (createdTemp) {
-        try {
-          await qrEngine.clear();
-        } catch {}
-      }
-    } catch (err: any) {
-      console.warn('File scan failed:', err);
-      setCameraError('No se detectó ningún código QR en la imagen seleccionada. Intenta con una captura clara.');
-    } finally {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
   };
 
   useEffect(() => {
@@ -371,24 +358,7 @@ export function AirbnbScannerTerminal() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              onChange={handleFileScan}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 h-11 px-4 rounded-full bg-white hover:bg-[#F7F7F7] text-[#222222] border border-[#EBEBEB] text-xs font-semibold transition-all active:scale-95 cursor-pointer"
-              title="Cargar foto o captura de un código QR"
-            >
-              <Upload className="w-4 h-4 text-[#E61E4D]" />
-              <span>Subir Foto QR</span>
-            </button>
-
+          <div className="flex items-center gap-2 shrink-0">
             {!isCameraActive ? (
               <button
                 type="button"

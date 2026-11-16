@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { generateQrTotp, getTotpSecondsRemaining } from '@/lib/totp';
 import {
   Sparkles,
   Wallet,
@@ -29,6 +30,19 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
   const [isGeneratingWallet, setIsGeneratingWallet] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
+
+  // Dynamic TOTP for anti-screenshot protection
+  const [totp, setTotp] = useState(() => generateQrTotp(student.token));
+  const [secondsLeft, setSecondsLeft] = useState(() => getTotpSecondsRemaining());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const remaining = getTotpSecondsRemaining();
+      setSecondsLeft(remaining);
+      setTotp(generateQrTotp(student.token));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [student.token]);
 
   const totalRequired = config.totalStampsRequired || 10;
   const currentStamps = student.stamps;
@@ -252,17 +266,21 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
 
             <div className="my-4 inline-block p-4 rounded-3xl bg-neutral-50 shadow-inner border border-neutral-200">
               <QRCodeSVG
-                value={student.token}
+                value={`https://loyal.jhojan.cloud/card/${student.token}?totp=${totp}`}
                 size={175}
                 level="H"
                 includeMargin={false}
-                className="mx-auto"
+                className="mx-auto transition-all"
               />
             </div>
 
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-[11px] font-mono bg-neutral-100 text-neutral-700 px-3 py-1 rounded-full border border-neutral-200">
-                ID: {student.token}
+            <div className="flex flex-col items-center justify-center gap-1.5">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-neutral-800 bg-neutral-100 px-3 py-1 rounded-full border border-neutral-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>QR Seguro · Rota en <b className="font-mono text-neutral-950 font-bold">{secondsLeft}s</b></span>
+              </div>
+              <span className="text-[10px] text-neutral-400 font-mono">
+                Token: {totp}
               </span>
             </div>
 
