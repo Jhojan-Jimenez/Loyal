@@ -110,22 +110,25 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
       {/* Main View: Digital Punch Card */}
       {activeTab === 'card' && (
         <div className="space-y-4">
-          {/* Executive Black Membership Stamp Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-neutral-950 via-neutral-900 to-black text-white p-6 sm:p-7 shadow-2xl border border-neutral-800">
+          {/* Executive Stamp Card with dynamic theme colorimetry */}
+          <div
+            className="relative overflow-hidden rounded-3xl text-white p-6 sm:p-7 shadow-2xl border border-card-border transition-all duration-300"
+            style={{ background: 'var(--color-card-gradient)' }}
+          >
             {/* Subtle Minimalist Geometry in Background */}
-            <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full border border-neutral-800/40 pointer-events-none select-none" />
-            <div className="absolute -left-20 -bottom-20 w-64 h-64 rounded-full border border-neutral-800/30 pointer-events-none select-none" />
+            <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full border border-card-surface-border/40 pointer-events-none select-none" />
+            <div className="absolute -left-20 -bottom-20 w-64 h-64 rounded-full border border-card-surface-border/30 pointer-events-none select-none" />
 
             {/* Business Header */}
-            <div className="relative z-10 flex items-start justify-between border-b border-neutral-800 pb-4">
+            <div className="relative z-10 flex items-start justify-between border-b border-white/10 pb-4">
               <div>
                 <h2 className="text-xl font-bold text-white tracking-tight">
                   {config.studioName}
                 </h2>
                 <p className="text-xs text-neutral-400 mt-0.5">{config.tagline}</p>
               </div>
-              <div className="w-10 h-10 rounded-2xl bg-neutral-800 border border-neutral-700 flex items-center justify-center shadow-xs">
-                <ShieldCheck className="w-5 h-5 text-neutral-200" />
+              <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-xs">
+                <ShieldCheck className="w-5 h-5 text-neutral-300" />
               </div>
             </div>
 
@@ -141,7 +144,7 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
                 <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider">
                   Premios Ganados
                 </p>
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-neutral-200 bg-neutral-800/90 border border-neutral-700 px-2.5 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-neutral-200 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">
                   <Gift className="w-3 h-3 text-neutral-300" />
                   {student.totalCompletedCycles} {student.totalCompletedCycles === 1 ? 'ciclo' : 'ciclos'}
                 </span>
@@ -149,7 +152,7 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
             </div>
 
             {/* Progress Status Banner */}
-            <div className="relative z-10 rounded-2xl p-3.5 my-2 bg-neutral-900/90 border border-neutral-800 text-white">
+            <div className="relative z-10 rounded-2xl p-3.5 my-2 bg-white/5 border border-white/10 text-white">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold flex items-center gap-1.5">
                   {isComplete ? (
@@ -159,7 +162,7 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-4 h-4 text-neutral-300" />
+                      <CheckCircle2 className="w-4 h-4 text-accent" />
                       {currentStamps} de {totalRequired} Sellos Acumulados
                     </>
                   )}
@@ -168,9 +171,9 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full bg-neutral-800 h-2 rounded-full mt-2.5 overflow-hidden">
+              <div className="w-full bg-black/40 border border-white/5 h-2 rounded-full mt-2.5 overflow-hidden">
                 <div
-                  className="bg-white h-full rounded-full transition-all duration-700 ease-out"
+                  className="h-full rounded-full transition-all duration-700 ease-out bg-accent"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -194,14 +197,21 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
                       key={num}
                       className={`relative aspect-square rounded-2xl flex flex-col items-center justify-center transition-all ${
                         isFilled
-                          ? 'bg-white text-neutral-950 shadow-md font-bold'
-                          : 'bg-neutral-900/80 border border-dashed border-neutral-700 text-neutral-500'
-                      } ${isCurrent ? 'ring-2 ring-white/60 ring-offset-2 ring-offset-neutral-950' : ''}`}
+                          ? 'bg-accent text-white shadow-md font-bold'
+                          : isCurrent
+                          ? 'bg-white/10 border-2 border-accent text-white'
+                          : 'bg-black/30 border border-dashed border-white/15 text-neutral-500'
+                      }`}
+                      style={
+                        isFilled
+                          ? { boxShadow: '0 2px 10px var(--color-accent-glow)' }
+                          : undefined
+                      }
                     >
                       {isFilled ? (
                         <div className="flex flex-col items-center">
-                          <Check className="w-5 h-5 text-neutral-950 stroke-[3]" />
-                          <span className="text-[9px] font-bold text-neutral-900 mt-0.5">#{num}</span>
+                          <Check className="w-5 h-5 text-white stroke-[3]" />
+                          <span className="text-[9px] font-bold text-white/90 mt-0.5">#{num}</span>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center">
@@ -218,9 +228,9 @@ export function LoyaltyCard({ student, config }: LoyaltyCardProps) {
             </div>
 
             {/* Reward Card Highlight */}
-            <div className="relative z-10 bg-neutral-900/90 rounded-2xl p-3 border border-neutral-800 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-white shrink-0">
-                <Gift className="w-4 h-4 text-neutral-200" />
+            <div className="relative z-10 bg-white/5 rounded-2xl p-3 border border-white/10 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-black/30 border border-white/10 flex items-center justify-center text-white shrink-0">
+                <Gift className="w-4 h-4 text-neutral-300" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider">

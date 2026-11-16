@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { StudentCardView } from './StudentCardView';
-import { LotusIcon } from '@/components/MandalaBackground';
+import { Loader2 } from 'lucide-react';
 import { INITIAL_STUDENTS } from '@/lib/store';
 
 export async function generateStaticParams() {
@@ -20,8 +20,8 @@ export default async function StudentCardPage({
     <Suspense
       fallback={
         <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
-          <LotusIcon className="w-10 h-10 text-purple-600 animate-spin" />
-          <p className="text-xs text-purple-700 mt-3 font-medium">Cargando pase de clases...</p>
+          <Loader2 className="w-8 h-8 text-neutral-900 animate-spin" />
+          <p className="text-xs text-neutral-600 mt-3 font-medium">Cargando pase digital...</p>
         </div>
       }
     >

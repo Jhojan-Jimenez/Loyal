@@ -41,8 +41,8 @@ google-credentials*.json
 gen-lang-*.json
 service-account*.json
 
-# vercel
-.vercel
+# local db
+data/
 
 # typescript
 *.tsbuildinfo

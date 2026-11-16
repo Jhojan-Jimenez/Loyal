@@ -81,18 +81,12 @@ export default function HomePage() {
           
           {/* Left Column: Direct B2B Value Proposition & CTAs */}
           <div className="lg:col-span-7 space-y-3 sm:space-y-5 max-w-2xl w-full">
-            {/* Sober Status Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-200 text-[11px] font-semibold text-neutral-800 tracking-wide uppercase">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              SaaS B2B · Fidelización Digital en Google Wallet & Web
-            </div>
-
             {/* Powerful Typography */}
             <div className="space-y-0.5">
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-neutral-950 tracking-tight leading-none uppercase">
                 TARJETAS DE SELLOS
               </h1>
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-light text-neutral-600 tracking-tight uppercase">
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-light text-neutral-700 tracking-tight uppercase">
                 DIGITALES PARA TU NEGOCIO
               </h2>
             </div>
@@ -106,10 +100,13 @@ export default function HomePage() {
             <div className="pt-1 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setIsRegisterOpen(true)}
-                className="px-6 sm:px-8 py-3 rounded-xl bg-neutral-950 hover:bg-black text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                className="px-6 sm:px-8 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                style={{
+                  boxShadow: '0 4px 14px var(--color-accent-glow)',
+                }}
               >
                 <span>Crear Tarjeta Demo</span>
-                <ArrowRight className="w-4 h-4 text-neutral-300" />
+                <ArrowRight className="w-4 h-4 text-white/90" />
               </button>
 
               <Link
@@ -123,16 +120,16 @@ export default function HomePage() {
 
             {/* Trust Pillars */}
             <div className="pt-1 flex flex-wrap items-center gap-4 sm:gap-6 text-[11px] sm:text-xs text-neutral-500">
-              <span className="flex items-center gap-1.5 font-medium text-neutral-700">
-                <CheckCircle2 className="w-3.5 h-3.5 text-neutral-900" />
+              <span className="flex items-center gap-1.5 font-medium text-neutral-600">
+                <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400" />
                 100% Sin descargas de apps
               </span>
-              <span className="flex items-center gap-1.5 font-medium text-neutral-700">
-                <CheckCircle2 className="w-3.5 h-3.5 text-neutral-900" />
+              <span className="flex items-center gap-1.5 font-medium text-neutral-600">
+                <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400" />
                 Google Wallet Oficial (Android)
               </span>
-              <span className="flex items-center gap-1.5 font-medium text-neutral-700">
-                <CheckCircle2 className="w-3.5 h-3.5 text-neutral-900" />
+              <span className="flex items-center gap-1.5 font-medium text-neutral-600">
+                <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400" />
                 Compatible con iPhone (PWA/NFC)
               </span>
             </div>
@@ -140,16 +137,19 @@ export default function HomePage() {
 
           {/* Right Column: Live Mockup / Digital Membership Card */}
           <div className="lg:col-span-5 relative flex-1 lg:flex-none min-h-0 w-full flex items-center justify-center my-auto lg:my-0">
-            <div className="relative w-full max-w-[420px] p-5 sm:p-6 rounded-3xl bg-neutral-950 text-white shadow-2xl border border-neutral-800">
+            <div
+              className="relative w-full max-w-[420px] p-5 sm:p-6 rounded-3xl text-white shadow-2xl border border-card-border transition-all duration-300"
+              style={{ background: 'var(--color-card-gradient)' }}
+            >
               {/* Header inside card */}
-              <div className="flex items-start justify-between border-b border-neutral-800 pb-3">
+              <div className="flex items-start justify-between border-b border-white/10 pb-3">
                 <div>
                   <span className="text-[10px] uppercase font-bold tracking-widest text-neutral-400">Pase Digital</span>
                   <h3 className="text-lg font-bold text-white tracking-tight">Tu Negocio / Marca</h3>
                   <p className="text-[11px] text-neutral-400">Club de Fidelización & Sellos</p>
                 </div>
-                <div className="w-8 h-8 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-white">
-                  <ShieldCheck className="w-4 h-4 text-neutral-200" />
+                <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white">
+                  <ShieldCheck className="w-4 h-4 text-neutral-300" />
                 </div>
               </div>
 
@@ -159,8 +159,11 @@ export default function HomePage() {
                   <span className="font-semibold text-neutral-200">7 de 10 Sellos Acumulados</span>
                   <span className="font-bold text-white">70%</span>
                 </div>
-                <div className="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
-                  <div className="bg-white h-full w-[70%] rounded-full" />
+                <div className="w-full bg-black/40 border border-white/5 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700 bg-accent"
+                    style={{ width: '70%' }}
+                  />
                 </div>
               </div>
 
@@ -171,11 +174,12 @@ export default function HomePage() {
                   return (
                     <div
                       key={num}
-                      className={`aspect-square rounded-xl flex flex-col items-center justify-center text-[10px] font-bold ${
+                      className={`aspect-square rounded-xl flex flex-col items-center justify-center text-[10px] font-bold transition-all ${
                         isFilled
-                          ? 'bg-white text-neutral-950 shadow-sm'
-                          : 'bg-neutral-900 border border-neutral-800 text-neutral-500'
+                          ? 'bg-accent text-white shadow-xs'
+                          : 'bg-black/30 border border-white/10 text-neutral-500'
                       }`}
+                      style={isFilled ? { boxShadow: '0 2px 8px var(--color-accent-glow)' } : undefined}
                     >
                       {isFilled ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : num}
                     </div>
@@ -184,15 +188,15 @@ export default function HomePage() {
               </div>
 
               {/* Reward preview */}
-              <div className="mt-3 p-2.5 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center gap-2.5 text-xs">
+              <div className="mt-3 p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2.5 text-xs">
                 <Gift className="w-4 h-4 text-neutral-300 shrink-0" />
-                <span className="text-neutral-300 truncate">Premio: Producto gratis al 10º sello</span>
+                <span className="text-white truncate">Premio: Producto gratis al 10º sello</span>
               </div>
 
               {/* Floating High-Conversion Metric Badge */}
               <div className="absolute -bottom-3 -right-3 sm:-right-4 bg-white text-neutral-950 px-3.5 py-1.5 rounded-xl border border-neutral-200 shadow-xl flex items-center gap-2">
-                <TrendingUp className="w-3.5 h-3.5 text-neutral-900" />
-                <span className="text-xs font-bold">+38% Retorno de clientes</span>
+                <TrendingUp className="w-3.5 h-3.5 text-accent" />
+                <span className="text-xs font-bold text-neutral-950">+38% Retorno de clientes</span>
               </div>
             </div>
           </div>
@@ -206,7 +210,7 @@ export default function HomePage() {
       <section id="producto" className="py-20 px-6 sm:px-10 lg:px-16 bg-neutral-50 border-b border-neutral-200/80">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-            <span className="text-[11px] font-bold tracking-widest text-neutral-700 uppercase bg-neutral-200/60 px-3 py-1 rounded-full border border-neutral-300/80">
+            <span className="text-[11px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border bg-accent-light border-accent-border text-neutral-900 transition-colors">
               Experiencia Interactiva
             </span>
             <h3 className="text-3xl sm:text-4xl font-black text-neutral-950 tracking-tight">
@@ -229,7 +233,7 @@ export default function HomePage() {
       ───────────────────────────────────────────────────────────── */}
       <section id="como-funciona" className="py-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full">
         <div className="text-center max-w-xl mx-auto mb-16 space-y-2">
-          <span className="text-[11px] font-bold tracking-widest text-neutral-700 uppercase bg-neutral-100 px-3 py-1 rounded-full border border-neutral-200">
+          <span className="text-[11px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border bg-accent-light border-accent-border text-neutral-900 transition-colors">
             Simplicidad Extrema
           </span>
           <h3 className="text-3xl sm:text-4xl font-black text-neutral-950 tracking-tight">
@@ -243,7 +247,10 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Paso 1 */}
           <div className="p-8 rounded-3xl bg-white border border-neutral-200 shadow-xs hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-2xl bg-neutral-950 text-white flex items-center justify-center font-bold text-lg mb-6">
+            <div
+              className="w-12 h-12 rounded-2xl bg-accent text-white flex items-center justify-center font-bold text-lg mb-6 shadow-md transition-all"
+              style={{ boxShadow: '0 4px 12px var(--color-accent-glow)' }}
+            >
               1
             </div>
             <h4 className="text-lg font-bold text-neutral-950 mb-2">Configura tu Recompensa</h4>
@@ -254,7 +261,10 @@ export default function HomePage() {
 
           {/* Paso 2 */}
           <div className="p-8 rounded-3xl bg-white border border-neutral-200 shadow-xs hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-2xl bg-neutral-950 text-white flex items-center justify-center font-bold text-lg mb-6">
+            <div
+              className="w-12 h-12 rounded-2xl bg-accent text-white flex items-center justify-center font-bold text-lg mb-6 shadow-md transition-all"
+              style={{ boxShadow: '0 4px 12px var(--color-accent-glow)' }}
+            >
               2
             </div>
             <h4 className="text-lg font-bold text-neutral-950 mb-2">El Cliente Guarda su Pase</h4>
@@ -265,7 +275,10 @@ export default function HomePage() {
 
           {/* Paso 3 */}
           <div className="p-8 rounded-3xl bg-white border border-neutral-200 shadow-xs hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-2xl bg-neutral-950 text-white flex items-center justify-center font-bold text-lg mb-6">
+            <div
+              className="w-12 h-12 rounded-2xl bg-accent text-white flex items-center justify-center font-bold text-lg mb-6 shadow-md transition-all"
+              style={{ boxShadow: '0 4px 12px var(--color-accent-glow)' }}
+            >
               3
             </div>
             <h4 className="text-lg font-bold text-neutral-950 mb-2">Escanea y Premia en Caja</h4>
@@ -387,21 +400,27 @@ export default function HomePage() {
           </div>
 
           {/* Plan Pro (Destacado) */}
-          <div className="p-8 rounded-3xl bg-neutral-950 text-white border-2 border-neutral-900 flex flex-col justify-between shadow-2xl relative">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-white text-neutral-950 text-[10px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full border border-neutral-200">
+          <div
+            className="p-8 rounded-3xl text-white border-2 border-accent flex flex-col justify-between shadow-2xl relative transition-all duration-300"
+            style={{
+              background: 'var(--color-card-gradient)',
+              boxShadow: '0 8px 30px var(--color-accent-glow)',
+            }}
+          >
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-white text-[10px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full shadow-sm bg-accent">
               Más Recomendado
             </div>
 
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">Pro Business</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-card-subtext">Pro Business</span>
               <div className="flex items-baseline gap-1 my-3">
                 <span className="text-4xl font-black text-white">$29</span>
-                <span className="text-xs text-neutral-400">USD / mes (o $79.000 COP)</span>
+                <span className="text-xs text-card-subtext/80">USD / mes (o $79.000 COP)</span>
               </div>
-              <p className="text-xs text-neutral-400 mb-6">
+              <p className="text-xs text-card-subtext/90 mb-6">
                 Para comercios establecidos que buscan fidelizar sin límites y con métricas.
               </p>
-              <ul className="space-y-3 text-xs text-neutral-300 border-t border-neutral-800 pt-6">
+              <ul className="space-y-3 text-xs text-neutral-200 border-t border-card-surface-border pt-6">
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-white" />
                   Clientes y sellos ilimitados
@@ -433,7 +452,10 @@ export default function HomePage() {
               href="https://wa.me/573203282014?text=Hola!%20Quiero%20suscribirme%20al%20plan%20Pro%20de%20Loyal"
               target="_blank"
               rel="noreferrer"
-              className="w-full mt-8 py-3 rounded-xl bg-white text-neutral-950 text-xs font-bold hover:bg-neutral-100 transition-all text-center block cursor-pointer"
+              className="w-full mt-8 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all text-center block cursor-pointer"
+              style={{
+                boxShadow: '0 4px 14px var(--color-accent-glow)',
+              }}
             >
               Suscribirme al Plan Pro
             </a>
@@ -549,7 +571,10 @@ export default function HomePage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 rounded-xl bg-neutral-950 hover:bg-black text-white text-sm font-bold shadow-md transition-all active:scale-95 cursor-pointer mt-2"
+                className="w-full py-3.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-sm font-bold shadow-md transition-all active:scale-95 cursor-pointer mt-2"
+                style={{
+                  boxShadow: '0 4px 14px var(--color-accent-glow)',
+                }}
               >
                 {isSubmitting ? 'Generando pase digital...' : 'Emitir Mi Tarjeta de Sellos'}
               </button>

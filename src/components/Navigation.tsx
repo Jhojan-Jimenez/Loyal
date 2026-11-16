@@ -17,6 +17,13 @@ export function Navigation() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  if (
+    pathname?.startsWith('/style/granola') ||
+    pathname?.startsWith('/style/airbnb')
+  ) {
+    return null;
+  }
+
   const isHome = pathname === '/';
 
   const navLinks = [
