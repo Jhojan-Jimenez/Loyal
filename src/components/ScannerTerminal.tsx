@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Store,
   Upload,
+  Zap,
 } from 'lucide-react';
 
 export function ScannerTerminal() {
@@ -26,6 +27,7 @@ export function ScannerTerminal() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>('camila-restrepo-yoga');
+  const [autoStamp, setAutoStamp] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -93,12 +95,48 @@ export function ScannerTerminal() {
     }
 
     setSelectedToken(cleanToken);
-    if (!getStudentByToken(cleanToken)) {
+    let student = getStudentByToken(cleanToken);
+    if (!student) {
       await refreshFromServer();
+      student = getStudentByToken(cleanToken);
     }
-    setMessage({ type: 'info', text: `¡Pase detectado (${sourceLabel})! Cliente identificado: ${cleanToken}` });
-    playChime(true);
-    triggerCelebration();
+
+    const studentName = student ? student.name : cleanToken;
+
+    if (autoStamp && student) {
+      if (student.stamps >= maxStamps) {
+        playChime(true);
+        triggerCelebration();
+        setMessage({
+          type: 'info',
+          text: `🎁 ¡${studentName} ya tiene sus ${maxStamps}/${maxStamps} sellos completos y listos para canjear premio!`,
+        });
+      } else {
+        const res = addStamp(cleanToken, `Auto-registro QR (${sourceLabel})`, 'Caja Principal');
+        if (res.success) {
+          playChime(true);
+          triggerCelebration();
+          if (res.rewardUnlocked) {
+            setMessage({
+              type: 'success',
+              text: `🎉 ¡Sello sumado automáticamente! ${studentName} completó sus ${maxStamps} sellos. Recompensa desbloqueada.`,
+            });
+          } else {
+            setMessage({
+              type: 'success',
+              text: `⚡ ¡Sello sumado automáticamente! ${studentName} ahora tiene ${res.student?.stamps}/${maxStamps} sellos.`,
+            });
+          }
+        } else {
+          playChime(false);
+          setMessage({ type: 'error', text: res.error || 'No se pudo sumar el sello automático' });
+        }
+      }
+    } else {
+      setMessage({ type: 'info', text: `¡Pase detectado (${sourceLabel})! Cliente identificado: ${studentName}` });
+      playChime(true);
+      triggerCelebration();
+    }
   };
 
   // Initialize html5-qrcode camera scanner
@@ -277,6 +315,22 @@ export function ScannerTerminal() {
             <p className="text-xs text-neutral-400 mt-1">
               Escanea códigos QR de clientes, estampa sellos en 1 segundo y redime beneficios
             </p>
+
+            <div className="flex items-center gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => setAutoStamp(!autoStamp)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all cursor-pointer ${
+                  autoStamp
+                    ? 'bg-emerald-950/70 border-emerald-500/50 text-emerald-300 shadow-xs'
+                    : 'bg-neutral-900 border-neutral-700 text-neutral-400'
+                }`}
+                title="Haz clic para activar o desactivar el auto-estampado al detectar un QR"
+              >
+                <Zap className={`w-3.5 h-3.5 ${autoStamp ? 'text-emerald-400 fill-emerald-400 animate-pulse' : 'text-neutral-500'}`} />
+                <span>{autoStamp ? 'Auto-sumar sello al leer QR: ACTIVADO' : 'Modo consulta (Sin auto-sumar)'}</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

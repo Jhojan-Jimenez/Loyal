@@ -22,6 +22,7 @@ import {
   Clock,
   ChevronRight,
   Upload,
+  Zap,
 } from 'lucide-react';
 
 export function GranolaScannerTerminal() {
@@ -37,6 +38,7 @@ export function GranolaScannerTerminal() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>('camila-restrepo-yoga');
+  const [autoStamp, setAutoStamp] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -108,12 +110,48 @@ export function GranolaScannerTerminal() {
     }
 
     setSelectedToken(cleanToken);
-    if (!getStudentByToken(cleanToken)) {
+    let student = getStudentByToken(cleanToken);
+    if (!student) {
       await refreshFromServer();
+      student = getStudentByToken(cleanToken);
     }
-    setMessage({ type: 'info', text: `¡Pase detectado (${sourceLabel})! Cliente identificado: ${cleanToken}` });
-    playChime(true);
-    triggerCelebration();
+
+    const studentName = student ? student.name : cleanToken;
+
+    if (autoStamp && student) {
+      if (student.stamps >= maxStamps) {
+        playChime(true);
+        triggerCelebration();
+        setMessage({
+          type: 'info',
+          text: `🎁 ¡${studentName} ya tiene sus ${maxStamps}/${maxStamps} sellos completos y listos para su regalo!`,
+        });
+      } else {
+        const res = addStamp(cleanToken, `Auto-registro QR (${sourceLabel})`, 'Caja Granola');
+        if (res.success) {
+          playChime(true);
+          triggerCelebration();
+          if (res.rewardUnlocked) {
+            setMessage({
+              type: 'success',
+              text: `🎉 ¡Sello sumado automáticamente! ${studentName} completó sus ${maxStamps} sellos. Recompensa desbloqueada.`,
+            });
+          } else {
+            setMessage({
+              type: 'success',
+              text: `⚡ ¡Sello sumado automáticamente! ${studentName} ahora tiene ${res.student?.stamps}/${maxStamps} sellos.`,
+            });
+          }
+        } else {
+          playChime(false);
+          setMessage({ type: 'error', text: res.error || 'No se pudo sumar el sello' });
+        }
+      }
+    } else {
+      setMessage({ type: 'info', text: `¡Pase detectado (${sourceLabel})! Cliente identificado: ${studentName}` });
+      playChime(true);
+      triggerCelebration();
+    }
   };
 
   // Start html5-qrcode scanner
@@ -324,6 +362,22 @@ export function GranolaScannerTerminal() {
             <p className="text-xs text-[#72726E] mt-1 max-w-xl">
               Escanea el código QR de tus clientes desde cualquier cámara o busca manualmente por nombre/teléfono para sumar sellos al instante.
             </p>
+
+            <div className="flex items-center gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => setAutoStamp(!autoStamp)}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-medium border transition-all cursor-pointer ${
+                  autoStamp
+                    ? 'bg-[#E5EACD] border-[#5B6F00]/50 text-[#292929] shadow-2xs'
+                    : 'bg-[#F7F7F2] border-[#D5D5D2] text-[#72726E]'
+                }`}
+                title="Haz clic para alternar el estampado automático"
+              >
+                <Zap className={`w-3.5 h-3.5 ${autoStamp ? 'text-[#5B6F00] fill-[#5B6F00]' : 'text-[#72726E]'}`} />
+                <span>{autoStamp ? '⚡ Auto-sumar sello al leer QR: ACTIVADO' : 'Modo consulta (Sin auto-sumar)'}</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">

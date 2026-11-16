@@ -20,6 +20,7 @@ import {
   Phone,
   Heart,
   Upload,
+  Zap,
 } from 'lucide-react';
 
 export function AirbnbScannerTerminal() {
@@ -35,6 +36,7 @@ export function AirbnbScannerTerminal() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>('camila-restrepo-yoga');
+  const [autoStamp, setAutoStamp] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -103,12 +105,48 @@ export function AirbnbScannerTerminal() {
     }
 
     setSelectedToken(cleanToken);
-    if (!getStudentByToken(cleanToken)) {
+    let student = getStudentByToken(cleanToken);
+    if (!student) {
       await refreshFromServer();
+      student = getStudentByToken(cleanToken);
     }
-    setMessage({ type: 'info', text: `¡Pase detectado (${sourceLabel})! Cliente identificado: ${cleanToken}` });
-    playChime(true);
-    triggerCelebration();
+
+    const studentName = student ? student.name : cleanToken;
+
+    if (autoStamp && student) {
+      if (student.stamps >= maxStamps) {
+        playChime(true);
+        triggerCelebration();
+        setMessage({
+          type: 'info',
+          text: `🎁 ¡${studentName} ya tiene sus ${maxStamps}/${maxStamps} sellos completos y listos para canjear premio!`,
+        });
+      } else {
+        const res = addStamp(cleanToken, `Auto-registro QR (${sourceLabel})`, 'Caja Airbnb');
+        if (res.success) {
+          playChime(true);
+          triggerCelebration();
+          if (res.rewardUnlocked) {
+            setMessage({
+              type: 'success',
+              text: `🎉 ¡Sello sumado automáticamente! ${studentName} completó sus ${maxStamps} sellos. Recompensa desbloqueada.`,
+            });
+          } else {
+            setMessage({
+              type: 'success',
+              text: `⚡ ¡Sello sumado automáticamente! ${studentName} ahora tiene ${res.student?.stamps}/${maxStamps} sellos acumulados.`,
+            });
+          }
+        } else {
+          playChime(false);
+          setMessage({ type: 'error', text: res.error || 'No se pudo registrar el sello' });
+        }
+      }
+    } else {
+      setMessage({ type: 'info', text: `¡Pase detectado (${sourceLabel})! Cliente identificado: ${studentName}` });
+      playChime(true);
+      triggerCelebration();
+    }
   };
 
   const startCamera = async () => {
@@ -315,6 +353,22 @@ export function AirbnbScannerTerminal() {
             <p className="text-xs text-[#717171] mt-1 max-w-xl">
               Registra visitas en 0.8 segundos con cualquier cámara o busca clientes por nombre para sumar sellos al instante.
             </p>
+
+            <div className="flex items-center gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => setAutoStamp(!autoStamp)}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold border transition-all cursor-pointer ${
+                  autoStamp
+                    ? 'bg-[#FFF8F8] border-[#E61E4D]/40 text-[#E61E4D] shadow-2xs'
+                    : 'bg-white border-[#EBEBEB] text-[#717171]'
+                }`}
+                title="Haz clic para alternar el estampado automático"
+              >
+                <Zap className={`w-3.5 h-3.5 ${autoStamp ? 'text-[#E61E4D] fill-[#E61E4D]' : 'text-[#717171]'}`} />
+                <span>{autoStamp ? '⚡ Auto-sumar sello al leer QR: ACTIVADO' : 'Modo consulta (Sin auto-sumar)'}</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
