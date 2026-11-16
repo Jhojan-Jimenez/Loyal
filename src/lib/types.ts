@@ -53,3 +53,22 @@ export interface YogaClass {
   intensity: 'Suave' | 'Media' | 'Dinámica';
   description: string;
 }
+
+export type TenantPlan = 'starter' | 'pro' | 'enterprise';
+export type TenantStatus = 'active' | 'trial' | 'suspended';
+
+export interface TenantBusiness {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone: string;
+  plan: TenantPlan;
+  status: TenantStatus;
+  monthlyFeeCop: number;
+  createdAt: string;
+  totalStudentsCount?: number;
+  totalStampsCount?: number;
+}

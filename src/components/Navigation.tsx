@@ -88,10 +88,20 @@ export function Navigation() {
 
           <Link
             href="/admin"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-950 text-white text-xs font-semibold hover:bg-black transition-all active:scale-95 shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-semibold transition-all active:scale-95"
+            title="Panel de Comercio"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-neutral-300" />
+            <ShieldCheck className="w-3.5 h-3.5 text-neutral-700" />
             <span>Admin</span>
+          </Link>
+
+          <Link
+            href="/superadmin"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-neutral-950 text-emerald-400 border border-emerald-500/30 text-xs font-bold hover:bg-black transition-all active:scale-95 shadow-xs"
+            title="Consola Maestra del SaaS"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>SuperAdmin</span>
           </Link>
         </div>
 
@@ -158,13 +168,25 @@ export function Navigation() {
             <Link
               href="/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3 rounded-xl bg-neutral-950 text-white font-semibold text-xs"
+              className="flex items-center justify-between p-3 rounded-xl bg-neutral-100 border border-neutral-300 font-semibold text-xs text-neutral-900"
             >
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-neutral-300" />
-                <span>Panel de Administración</span>
+                <ShieldCheck className="w-4 h-4 text-neutral-700" />
+                <span>Panel Admin Comercio</span>
               </div>
               <ArrowRight className="w-4 h-4 text-neutral-400" />
+            </Link>
+
+            <Link
+              href="/superadmin"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between p-3 rounded-xl bg-neutral-950 border border-emerald-500/30 text-emerald-400 font-bold text-xs"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Consola SuperAdmin (SaaS)</span>
+              </div>
+              <ArrowRight className="w-4 h-4 text-emerald-400" />
             </Link>
           </div>
         </div>
