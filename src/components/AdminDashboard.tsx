@@ -31,6 +31,8 @@ import {
   Phone,
   LogOut,
   Copy,
+  Palette,
+  Smartphone,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -79,6 +81,10 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
     wifiSsid: globalConfig.wifiSsid,
     wifiPassword: globalConfig.wifiPassword,
     whatsappNumber: globalConfig.whatsappNumber,
+    walletBgColor: globalConfig.walletBgColor || '#1C1917',
+    walletProgramName: globalConfig.walletProgramName || 'Pase Digital de Fidelización',
+    walletLogoUrl: globalConfig.walletLogoUrl || '',
+    walletHeroImageUrl: globalConfig.walletHeroImageUrl || '',
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -104,6 +110,10 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
               wifiSsid: data.config.wifiSsid || '',
               wifiPassword: data.config.wifiPassword || '',
               whatsappNumber: data.config.whatsappNumber || '',
+              walletBgColor: data.config.walletBgColor || '#1C1917',
+              walletProgramName: data.config.walletProgramName || 'Pase Digital de Fidelización',
+              walletLogoUrl: data.config.walletLogoUrl || '',
+              walletHeroImageUrl: data.config.walletHeroImageUrl || '',
             });
           }
           if (Array.isArray(data.students)) {
@@ -652,108 +662,306 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
       {/* Tab 3: Settings */}
       {activeTab === 'settings' && (
         <div className="bg-[#FFFDF9] rounded-[32px] p-6 sm:p-8 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
-          <form onSubmit={handleSaveConfig} className="space-y-6 max-w-2xl">
+          <form onSubmit={handleSaveConfig} className="space-y-8">
             {saveSuccess && (
               <div className="p-4 rounded-2xl bg-[#F1F5DC] text-[#5B6F00] border border-[#D9E2B3] text-xs font-bold flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-[#5B6F00]" />
-                <span>Configuración actualizada con éxito. Todos los clientes verán los cambios.</span>
+                <span>Configuración actualizada con éxito. Tu tarjeta en Google Wallet y página de registro ya reflejan los cambios.</span>
               </div>
             )}
 
-            <div>
-              <h3 className="text-lg font-serif font-normal text-[#1C1917]">
-                Ajustes del Programa de Fidelización
-              </h3>
-              <p className="text-xs text-[#78716C] mt-0.5">
-                Modifica la meta de visitas y las recompensas sin necesidad de tocar código
-              </p>
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column: Program & Wallet Styling Controls */}
+              <div className="lg:col-span-7 space-y-6">
+                <div>
+                  <h3 className="text-lg font-serif font-normal text-[#1C1917]">
+                    Ajustes del Programa de Fidelización
+                  </h3>
+                  <p className="text-xs text-[#78716C] mt-0.5">
+                    Modifica la meta de visitas y las recompensas sin necesidad de tocar código
+                  </p>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
-                  Nombre del Comercio / Marca
-                </label>
-                <input
-                  type="text"
-                  value={formData.studioName}
-                  onChange={(e) => setFormData({ ...formData, studioName: e.target.value })}
-                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                      Nombre del Comercio / Marca
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.studioName}
+                      onChange={(e) => setFormData({ ...formData, studioName: e.target.value })}
+                      className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                      Meta de Sellos para Recompensa
+                    </label>
+                    <input
+                      type="number"
+                      min="3"
+                      max="20"
+                      value={formData.totalStampsRequired}
+                      onChange={(e) => setFormData({ ...formData, totalStampsRequired: Number(e.target.value) })}
+                      className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] font-bold focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                    Título de la Recompensa Activa
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.currentRewardTitle}
+                    onChange={(e) => setFormData({ ...formData, currentRewardTitle: e.target.value })}
+                    className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                    Descripción / Condiciones del Premio
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formData.currentRewardDescription}
+                    onChange={(e) => setFormData({ ...formData, currentRewardDescription: e.target.value })}
+                    className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
+                  />
+                </div>
+
+                {/* Google Wallet Styling Section */}
+                <div className="pt-6 border-t border-[#EAE4D5] space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-[#F1F5DC] text-[#5B6F00] border border-[#D9E2B3] flex items-center justify-center">
+                      <Palette className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-serif font-normal text-[#1C1917]">
+                        Estilización de Tarjeta en Google Wallet
+                      </h4>
+                      <p className="text-[11px] text-[#78716C]">
+                        Cada comercio posee su propia plantilla aislada en Google Wallet. Personaliza tus colores y logo.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-2">
+                      Color de Fondo de la Tarjeta
+                    </label>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {[
+                        { name: 'Ink Dark', hex: '#1C1917' },
+                        { name: 'Loyal Olive', hex: '#5B6F00' },
+                        { name: 'Espresso', hex: '#3F2E26' },
+                        { name: 'Slate Navy', hex: '#1E293B' },
+                        { name: 'Terracotta', hex: '#9A3412' },
+                        { name: 'Forest', hex: '#14532D' },
+                      ].map((swatch) => (
+                        <button
+                          key={swatch.hex}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, walletBgColor: swatch.hex })}
+                          title={swatch.name}
+                          className={`w-8 h-8 rounded-full border-2 transition-transform cursor-pointer ${
+                            formData.walletBgColor?.toLowerCase() === swatch.hex.toLowerCase()
+                              ? 'border-[#5B6F00] scale-110 ring-2 ring-[#5B6F00]/30'
+                              : 'border-[#EAE4D5] hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: swatch.hex }}
+                        />
+                      ))}
+
+                      <div className="flex items-center gap-2 ml-1 bg-[#FAF7F2] px-3 py-1.5 rounded-full border border-[#EAE4D5]">
+                        <input
+                          type="color"
+                          value={formData.walletBgColor}
+                          onChange={(e) => setFormData({ ...formData, walletBgColor: e.target.value })}
+                          className="w-5 h-5 rounded-full cursor-pointer bg-transparent border-0 p-0"
+                        />
+                        <input
+                          type="text"
+                          value={formData.walletBgColor}
+                          onChange={(e) => setFormData({ ...formData, walletBgColor: e.target.value })}
+                          placeholder="#1C1917"
+                          className="w-18 text-xs font-mono text-[#1C1917] bg-transparent focus:outline-hidden uppercase"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                      Nombre / Subtítulo del Programa
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.walletProgramName}
+                      onChange={(e) => setFormData({ ...formData, walletProgramName: e.target.value })}
+                      placeholder="Ej. Club VIP · Tarjeta de Sellos"
+                      className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                        URL Logo Cuadrado <span className="text-[#78716C] font-normal lowercase">(opcional, https)</span>
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.walletLogoUrl}
+                        onChange={(e) => setFormData({ ...formData, walletLogoUrl: e.target.value })}
+                        placeholder="https://.../logo.png"
+                        className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                        URL Imagen Banner <span className="text-[#78716C] font-normal lowercase">(opcional, 1032x336)</span>
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.walletHeroImageUrl}
+                        onChange={(e) => setFormData({ ...formData, walletHeroImageUrl: e.target.value })}
+                        placeholder="https://.../banner.jpg"
+                        className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-[#EAE4D5]">
+                  <div>
+                    <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                      Nombre Red Wi-Fi (SSID)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.wifiSsid}
+                      onChange={(e) => setFormData({ ...formData, wifiSsid: e.target.value })}
+                      className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                      Contraseña del Wi-Fi
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.wifiPassword}
+                      onChange={(e) => setFormData({ ...formData, wifiPassword: e.target.value })}
+                      className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] font-mono focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
-                  Meta de Sellos para Recompensa
-                </label>
-                <input
-                  type="number"
-                  min="3"
-                  max="20"
-                  value={formData.totalStampsRequired}
-                  onChange={(e) => setFormData({ ...formData, totalStampsRequired: Number(e.target.value) })}
-                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] font-bold focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
-                />
+              {/* Right Column: Live Google Wallet Card Preview */}
+              <div className="lg:col-span-5 lg:sticky lg:top-8 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#78716C] flex items-center gap-1.5">
+                    <Smartphone className="w-3.5 h-3.5 text-[#5B6F00]" />
+                    Vista Previa Google Wallet
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FAF7F2] border border-[#EAE4D5] text-[#78716C]">
+                    En vivo
+                  </span>
+                </div>
+
+                <div
+                  className="rounded-[28px] p-5 text-white shadow-xl border border-white/10 transition-colors duration-300 space-y-5"
+                  style={{ backgroundColor: formData.walletBgColor || '#1C1917' }}
+                >
+                  {/* Top Header */}
+                  <div className="flex items-center gap-3">
+                    {formData.walletLogoUrl ? (
+                      <img
+                        src={formData.walletLogoUrl}
+                        alt="Logo"
+                        className="w-10 h-10 rounded-full object-cover bg-white/10 border border-white/20 shrink-0"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-white/15 border border-white/25 flex items-center justify-center font-serif text-base font-bold shrink-0">
+                        {(formData.studioName || 'L').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-white/90 truncate">
+                        {formData.studioName || 'Mi Comercio'}
+                      </p>
+                      <p className="text-[11px] text-white/70 truncate">
+                        {formData.walletProgramName || 'Pase Digital de Fidelización'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Holder & Points */}
+                  <div className="flex items-end justify-between gap-2 pt-1">
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-white/60 block">
+                        Sellos Acumulados
+                      </span>
+                      <p className="text-2xl font-serif font-normal text-white mt-0.5">
+                        3 de {formData.totalStampsRequired || 10} sellos
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase tracking-wider text-white/60 block">
+                        Titular
+                      </span>
+                      <p className="text-xs font-medium text-white">Camila Morales</p>
+                    </div>
+                  </div>
+
+                  {/* Simulated Barcode Box */}
+                  <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-[#1C1917]">
+                    <QrCode className="w-24 h-24 text-[#1C1917]" strokeWidth={1.5} />
+                    <span className="text-[10px] font-mono text-[#78716C] mt-1">
+                      camila-morales-7x2q
+                    </span>
+                  </div>
+
+                  {/* Optional Hero Banner */}
+                  {formData.walletHeroImageUrl && (
+                    <div className="rounded-xl overflow-hidden border border-white/15 max-h-24">
+                      <img
+                        src={formData.walletHeroImageUrl}
+                        alt="Hero Banner"
+                        className="w-full h-24 object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Reward footer */}
+                  <div className="pt-2 border-t border-white/15 flex items-center justify-between text-[11px] text-white/80">
+                    <span className="truncate">🎁 {formData.currentRewardTitle || 'Recompensa'}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
-                Título de la Recompensa Activa
-              </label>
-              <input
-                type="text"
-                value={formData.currentRewardTitle}
-                onChange={(e) => setFormData({ ...formData, currentRewardTitle: e.target.value })}
-                className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
-                Descripción / Condiciones del Premio
-              </label>
-              <textarea
-                rows={3}
-                value={formData.currentRewardDescription}
-                onChange={(e) => setFormData({ ...formData, currentRewardDescription: e.target.value })}
-                className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-[#EAE4D5]">
-              <div>
-                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
-                  Nombre Red Wi-Fi (SSID)
-                </label>
-                <input
-                  type="text"
-                  value={formData.wifiSsid}
-                  onChange={(e) => setFormData({ ...formData, wifiSsid: e.target.value })}
-                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
-                  Contraseña del Wi-Fi
-                </label>
-                <input
-                  type="text"
-                  value={formData.wifiPassword}
-                  onChange={(e) => setFormData({ ...formData, wifiPassword: e.target.value })}
-                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] font-mono focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex items-center justify-between pt-4 border-t border-[#EAE4D5]">
               <button
                 type="submit"
-                className="flex items-center gap-2 h-12 px-7 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer"
+                disabled={savingConfig}
+                className="flex items-center gap-2 h-12 px-7 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50"
               >
                 <Save className="w-4 h-4 text-[#B2C248]" />
-                <span>Guardar Cambios</span>
+                <span>{savingConfig ? 'Guardando...' : 'Guardar Cambios'}</span>
               </button>
 
               <button

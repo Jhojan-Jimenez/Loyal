@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateStudioConfigServer, updateTenantConfigServer } from '@/lib/server-db';
+import { updateGoogleWalletClass } from '@/lib/google-wallet';
 import { AUTH_COOKIE_NAME, verifySessionToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +34,14 @@ export async function POST(req: NextRequest) {
       }
 
       const updated = updateTenantConfigServer(tenantSlug, config);
+
+      // Sync LoyaltyClass styling with Google Wallet in the background
+      if (updated?.config) {
+        updateGoogleWalletClass(tenantSlug, updated.config).catch((err) => {
+          console.warn('[AdminConfig] Google Wallet class sync warning:', err);
+        });
+      }
+
       return NextResponse.json({ success: true, config: updated?.config || config });
     }
 

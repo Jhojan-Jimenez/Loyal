@@ -663,7 +663,8 @@ export function addStampServer(
     updatedStudent.token,
     updatedStudent.stamps,
     totalRequired,
-    updatedStudent.name
+    updatedStudent.name,
+    tenant?.slug || student.tenantSlug
   ).catch((err) => {
     console.warn('[ServerDB] Google Wallet background update warning:', err);
   });
@@ -720,7 +721,8 @@ export function redeemRewardServer(
     updatedStudent.token,
     0,
     totalRequired,
-    updatedStudent.name
+    updatedStudent.name,
+    tenant?.slug || student.tenantSlug
   ).catch((err) => {
     console.warn('[ServerDB] Google Wallet background update warning:', err);
   });

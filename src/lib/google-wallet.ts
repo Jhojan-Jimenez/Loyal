@@ -10,7 +10,6 @@ interface GoogleWalletCredentials {
 }
 
 function getCredentials(): GoogleWalletCredentials | null {
-  // 1. Try environment variables first
   const envIssuer = process.env.GOOGLE_WALLET_ISSUER_ID;
   const envEmail = process.env.GOOGLE_WALLET_CLIENT_EMAIL;
   const envKey = process.env.GOOGLE_WALLET_PRIVATE_KEY;
@@ -23,7 +22,6 @@ function getCredentials(): GoogleWalletCredentials | null {
     };
   }
 
-  // 2. Try loading from secrets file fallback on server
   try {
     const secretsPath = path.join(process.cwd(), 'secrets', 'google-wallet-credentials.json');
     if (fs.existsSync(secretsPath)) {
@@ -41,9 +39,107 @@ function getCredentials(): GoogleWalletCredentials | null {
   return null;
 }
 
+function sanitizeIdPart(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+}
+
+export function getWalletIds(issuerId: string, token: string, tenantSlug?: string) {
+  const cleanSlug = sanitizeIdPart(tenantSlug || 'default');
+  const sanitizedToken = sanitizeIdPart(token);
+  return {
+    classId: `${issuerId}.loyal_${cleanSlug}_v1`,
+    objectId: `${issuerId}.${cleanSlug}_${sanitizedToken}`,
+  };
+}
+
+function isValidHttpsUrl(url?: string): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url.trim());
+    return parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function buildLoyaltyClassPayload(classId: string, config: StudioConfig, appUrl: string) {
+  const logoUri = isValidHttpsUrl(config.walletLogoUrl)
+    ? config.walletLogoUrl!.trim()
+    : `${appUrl}/icon-512.png`;
+
+  const bgColor = /^#[0-9A-Fa-f]{6}$/.test(config.walletBgColor || '')
+    ? config.walletBgColor!
+    : '#1C1917';
+
+  const payload: Record<string, any> = {
+    id: classId,
+    issuerName: config.studioName || 'Loyal Business Club',
+    programName: config.walletProgramName?.trim() || 'Pase Digital de Fidelización',
+    programLogo: {
+      sourceUri: { uri: logoUri },
+      contentDescription: {
+        defaultValue: {
+          language: 'es',
+          value: `Logo ${config.studioName || 'Loyal'}`,
+        },
+      },
+    },
+    hexBackgroundColor: bgColor,
+    reviewStatus: 'UNDER_REVIEW',
+  };
+
+  if (isValidHttpsUrl(config.walletHeroImageUrl)) {
+    payload.heroImage = {
+      sourceUri: { uri: config.walletHeroImageUrl!.trim() },
+      contentDescription: {
+        defaultValue: {
+          language: 'es',
+          value: config.studioName || 'Tarjeta de Fidelización',
+        },
+      },
+    };
+  }
+
+  return payload;
+}
+
+async function getGoogleWalletAccessToken(creds: GoogleWalletCredentials): Promise<string | null> {
+  const now = Math.floor(Date.now() / 1000);
+  const assertion = jwt.sign(
+    {
+      iss: creds.clientEmail,
+      scope: 'https://www.googleapis.com/auth/wallet_object.issuer',
+      aud: 'https://oauth2.googleapis.com/token',
+      exp: now + 3600,
+      iat: now,
+    },
+    creds.privateKey,
+    { algorithm: 'RS256' }
+  );
+
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion,
+    }),
+  });
+
+  if (!tokenRes.ok) {
+    const errText = await tokenRes.text();
+    console.warn('Failed to obtain Google OAuth token for Wallet:', errText);
+    return null;
+  }
+
+  const tokenData = await tokenRes.json();
+  return tokenData.access_token || null;
+}
+
 export function generateGoogleWalletSaveUrl(
   student: Student,
-  config: StudioConfig
+  config: StudioConfig,
+  tenantSlug?: string
 ): { success: boolean; saveUrl?: string; error?: string } {
   const creds = getCredentials();
   if (!creds || !creds.privateKey) {
@@ -54,42 +150,66 @@ export function generateGoogleWalletSaveUrl(
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://loyal.jhojan.cloud';
-  const issuerId = creds.issuerId;
-  const classId = `${issuerId}.samyama_yoga_pass_v1`;
-  const sanitizedToken = student.token.replace(/[^a-zA-Z0-9_-]/g, '_');
-  const objectId = `${issuerId}.${sanitizedToken}`;
+  const resolvedSlug = tenantSlug || student.tenantSlug || 'default';
+  const { classId, objectId } = getWalletIds(creds.issuerId, student.token, resolvedSlug);
 
-  // 1. Define LoyaltyClass (Template)
-  const loyaltyClass = {
-    id: classId,
-    issuerName: config.studioName || 'Loyal Business Club',
-    programName: 'Pase Digital de Fidelización',
-    programLogo: {
-      sourceUri: {
-        uri: `${appUrl}/icon-512.png`,
-      },
-      contentDescription: {
-        defaultValue: {
-          language: 'es',
-          value: 'Logo Loyal',
-        },
-      },
+  // 1. Define LoyaltyClass (Template scoped strictly to this tenant)
+  const loyaltyClass = buildLoyaltyClassPayload(classId, config, appUrl);
+
+  // 2. Define LoyaltyObject (Individual Student Card scoped to tenant + student)
+  const textModulesData: Array<{ header: string; body: string; id: string }> = [
+    {
+      header: 'Premio al completar',
+      body: config.currentRewardTitle || 'Recompensa Especial',
+      id: 'reward_module',
     },
-    hexBackgroundColor: '#09090B',
-    reviewStatus: 'UNDER_REVIEW',
-  };
+  ];
 
-  // 2. Define LoyaltyObject (Individual Student Card)
+  if (config.wifiSsid?.trim()) {
+    textModulesData.push({
+      header: 'Wi-Fi Clientes',
+      body: config.wifiPassword?.trim()
+        ? `Red: ${config.wifiSsid} · Clave: ${config.wifiPassword}`
+        : `Red: ${config.wifiSsid}`,
+      id: 'wifi_module',
+    });
+  }
+
+  if (config.address?.trim()) {
+    textModulesData.push({
+      header: 'Ubicación Local',
+      body: config.address,
+      id: 'location_module',
+    });
+  }
+
+  const uris: Array<{ uri: string; description: string; id: string }> = [
+    {
+      uri: `${appUrl}/card/${student.token}`,
+      description: 'Ver Mi Tarjeta Web Interactiva',
+      id: 'web_card_link',
+    },
+  ];
+
+  const cleanWa = (config.whatsappNumber || '').replace(/\D/g, '');
+  if (cleanWa.length >= 7) {
+    uris.push({
+      uri: `https://wa.me/${cleanWa}`,
+      description: 'Contactar Establecimiento por WhatsApp',
+      id: 'whatsapp_link',
+    });
+  }
+
   const loyaltyObject = {
     id: objectId,
-    classId: classId,
+    classId,
     state: 'ACTIVE',
     accountName: student.name,
     accountId: student.id,
     loyaltyPoints: {
       label: 'Sellos Acumulados',
       balance: {
-        string: `${student.stamps} de ${config.totalStampsRequired} sellos`,
+        string: `${student.stamps} de ${config.totalStampsRequired || 10} sellos`,
       },
     },
     barcode: {
@@ -97,37 +217,8 @@ export function generateGoogleWalletSaveUrl(
       value: student.token,
       alternateText: student.token,
     },
-    textModulesData: [
-      {
-        header: 'Premio al completar',
-        body: config.currentRewardTitle,
-        id: 'reward_module',
-      },
-      {
-        header: 'Wi-Fi Clientes',
-        body: `Red: ${config.wifiSsid} · Clave: ${config.wifiPassword}`,
-        id: 'wifi_module',
-      },
-      {
-        header: 'Ubicación Local',
-        body: config.address,
-        id: 'location_module',
-      },
-    ],
-    linksModuleData: {
-      uris: [
-        {
-          uri: `${appUrl}/card/${student.token}`,
-          description: 'Ver Mi Tarjeta Web Interactiva',
-          id: 'web_card_link',
-        },
-        {
-          uri: `https://wa.me/${config.whatsappNumber.replace(/\D/g, '')}`,
-          description: 'Contactar Establecimiento por WhatsApp',
-          id: 'whatsapp_link',
-        },
-      ],
-    },
+    textModulesData,
+    linksModuleData: { uris },
   };
 
   // 3. Claims payload for Fat JWT Save Link
@@ -156,53 +247,27 @@ export function generateGoogleWalletSaveUrl(
 }
 
 /**
- * Updates an existing Google Wallet pass over-the-air with real-time balance and push notification
+ * Updates an existing Google Wallet pass over-the-air with real-time balance
  */
 export async function updateGoogleWalletPass(
   token: string,
   stamps: number,
   totalRequired: number = 10,
-  studentName?: string
+  studentName?: string,
+  tenantSlug?: string
 ): Promise<{ success: boolean; error?: string }> {
   const creds = getCredentials();
   if (!creds || !creds.privateKey) {
     return { success: false, error: 'Google Wallet credentials not configured' };
   }
 
-  const sanitizedToken = token.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
-  const objectId = `${creds.issuerId}.${sanitizedToken}`;
+  const { objectId } = getWalletIds(creds.issuerId, token, tenantSlug);
 
   try {
-    const now = Math.floor(Date.now() / 1000);
-    const assertion = jwt.sign(
-      {
-        iss: creds.clientEmail,
-        scope: 'https://www.googleapis.com/auth/wallet_object.issuer',
-        aud: 'https://oauth2.googleapis.com/token',
-        exp: now + 3600,
-        iat: now,
-      },
-      creds.privateKey,
-      { algorithm: 'RS256' }
-    );
-
-    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-        assertion,
-      }),
-    });
-
-    if (!tokenRes.ok) {
-      const errText = await tokenRes.text();
-      console.warn('Failed to obtain Google OAuth token for Wallet update:', errText);
+    const accessToken = await getGoogleWalletAccessToken(creds);
+    if (!accessToken) {
       return { success: false, error: 'OAuth failure' };
     }
-
-    const tokenData = await tokenRes.json();
-    const accessToken = tokenData.access_token;
 
     const patchRes = await fetch(
       `https://walletobjects.googleapis.com/walletobjects/v1/loyaltyObject/${objectId}`,
@@ -214,7 +279,7 @@ export async function updateGoogleWalletPass(
         },
         body: JSON.stringify({
           loyaltyPoints: {
-            label: 'Clases Asistidas',
+            label: 'Sellos Acumulados',
             balance: {
               string: `${stamps} de ${totalRequired} sellos`,
             },
@@ -237,3 +302,50 @@ export async function updateGoogleWalletPass(
   }
 }
 
+/**
+ * Syncs LoyaltyClass visual styling changes to Google Wallet REST API for a tenant
+ */
+export async function updateGoogleWalletClass(
+  tenantSlug: string,
+  config: StudioConfig
+): Promise<{ success: boolean; error?: string }> {
+  const creds = getCredentials();
+  if (!creds || !creds.privateKey) {
+    return { success: false, error: 'Google Wallet credentials not configured' };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://loyal.jhojan.cloud';
+  const { classId } = getWalletIds(creds.issuerId, 'class', tenantSlug);
+  const classPayload = buildLoyaltyClassPayload(classId, config, appUrl);
+
+  try {
+    const accessToken = await getGoogleWalletAccessToken(creds);
+    if (!accessToken) {
+      return { success: false, error: 'OAuth failure' };
+    }
+
+    const patchRes = await fetch(
+      `https://walletobjects.googleapis.com/walletobjects/v1/loyaltyClass/${classId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(classPayload),
+      }
+    );
+
+    if (!patchRes.ok) {
+      const errData = await patchRes.text();
+      console.warn(`[Google Wallet] Class patch status ${patchRes.status} for ${classId}:`, errData);
+      return { success: false, error: `Class patch status ${patchRes.status}` };
+    }
+
+    console.log(`[Google Wallet] Synced LoyaltyClass ${classId}`);
+    return { success: true };
+  } catch (err: any) {
+    console.warn('[Google Wallet] Class sync error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
