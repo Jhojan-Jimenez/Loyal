@@ -1,13 +1,8 @@
 import React, { Suspense } from 'react';
 import { FusionStudentCardView } from '@/components/fusion/FusionStudentCardView';
 import { Loader2 } from 'lucide-react';
-import { INITIAL_STUDENTS } from '@/lib/store';
 
-export async function generateStaticParams() {
-  return INITIAL_STUDENTS.map((s) => ({
-    token: s.token,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export default async function StudentCardPage({
   params,

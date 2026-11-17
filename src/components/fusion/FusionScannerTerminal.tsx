@@ -34,7 +34,7 @@ export function FusionScannerTerminal() {
   } = useLoyal();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedToken, setSelectedToken] = useState<string>('camila-restrepo-yoga');
+  const [selectedToken, setSelectedToken] = useState<string>('');
   const [autoStamp, setAutoStamp] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -44,7 +44,9 @@ export function FusionScannerTerminal() {
   const isProcessingScan = useRef(false);
   const scannerContainerId = 'fusion-qr-reader-container';
 
-  const currentStudent = getStudentByToken(selectedToken) || students[0];
+  const currentStudent = selectedToken
+    ? getStudentByToken(selectedToken)
+    : (students.length > 0 ? students[0] : undefined);
   const maxStamps = config.totalStampsRequired || 10;
   const currentStamps = currentStudent ? currentStudent.stamps : 0;
   const isRewardReady = currentStamps >= maxStamps;
@@ -411,26 +413,35 @@ export function FusionScannerTerminal() {
             </div>
 
             <div className="space-y-1.5 max-h-48 overflow-y-auto">
-              {filteredStudents.map((st) => (
-                <button
-                  key={st.id}
-                  onClick={() => setSelectedToken(st.token)}
-                  className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                    st.token === selectedToken
-                      ? 'bg-[#F1F5DC] border border-[#D9E2B3] text-[#5B6F00] font-bold'
-                      : 'hover:bg-[#FAF7F2] text-[#57534E]'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#5B6F00]" />
-                    <span className="font-semibold text-[#1C1917]">{st.name}</span>
-                    <span className="text-[10px] text-[#78716C] font-mono">{st.phone}</span>
-                  </div>
-                  <span className="font-serif font-normal text-xs text-[#1C1917]">
-                    {st.stamps}/{maxStamps} sellos
-                  </span>
-                </button>
-              ))}
+              {filteredStudents.length === 0 ? (
+                <div className="text-center py-6 px-4 bg-[#FAF7F2] rounded-2xl border border-dashed border-[#EAE4D5]">
+                  <p className="text-xs text-[#57534E] font-medium">No hay clientes registrados aún</p>
+                  <p className="text-[11px] text-[#A89F91] mt-0.5">
+                    Escanea un QR nuevo con la cámara o añade el primero desde el panel Admin.
+                  </p>
+                </div>
+              ) : (
+                filteredStudents.map((st) => (
+                  <button
+                    key={st.id}
+                    onClick={() => setSelectedToken(st.token)}
+                    className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                      st.token === selectedToken
+                        ? 'bg-[#F1F5DC] border border-[#D9E2B3] text-[#5B6F00] font-bold'
+                        : 'hover:bg-[#FAF7F2] text-[#57534E]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#5B6F00]" />
+                      <span className="font-semibold text-[#1C1917]">{st.name}</span>
+                      <span className="text-[10px] text-[#78716C] font-mono">{st.phone}</span>
+                    </div>
+                    <span className="font-serif font-normal text-xs text-[#1C1917]">
+                      {st.stamps}/{maxStamps} sellos
+                    </span>
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>

@@ -9,47 +9,7 @@ import {
 } from './store';
 import { updateGoogleWalletPass } from './google-wallet';
 
-export const INITIAL_TENANTS: TenantBusiness[] = [
-  {
-    id: 'ten_01',
-    slug: 'yoga-shala',
-    name: 'Yoga Shala & Wellness',
-    category: 'Fitness & Yoga',
-    ownerName: 'Andrea Salgar',
-    ownerEmail: 'andrea@yogashala.co',
-    ownerPhone: '+57 320 328 2014',
-    plan: 'pro',
-    status: 'active',
-    monthlyFeeCop: 129000,
-    createdAt: '2026-10-01T08:00:00Z',
-  },
-  {
-    id: 'ten_02',
-    slug: 'cafe-pergamino',
-    name: 'Café Pergamino 93',
-    category: 'Cafetería & Pastelería',
-    ownerName: 'Carlos Duque',
-    ownerEmail: 'carlos@pergamino.co',
-    ownerPhone: '+57 310 889 1234',
-    plan: 'starter',
-    status: 'active',
-    monthlyFeeCop: 79000,
-    createdAt: '2026-10-15T10:00:00Z',
-  },
-  {
-    id: 'ten_03',
-    slug: 'barberia-capital',
-    name: 'Barbería Capital Studio',
-    category: 'Belleza & Barbería',
-    ownerName: 'Juan Torres',
-    ownerEmail: 'juan@barberiacapital.com',
-    ownerPhone: '+57 318 555 4321',
-    plan: 'pro',
-    status: 'trial',
-    monthlyFeeCop: 129000,
-    createdAt: '2026-11-05T14:30:00Z',
-  },
-];
+export const INITIAL_TENANTS: TenantBusiness[] = [];
 
 export interface DatabaseData {
   students: Student[];
@@ -62,13 +22,27 @@ export interface DatabaseData {
 let cachedDb: DatabaseData | null = null;
 
 function getDbPath(): string {
-  const dataDir = path.join(process.cwd(), 'data');
-  try {
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+  const candidates = [
+    process.env.DATA_DIR,
+    path.join(process.cwd(), 'data'),
+    '/tmp/loyal-data',
+  ].filter(Boolean) as string[];
+
+  for (const dir of candidates) {
+    try {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      const testFile = path.join(dir, `.test-write-${Date.now()}`);
+      fs.writeFileSync(testFile, '1', 'utf8');
+      fs.unlinkSync(testFile);
+      return path.join(dir, 'loyal-db.json');
+    } catch {
+      // try next candidate
     }
-  } catch {}
-  return path.join(dataDir, 'loyal-db.json');
+  }
+
+  return path.join(process.cwd(), 'loyal-db.json');
 }
 
 function loadDb(): DatabaseData {
@@ -82,25 +56,25 @@ function loadDb(): DatabaseData {
       if (parsed && Array.isArray(parsed.students)) {
         cachedDb = {
           students: parsed.students,
-          transactions: parsed.transactions || INITIAL_TRANSACTIONS,
+          transactions: parsed.transactions || [],
           config: parsed.config || DEFAULT_STUDIO_CONFIG,
-          classes: parsed.classes || INITIAL_CLASSES,
-          tenants: Array.isArray(parsed.tenants) && parsed.tenants.length > 0 ? parsed.tenants : [...INITIAL_TENANTS],
+          classes: parsed.classes || [],
+          tenants: Array.isArray(parsed.tenants) ? parsed.tenants : [],
         };
         return cachedDb;
       }
     }
   } catch (err) {
-    console.warn('[ServerDB] Failed to load DB file, reinitializing with seed:', err);
+    console.warn('[ServerDB] Failed to load DB file, reinitializing with empty data:', err);
   }
 
-  // Initialize with seed data
+  // Initialize with clean data
   cachedDb = {
-    students: [...INITIAL_STUDENTS],
-    transactions: [...INITIAL_TRANSACTIONS],
+    students: [],
+    transactions: [],
     config: { ...DEFAULT_STUDIO_CONFIG },
-    classes: [...INITIAL_CLASSES],
-    tenants: [...INITIAL_TENANTS],
+    classes: [],
+    tenants: [],
   };
 
   saveDb(cachedDb);
@@ -316,18 +290,11 @@ export function getTenantsServer(): TenantBusiness[] {
   const totalStamps = db.students.reduce((acc, s) => acc + s.totalVisits, 0);
 
   return (db.tenants || []).map((t) => {
-    // Para el tenant inicial de yoga, asignar los estudiantes reales
-    if (t.slug === 'yoga-shala') {
-      return {
-        ...t,
-        totalStudentsCount: totalStudents,
-        totalStampsCount: totalStamps,
-      };
-    }
+    // Si solo hay un negocio registrado o coincide con el actual, reflejar las estadísticas reales
     return {
       ...t,
-      totalStudentsCount: t.totalStudentsCount ?? (t.status === 'active' ? 124 : 18),
-      totalStampsCount: t.totalStampsCount ?? (t.status === 'active' ? 480 : 45),
+      totalStudentsCount: t.totalStudentsCount ?? totalStudents,
+      totalStampsCount: t.totalStampsCount ?? totalStamps,
     };
   });
 }

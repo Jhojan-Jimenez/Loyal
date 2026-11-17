@@ -360,15 +360,15 @@ export default function HomePage() {
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#FFFDF9]/95 backdrop-blur-xs text-[11px] font-serif font-normal text-[#1C1917] border border-[#EAE4D5]">
-                Yoga Shala & Wellness · Bogotá
+                Comercio Local · Bogotá
               </div>
             </div>
             <div className="p-5 text-center">
               <p className="text-[14px] leading-[20px] text-[#1C1917] font-normal max-w-[220px] mx-auto">
-                Andrea eliminó las libretas de papel y gestiona 120 alumnas frecuentes sin perder un pase.
+                Elimina las tarjetas de cartón y fideliza a tus clientes frecuentes con métricas claras en tiempo real.
               </p>
               <span className="inline-block mt-3 text-xs font-serif font-normal text-[#5B6F00]">
-                120 pases activos
+                Programa activo
               </span>
             </div>
           </div>
@@ -545,7 +545,7 @@ export default function HomePage() {
                     ¡Sello Estampado!
                   </span>
                   <p className="text-[11px] text-[#78716C] mt-1">
-                    Cliente: Camila Restrepo (Visita #8)
+                    Cliente Frecuente (Visita #8)
                   </p>
                 </div>
               </div>

@@ -81,13 +81,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
               href="/"
               className="py-3 rounded-full bg-[#5B6F00] text-white text-xs font-bold hover:bg-[#4D5E00] transition-all shadow-xs"
             >
-              Crear una Nueva Tarjeta
-            </Link>
-            <Link
-              href="/card/camila-restrepo-yoga"
-              className="py-3 rounded-full bg-white text-[#1C1917] text-xs font-bold hover:bg-[#FAF7F2] transition-all border border-[#EAE4D5]"
-            >
-              Ver Pase Demo de Camila
+              Volver al Inicio
             </Link>
           </div>
         </div>
