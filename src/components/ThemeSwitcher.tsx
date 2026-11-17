@@ -9,11 +9,14 @@ export function ThemeSwitcher() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
+  const isFusion = pathname?.startsWith('/style/fusion');
   const isGranola = pathname?.startsWith('/style/granola');
   const isAirbnb = pathname?.startsWith('/style/airbnb');
-  const isBase = !isGranola && !isAirbnb;
+  const isBase = !isFusion && !isGranola && !isAirbnb;
 
-  const currentVersion = isGranola
+  const currentVersion = isFusion
+    ? { name: '🌿 Granola x Airbnb', color: '#5B6F00', bg: 'bg-[#5B6F00]' }
+    : isGranola
     ? { name: '🌾 Granola', color: '#5B6F00', bg: 'bg-[#5B6F00]' }
     : isAirbnb
     ? { name: '🌸 Airbnb', color: '#E61E4D', bg: 'bg-[#E61E4D]' }
@@ -23,19 +26,89 @@ export function ThemeSwitcher() {
     <div className="fixed bottom-5 right-5 z-50 font-sans select-none">
       {/* Floating Widget Flyout Menu */}
       {isOpen && (
-        <div className="mb-3 p-4 rounded-3xl bg-white/95 backdrop-blur-md border border-neutral-200/90 shadow-2xl w-80 animate-in slide-in-from-bottom-2 duration-200 text-[#222222]">
+        <div className="mb-3 p-4 rounded-3xl bg-white/95 backdrop-blur-md border border-neutral-200/90 shadow-2xl w-84 animate-in slide-in-from-bottom-2 duration-200 text-[#222222]">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-100">
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-neutral-800" />
               <span className="text-xs font-bold text-neutral-900">Versiones de Diseño</span>
             </div>
-            <span className="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider">
-              3 Diseños Finales
+            <span className="text-[10px] text-[#5B6F00] font-mono font-bold uppercase tracking-wider bg-[#F1F5DC] px-2 py-0.5 rounded-full border border-[#D9E2B3]">
+              4 Diseños
             </span>
           </div>
 
-          {/* 3 Main Final Version Cards */}
-          <div className="space-y-2 mb-3">
+          {/* 4 Version Cards */}
+          <div className="space-y-2 mb-2 max-h-[380px] overflow-y-auto pr-1">
+            {/* 0. NUEVA FUSIÓN: Granola x Airbnb */}
+            <div
+              className={`rounded-2xl border p-2.5 transition-all ${
+                isFusion
+                  ? 'bg-[#5B6F00] text-white border-[#5B6F00] shadow-md'
+                  : 'bg-gradient-to-r from-[#FAF7F2] to-[#F1F5DC]/40 text-neutral-900 border-[#D9E2B3] hover:border-[#5B6F00]'
+              }`}
+            >
+              <Link
+                href="/style/fusion"
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="w-3.5 h-3.5 rounded-full bg-[#B2C248] border border-white/50 shrink-0 shadow-xs" />
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="block text-xs font-bold leading-tight">🌿 Granola x Airbnb</span>
+                      <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${isFusion ? 'bg-white/20 text-white' : 'bg-[#5B6F00] text-white'}`}>
+                        FUSIÓN
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[10px] block mt-0.5 ${
+                        isFusion ? 'text-[#E5EACD]' : 'text-neutral-600'
+                      }`}
+                    >
+                      UI Airbnb + Fuentes y Colores Granola
+                    </span>
+                  </div>
+                </div>
+                {isFusion && <Check className="w-4 h-4 text-white shrink-0" />}
+              </Link>
+
+              {/* Sub-pages for Fusion */}
+              {isFusion && (
+                <div className="mt-2 pt-2 border-t border-white/20 grid grid-cols-3 gap-1">
+                  <Link
+                    href="/style/fusion"
+                    className={`py-1 rounded-lg text-center text-[10px] font-medium border ${
+                      pathname === '/style/fusion'
+                        ? 'bg-white text-[#5B6F00] border-white font-bold'
+                        : 'bg-[#4D5E00]/60 text-white border-[#4D5E00] hover:bg-[#4D5E00]'
+                    }`}
+                  >
+                    Portada
+                  </Link>
+                  <Link
+                    href="/style/fusion/scanner"
+                    className={`py-1 rounded-lg text-center text-[10px] font-medium border ${
+                      pathname === '/style/fusion/scanner'
+                        ? 'bg-white text-[#5B6F00] border-white font-bold'
+                        : 'bg-[#4D5E00]/60 text-white border-[#4D5E00] hover:bg-[#4D5E00]'
+                    }`}
+                  >
+                    Escáner
+                  </Link>
+                  <Link
+                    href="/style/fusion/card/camila-restrepo-yoga"
+                    className={`py-1 rounded-lg text-center text-[10px] font-medium border ${
+                      pathname?.includes('/style/fusion/card')
+                        ? 'bg-white text-[#5B6F00] border-white font-bold'
+                        : 'bg-[#4D5E00]/60 text-white border-[#4D5E00] hover:bg-[#4D5E00]'
+                    }`}
+                  >
+                    Tarjeta
+                  </Link>
+                </div>
+              )}
+            </div>
+
             {/* 1. Base: Carbón Grafito */}
             <div
               className={`rounded-2xl border p-2.5 transition-all ${
@@ -116,7 +189,7 @@ export function ThemeSwitcher() {
                 <div className="flex items-center gap-2.5">
                   <span className="w-3 h-3 rounded-full bg-[#B2C248] shrink-0" />
                   <div>
-                    <span className="block text-xs font-bold leading-tight">🌾 Granola</span>
+                    <span className="block text-xs font-bold leading-tight">🌾 Granola Clásico</span>
                     <span
                       className={`text-[10px] ${
                         isGranola ? 'text-[#E5EACD]' : 'text-neutral-500'
@@ -181,7 +254,7 @@ export function ThemeSwitcher() {
                 <div className="flex items-center gap-2.5">
                   <span className="w-3 h-3 rounded-full bg-white border border-[#E61E4D] shrink-0" />
                   <div>
-                    <span className="block text-xs font-bold leading-tight">🌸 Airbnb</span>
+                    <span className="block text-xs font-bold leading-tight">🌸 Airbnb Original</span>
                     <span
                       className={`text-[10px] ${
                         isAirbnb ? 'text-white/80' : 'text-neutral-500'
