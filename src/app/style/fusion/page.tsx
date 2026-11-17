@@ -105,28 +105,28 @@ export default function FusionStylePage() {
       {/* ─────────────────────────────────────────────────────────────
           1. TWO-OBJECT OPENING (HERO CHAPTER ON WARM STAGE) - 100VH VIEWPORT
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen min-h-[100dvh] pt-24 pb-12 sm:pt-28 sm:pb-16 px-6 sm:px-12 lg:px-20 max-w-[1440px] mx-auto w-full flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center w-full py-2">
+      <section className="relative min-h-screen min-h-[100dvh] pt-24 pb-12 sm:pt-28 sm:pb-16 px-6 sm:px-10 lg:px-12 max-w-[1240px] mx-auto w-full flex items-center justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-center w-full py-4">
           
-          {/* Left Column: 476px compact centered copy block */}
-          <div className="lg:col-span-6 max-w-[520px] mx-auto lg:mx-0 text-left space-y-6">
+          {/* Left Column: Focused editorial copy block */}
+          <div className="lg:col-span-7 max-w-[580px] mx-auto lg:mx-0 text-left space-y-5">
 
             {/* Display Headline in Libre Baskerville Serif (Signature Granola Style) */}
-            <h1 className="text-[38px] sm:text-[54px] lg:text-[64px] xl:text-[72px] leading-[0.98] font-serif font-normal text-[#1C1917] tracking-[-0.025em]">
+            <h1 className="text-[32px] sm:text-[42px] lg:text-[46px] xl:text-[50px] leading-[1.12] sm:leading-[1.08] font-serif font-normal text-[#1C1917] tracking-[-0.02em]">
               Fideliza clientes con tarjetas de sellos en su celular.
             </h1>
 
             {/* Hero Support Copy */}
-            <p className="text-[18px] sm:text-[21px] lg:text-[22px] leading-[28px] sm:leading-[32px] lg:leading-[34px] text-[#57534E] font-normal">
+            <p className="text-[16px] sm:text-[18px] lg:text-[19px] leading-[26px] sm:leading-[28px] text-[#57534E] font-normal">
               Pases inteligentes en Google Wallet y web. Sin tarjetas de cartón que se pierden y con escaneo en 1 segundo en tu mostrador.
             </p>
 
             {/* Actions: Primary Granola Olive Capsule & Pill Secondary */}
-            <div className="pt-2 flex flex-wrap items-center gap-3.5">
+            <div className="pt-1.5 flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={() => setIsRegisterModalOpen(true)}
-                className="h-12 px-7 rounded-full text-white text-[15px] sm:text-[16px] font-medium transition-all active:scale-[0.96] flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:shadow-[0_6px_20px_rgba(91,111,0,0.35)] hover:bg-[#4D5E00]"
+                className="h-11 sm:h-12 px-6 sm:px-7 rounded-full text-white text-[14px] sm:text-[15px] font-medium transition-all active:scale-[0.96] flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:shadow-[0_6px_20px_rgba(91,111,0,0.35)] hover:bg-[#4D5E00]"
                 style={{
                   background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)',
                 }}
@@ -137,7 +137,7 @@ export default function FusionStylePage() {
 
               <Link
                 href="/style/fusion/scanner"
-                className="h-12 px-6 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-[15px] font-medium transition-all active:scale-[0.96] flex items-center gap-2"
+                className="h-11 sm:h-12 px-5 sm:px-6 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-[14px] sm:text-[15px] font-medium transition-all active:scale-[0.96] flex items-center gap-2"
               >
                 <QrCode className="w-4 h-4 text-[#5B6F00]" />
                 <span>Ver escáner en mostrador</span>
@@ -145,7 +145,7 @@ export default function FusionStylePage() {
             </div>
 
             {/* Discreet Trust Qualifiers */}
-            <div className="pt-3 flex flex-wrap items-center gap-y-2 gap-x-6 text-[13px] text-[#57534E]">
+            <div className="pt-2 flex flex-wrap items-center gap-y-2 gap-x-5 text-[12px] sm:text-[13px] text-[#57534E]">
               <span className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-[#5B6F00]" />
                 Cero descargas de apps
@@ -161,18 +161,19 @@ export default function FusionStylePage() {
             </div>
           </div>
 
-          {/* Right Column: Compact Granola Punch Ticket (Exact Content from Granola) */}
-          <div className="lg:col-span-6 relative flex items-center justify-center lg:justify-end">
+          {/* Right Column: Prominent Granola Punch Ticket */}
+          <div className="lg:col-span-5 relative flex items-center justify-center lg:justify-end w-full">
             {/* Ground radial shadow in warm tone */}
             <div
-              className="absolute -bottom-8 w-[80%] h-20 rounded-full pointer-events-none"
+              className="absolute -bottom-8 w-[90%] h-24 rounded-full pointer-events-none"
               style={{
-                background: 'radial-gradient(ellipse at center, rgba(40,30,10,0.14) 0%, rgba(40,30,10,0) 70%)',
+                background: 'radial-gradient(ellipse at center, rgba(40,30,10,0.16) 0%, rgba(40,30,10,0) 70%)',
               }}
             />
 
-            <div id="experiencia" className="relative z-10 w-full max-w-[400px] flex justify-center">
+            <div id="experiencia" className="relative z-10 w-full max-w-[480px] flex justify-center lg:justify-end">
               <GranolaHeroTicket
+                size="lg"
                 onOpenRegister={() => setIsRegisterModalOpen(true)}
               />
             </div>
