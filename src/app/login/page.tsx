@@ -52,11 +52,11 @@ function LoginForm() {
               : role === 'admin'
               ? '/admin'
               : '/scanner');
-          router.replace(target);
+          window.location.href = target;
         }
       })
       .catch(() => {});
-  }, [redirectUrl, router]);
+  }, [redirectUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,9 +97,8 @@ function LoginForm() {
         (activeTab === 'superadmin' ? '/superadmin' : activeTab === 'admin' ? '/admin' : '/scanner');
 
       setTimeout(() => {
-        router.push(target);
-        router.refresh();
-      }, 400);
+        window.location.href = target;
+      }, 250);
     } catch (err: any) {
       setError(err.message || 'Error al autenticar');
     } finally {
