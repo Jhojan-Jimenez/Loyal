@@ -33,6 +33,11 @@ export function Navigation() {
   }, []);
 
   // Pages that render their own complete, contextual navigation
+  const segments = pathname ? pathname.split('/').filter(Boolean) : [];
+  const isTenantLandingOrJoin =
+    pathname?.endsWith('/join') ||
+    (segments.length === 1 && !['admin', 'superadmin', 'scanner', 'login', 'invite', 'card'].includes(segments[0]));
+
   if (
     pathname === '/' ||
     pathname === '/scanner' ||
@@ -40,7 +45,8 @@ export function Navigation() {
     pathname?.endsWith('/scanner') ||
     pathname?.startsWith('/card/') ||
     pathname?.startsWith('/invite/') ||
-    pathname?.startsWith('/style/')
+    pathname?.startsWith('/style/') ||
+    isTenantLandingOrJoin
   ) {
     return null;
   }

@@ -531,6 +531,19 @@ export function getStudentByToken(token: string): Student | undefined {
   );
 }
 
+export function findStudentByPhoneServer(phone: string, tenantSlug?: string): Student | undefined {
+  if (!phone || !phone.trim()) return undefined;
+  const db = loadDb();
+  const cleanPhone = phone.replace(/[^0-9]/g, '');
+  if (!cleanPhone) return undefined;
+
+  return (db.students || []).find((s) => {
+    const matchTenant = tenantSlug ? s.tenantSlug?.toLowerCase().trim() === tenantSlug.toLowerCase().trim() : true;
+    const sPhone = (s.phone || '').replace(/[^0-9]/g, '');
+    return matchTenant && sPhone && (sPhone === cleanPhone || sPhone.endsWith(cleanPhone) || cleanPhone.endsWith(sPhone));
+  });
+}
+
 export function registerStudentServer(
   name: string,
   phone: string,
@@ -539,6 +552,21 @@ export function registerStudentServer(
   tenantSlug?: string
 ): Student {
   const db = loadDb();
+
+  // If a student already exists with this phone at this tenant, return the existing student
+  if (phone && phone.trim()) {
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.length >= 7) {
+      const existingByPhone = (db.students || []).find((s) => {
+        const matchTenant = tenantSlug ? s.tenantSlug?.toLowerCase().trim() === tenantSlug.toLowerCase().trim() : true;
+        const sPhone = (s.phone || '').replace(/[^0-9]/g, '');
+        return matchTenant && sPhone && (sPhone === cleanPhone || sPhone.endsWith(cleanPhone) || cleanPhone.endsWith(sPhone));
+      });
+      if (existingByPhone) {
+        return existingByPhone;
+      }
+    }
+  }
 
   let token = customToken;
   if (!token) {

@@ -21,19 +21,27 @@ import {
   Phone,
   Smartphone,
 } from 'lucide-react';
+import { Student, StudioConfig } from '@/lib/types';
 
 interface FusionStudentCardViewProps {
   token: string;
+  initialStudent?: Student;
+  initialConfig?: StudioConfig;
 }
 
-export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
-  const { getStudentByToken, config, isLoaded, refreshFromServer } = useLoyal();
+export function FusionStudentCardView({
+  token,
+  initialStudent,
+  initialConfig,
+}: FusionStudentCardViewProps) {
+  const { getStudentByToken, config: globalConfig, isLoaded, refreshFromServer } = useLoyal();
 
   const [activeTab, setActiveTab] = useState<'card' | 'details' | 'install'>('card');
   const [isGeneratingWallet, setIsGeneratingWallet] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedWifi, setCopiedWifi] = useState(false);
+  const [tenantConfig, setTenantConfig] = useState<StudioConfig | null>(initialConfig || null);
 
   // Dynamic TOTP for anti-screenshot protection
   const [totp, setTotp] = useState(() => generateQrTotp(token));
@@ -48,19 +56,36 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
     return () => clearInterval(timer);
   }, [token]);
 
-  const student = getStudentByToken(token);
+  const studentFromContext = getStudentByToken(token);
+  const student = studentFromContext || initialStudent;
 
   useEffect(() => {
-    if (!student) {
+    if (!studentFromContext) {
       refreshFromServer();
     }
-  }, [student, refreshFromServer]);
+  }, [studentFromContext, refreshFromServer]);
 
-  if (!isLoaded) {
+  // Load tenant specific config if student belongs to a tenant
+  useEffect(() => {
+    if (student?.tenantSlug && !tenantConfig) {
+      fetch(`/api/db?tenantSlug=${encodeURIComponent(student.tenantSlug)}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success && d.config) {
+            setTenantConfig(d.config);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [student?.tenantSlug, tenantConfig]);
+
+  const config = tenantConfig || globalConfig;
+
+  if (!isLoaded && !initialStudent) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-4 bg-[#FDFBF7] font-sans">
         <Loader2 className="w-8 h-8 text-[#5B6F00] animate-spin" />
-        <p className="text-xs text-[#78716C] mt-3 font-semibold">Cargando pase editorial...</p>
+        <p className="text-xs text-[#78716C] mt-3 font-semibold">Cargando pase digital...</p>
       </div>
     );
   }
@@ -131,6 +156,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
           studentName: student.name,
           currentStamps: student.stamps,
           totalCycles: student.totalCompletedCycles,
+          tenantSlug: student.tenantSlug,
         }),
       });
 

@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Token is required' }, { status: 400 });
   }
 
-  const db = getDbData();
   // Find student in server DB or fallback
   const student = getStudentByToken(token) || {
     id: `std_${token}`,
@@ -27,6 +26,8 @@ export async function GET(request: NextRequest) {
     lastVisitAt: null,
   };
 
+  const tenantSlug = student?.tenantSlug || searchParams.get('tenantSlug') || undefined;
+  const db = getDbData(tenantSlug);
   const res = generateGoogleWalletSaveUrl(student, db.config || DEFAULT_STUDIO_CONFIG);
 
   if (res.success && res.saveUrl) {
@@ -47,13 +48,34 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { student, config } = body;
+    let student = body.student;
 
-    if (!student || !student.token) {
-      return NextResponse.json({ error: 'Student object is required' }, { status: 400 });
+    // Support payload with studentToken (used by FusionStudentCardView)
+    if (!student && body.studentToken) {
+      const existing = getStudentByToken(body.studentToken);
+      student = existing || {
+        id: `std_${body.studentToken}`,
+        token: body.studentToken,
+        name: body.studentName || 'Cliente Loyal',
+        phone: body.phone || '',
+        registeredAt: new Date().toISOString(),
+        stamps: body.currentStamps ?? 0,
+        totalCompletedCycles: body.totalCycles ?? 0,
+        totalVisits: body.currentStamps ?? 0,
+        lastVisitAt: null,
+        tenantSlug: body.tenantSlug,
+      };
     }
 
-    const res = generateGoogleWalletSaveUrl(student, config || DEFAULT_STUDIO_CONFIG);
+    if (!student || !student.token) {
+      return NextResponse.json({ error: 'Student or studentToken is required' }, { status: 400 });
+    }
+
+    const tenantSlug = student.tenantSlug || body.tenantSlug;
+    const db = getDbData(tenantSlug);
+    const resolvedConfig = body.config || db.config || DEFAULT_STUDIO_CONFIG;
+
+    const res = generateGoogleWalletSaveUrl(student, resolvedConfig);
 
     if (res.success && res.saveUrl) {
       return NextResponse.json({ success: true, saveUrl: res.saveUrl });

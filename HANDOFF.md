@@ -105,13 +105,13 @@ A pesar de que el backend y la base de datos están operativos, **el flujo de us
 
 ## 🗺️ 4. Hoja de Ruta Paso a Paso para la Próxima Conversación
 
-| Fase | Tarea Principal | Archivos Clave |
-| :--- | :--- | :--- |
-| **Fase 1** | **Limpieza de Layouts y Navegación:** Suprimir el navbar de marketing en `/superadmin`, `/[slug]/admin` y `/[slug]/scanner`. Crear un layout limpio para apps internas. | `src/app/layout.tsx`, `src/components/Navigation.tsx`, `src/components/fusion/FusionNavigation.tsx` |
-| **Fase 2** | **Página de Registro Público del Cliente:** Crear `src/app/[slug]/join/page.tsx` para que los clientes se registren en el negocio específico y obtengan su pase digital al instante. | `src/app/[slug]/join/page.tsx`, `src/lib/server-db.ts` |
-| **Fase 3** | **Blindaje de Aislamiento Multi-Tenant:** Auditar todos los endpoints de `api/students/**` para que reciban y filtren por `tenantId` estricto. | `src/lib/server-db.ts`, `src/app/api/students/**` |
-| **Fase 4** | **Pulido del Escáner de Mostrador:** Revalidar el flujo de escaneo rápido, feedback sonoro, búsqueda por teléfono y PIN de cajero. | `src/app/[slug]/scanner/page.tsx`, `src/components/fusion/FusionScannerTerminal.tsx` |
-| **Fase 5** | **Kit Imprimible de Mostrador en Admin:** Generador de cartel QR descargable en el panel de administración. | `src/app/[slug]/admin/page.tsx`, `src/components/fusion/FusionAdminDashboard.tsx` |
+| Fase | Tarea Principal | Archivos Clave | Estado |
+| :--- | :--- | :--- | :--- |
+| **Fase 1** | **Limpieza de Layouts y Navegación:** Suprimir el navbar de marketing en `/superadmin`, `/[slug]/admin`, `/[slug]/scanner` y `/[slug]/join`. | `src/components/Navigation.tsx` | ✅ **Completado** |
+| **Fase 2** | **Página de Registro Público del Cliente & QR Mostrador:** Crear `/[slug]/join` y `/[slug]` con onboarding móvil rápido, búsqueda por teléfono, enlace directo en admin y pase inmediato a Google Wallet. | `src/app/[slug]/join/page.tsx`, `src/app/[slug]/page.tsx`, `src/components/fusion/FusionCustomerJoinView.tsx`, `src/components/AdminDashboard.tsx`, `src/app/api/wallet/google/route.ts` | ✅ **Completado** |
+| **Fase 3** | **Blindaje de Aislamiento Multi-Tenant:** Auditar todos los endpoints de `api/students/**` para que reciban y filtren por `tenantId` estricto. | `src/lib/server-db.ts`, `src/app/api/students/**` | 🟡 Pendiente |
+| **Fase 4** | **Pulido del Escáner de Mostrador:** Revalidar el flujo de escaneo rápido, feedback sonoro, búsqueda por teléfono y PIN de cajero. | `src/app/[slug]/scanner/page.tsx`, `src/components/fusion/FusionScannerTerminal.tsx` | 🟡 Pendiente |
+| **Fase 5** | **Kit Imprimible de Mostrador en Admin:** Generador de cartel QR descargable en el panel de administración. | `src/app/[slug]/admin/page.tsx`, `src/components/fusion/FusionAdminDashboard.tsx` | 🟡 Pendiente |
 
 ---
 

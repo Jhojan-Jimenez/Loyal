@@ -30,6 +30,7 @@ import {
   X,
   Phone,
   LogOut,
+  Copy,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -258,11 +259,21 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   };
 
-  // Printable Counter Poster URL
+  // Printable Counter Poster URL (Direct client registration for this specific tenant)
+  const [copiedLink, setCopiedLink] = useState(false);
+
   const joinUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/${tenantSlug ? `?tenant=${tenantSlug}` : ''}`
-      : 'https://loyal.jhojan.cloud/';
+      ? `${window.location.origin}/${tenantSlug ? `${tenantSlug}/join` : ''}`
+      : `https://loyal.jhojan.cloud/${tenantSlug ? `${tenantSlug}/join` : ''}`;
+
+  const handleCopyJoinLink = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(joinUrl);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    }
+  };
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-6 font-sans text-[#1C1917]">
@@ -544,10 +555,10 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                 Material de Mostrador / Recepción
               </span>
               <h2 className="text-xl font-serif font-normal text-[#1C1917] mt-2">
-                Cartel de Auto-Registro en Mostrador
+                Cartel y Código QR de Auto-Registro
               </h2>
               <p className="text-xs text-[#57534E] mt-1 max-w-xl">
-                Coloca este código QR en un cartel o soporte de acrílico en tu caja. Los clientes lo escanean mientras esperan y obtienen su pase digital en 10 segundos sin que tengas que teclear nada.
+                Tus clientes escanean este QR en caja o en sus mesas con la cámara del celular. Los dirige directamente a la página de registro de tu negocio para crear su usuario y añadir su tarjeta de sellos a Google Wallet.
               </p>
             </div>
 
@@ -559,6 +570,46 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                 <Download className="w-4 h-4 text-[#B2C248]" />
                 <span>Descargar QR (Imagen PNG)</span>
               </button>
+            </div>
+          </div>
+
+          {/* Quick Link bar */}
+          <div className="bg-[#FAF7F2] p-4 rounded-2xl border border-[#EAE4D5] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-bold text-[#78716C] uppercase tracking-wider shrink-0 font-mono">
+                Enlace directo:
+              </span>
+              <code className="text-xs text-[#1C1917] font-mono bg-white px-3 py-1.5 rounded-lg border border-[#EAE4D5] truncate select-all">
+                {joinUrl}
+              </code>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleCopyJoinLink}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#F3EFE6] text-[#1C1917] border border-[#EAE4D5] text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              >
+                {copiedLink ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-[#5B6F00]" />
+                    <span className="text-[#5B6F00]">¡Copiado!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-[#78716C]" />
+                    <span>Copiar Enlace</span>
+                  </>
+                )}
+              </button>
+              <a
+                href={joinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#F3EFE6] text-[#1C1917] border border-[#EAE4D5] text-xs font-semibold shadow-xs transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-[#78716C]" />
+                <span>Probar Enlace</span>
+              </a>
             </div>
           </div>
 
