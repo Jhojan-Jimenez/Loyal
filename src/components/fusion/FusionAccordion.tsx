@@ -43,7 +43,7 @@ export function FusionAccordion({
               className="w-full flex items-center justify-between text-left gap-4 group cursor-pointer focus:outline-hidden"
               aria-expanded={isOpen}
             >
-              <span className="text-[19px] sm:text-[21px] leading-[28px] sm:leading-[30px] font-serif font-bold text-[#1C1917] group-hover:text-[#5B6F00] transition-colors">
+              <span className="text-[19px] sm:text-[21px] leading-[28px] sm:leading-[30px] font-serif font-normal text-[#1C1917] group-hover:text-[#5B6F00] transition-colors">
                 {item.question}
               </span>
               <div

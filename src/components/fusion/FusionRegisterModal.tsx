@@ -70,7 +70,7 @@ export function FusionRegisterModal({ isOpen, onClose }: FusionRegisterModalProp
             <Sparkles className="w-3.5 h-3.5" />
             <span>Generador de Pase Demo</span>
           </div>
-          <h3 className="text-[26px] leading-[32px] font-serif font-bold text-[#1C1917] tracking-tight">
+          <h3 className="text-[26px] leading-[32px] font-serif font-normal text-[#1C1917] tracking-tight">
             Crea tu primera tarjeta de sellos
           </h3>
           <p className="text-[14px] leading-[22px] text-[#57534E] mt-1.5">

@@ -72,7 +72,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
           <div className="w-12 h-12 rounded-2xl bg-[#FBF4EE] text-[#C26748] flex items-center justify-center mx-auto mb-4 border border-[#F1DED1]">
             <UserX className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-serif font-bold text-[#1C1917]">Tarjeta no encontrada</h2>
+          <h2 className="text-xl font-serif font-normal text-[#1C1917]">Tarjeta no encontrada</h2>
           <p className="text-xs text-[#78716C] mt-2 mb-6">
             El código <code className="bg-[#FAF7F2] px-2 py-0.5 rounded text-[#1C1917] font-mono">{token}</code> no corresponde a ningún miembro registrado.
           </p>
@@ -169,7 +169,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
             <span className="text-[10px] font-mono uppercase tracking-wider text-[#78716C] block leading-none">
               Pase de Fidelización
             </span>
-            <h1 className="text-sm font-serif font-bold text-[#1C1917]">
+            <h1 className="text-sm font-serif font-normal text-[#1C1917]">
               {config.studioName || 'Yoga Shala & Wellness'}
             </h1>
           </div>
@@ -235,7 +235,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
                   <span className="text-[11px] font-mono uppercase tracking-wider text-[#5B6F00] font-bold">
                     Pase de Alumno
                   </span>
-                  <h2 className="text-xl font-serif font-bold text-[#1C1917] mt-0.5">
+                  <h2 className="text-xl font-serif font-normal text-[#1C1917] mt-0.5">
                     {student.name}
                   </h2>
                   <span className="text-xs text-[#78716C] font-mono">{student.phone}</span>
@@ -289,7 +289,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
               <div className="space-y-2 mb-5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-[#57534E] font-medium">Progreso del ciclo:</span>
-                  <span className="font-serif font-bold text-sm text-[#1C1917]">
+                  <span className="font-serif font-normal text-sm text-[#1C1917]">
                     {currentStamps} de {totalRequired} sellos
                   </span>
                 </div>
@@ -333,7 +333,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
                   <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#78716C] block">
                     {isComplete ? '¡Premio listo!' : 'Próxima Recompensa'}
                   </span>
-                  <p className="text-xs font-serif font-bold text-[#1C1917] truncate">
+                  <p className="text-xs font-serif font-normal text-[#1C1917] truncate">
                     {config.currentRewardTitle || 'Clase Magistral o Taller Especial Gratis'}
                   </p>
                 </div>
@@ -368,7 +368,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
         {/* ── TAB 2: STUDIO BENEFITS & PERKS ── */}
         {activeTab === 'details' && (
           <div className="bg-[#FFFDF9] rounded-[32px] border border-[#EAE4D5] p-6 sm:p-7 shadow-xs space-y-5 animate-in fade-in duration-200">
-            <h3 className="text-lg font-serif font-bold text-[#1C1917]">
+            <h3 className="text-lg font-serif font-normal text-[#1C1917]">
               Beneficios para Miembros
             </h3>
 
@@ -376,7 +376,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
               <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] flex items-start gap-3">
                 <Gift className="w-5 h-5 text-[#5B6F00] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-xs font-serif font-bold text-[#1C1917]">
+                  <h4 className="text-xs font-serif font-normal text-[#1C1917]">
                     Recompensa de 10 Visitas
                   </h4>
                   <p className="text-xs text-[#57534E] mt-0.5">
@@ -388,7 +388,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
               <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#5B6F00] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-xs font-serif font-bold text-[#1C1917]">Ubicación</h4>
+                  <h4 className="text-xs font-serif font-normal text-[#1C1917]">Ubicación</h4>
                   <p className="text-xs text-[#57534E] mt-0.5">
                     Calle 93 # 14-20, Chicó Norte, Bogotá D.C.
                   </p>
@@ -399,7 +399,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
                 <div className="flex items-center gap-3">
                   <Wifi className="w-5 h-5 text-[#5B6F00]" />
                   <div>
-                    <h4 className="text-xs font-serif font-bold text-[#1C1917]">WiFi del Estudio</h4>
+                    <h4 className="text-xs font-serif font-normal text-[#1C1917]">WiFi del Estudio</h4>
                     <p className="text-xs text-[#57534E] font-mono">yogashala2026</p>
                   </div>
                 </div>
@@ -418,13 +418,13 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
         {/* ── TAB 3: INSTALL INSTRUCTIONS ── */}
         {activeTab === 'install' && (
           <div className="bg-[#FFFDF9] rounded-[32px] border border-[#EAE4D5] p-6 sm:p-7 shadow-xs space-y-5 animate-in fade-in duration-200">
-            <h3 className="text-lg font-serif font-bold text-[#1C1917]">
+            <h3 className="text-lg font-serif font-normal text-[#1C1917]">
               ¿Cómo guardar tu pase digital?
             </h3>
 
             <div className="space-y-4 text-xs text-[#57534E]">
               <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5]">
-                <h4 className="font-serif font-bold text-[#1C1917] text-sm mb-1.5">
+                <h4 className="font-serif font-normal text-[#1C1917] text-sm mb-1.5">
                   📱 En Android (Google Wallet)
                 </h4>
                 <p>
@@ -436,7 +436,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
               </div>
 
               <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5]">
-                <h4 className="font-serif font-bold text-[#1C1917] text-sm mb-1.5">
+                <h4 className="font-serif font-normal text-[#1C1917] text-sm mb-1.5">
                   🍎 En iPhone (Safari)
                 </h4>
                 <p>

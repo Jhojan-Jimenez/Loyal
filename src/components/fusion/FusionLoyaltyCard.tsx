@@ -84,7 +84,7 @@ export function FusionLoyaltyCard({
               <span className="text-[11px] font-mono uppercase tracking-wider text-[#5B6F00] font-bold">
                 Pase de Fidelización
               </span>
-              <h3 className="text-[17px] font-serif font-bold text-[#1C1917] tracking-tight leading-snug">
+              <h3 className="text-[17px] font-serif font-normal text-[#1C1917] tracking-tight leading-snug">
                 {businessName}
               </h3>
             </div>
@@ -126,7 +126,7 @@ export function FusionLoyaltyCard({
             <div className="flex items-center justify-between text-xs mb-2.5">
               <span className="text-[#57534E] font-medium">
                 Progreso:{' '}
-                <strong className="text-[#1C1917] font-serif text-sm">
+                <strong className="text-[#1C1917] font-serif font-normal text-sm">
                   {stamps} de {totalStamps}
                 </strong>{' '}
                 sellos
@@ -175,7 +175,7 @@ export function FusionLoyaltyCard({
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center">
-                        <span className="text-xs font-serif font-bold text-[#78716C]">
+                        <span className="text-xs font-serif font-normal text-[#78716C]">
                           {slotIndex}
                         </span>
                         {slotIndex === stamps + 1 && (
@@ -219,7 +219,7 @@ export function FusionLoyaltyCard({
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#78716C] block">
               Premio al completar 10 sellos
             </span>
-            <p className="text-xs font-serif font-bold text-[#1C1917] truncate">
+            <p className="text-xs font-serif font-normal text-[#1C1917] truncate">
               {rewardText}
             </p>
           </div>

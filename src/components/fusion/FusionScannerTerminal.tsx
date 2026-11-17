@@ -264,7 +264,7 @@ export function FusionScannerTerminal() {
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div className="flex items-center gap-2">
-            <h1 className="text-sm font-bold text-[#1C1917] flex items-center gap-1.5 font-serif">
+            <h1 className="text-sm font-normal text-[#1C1917] flex items-center gap-1.5 font-serif">
               <span>Terminal de Mostrador</span>
               <span className="text-[10px] font-mono uppercase tracking-wider text-[#5B6F00] bg-[#F1F5DC] px-2 py-0.5 rounded-full border border-[#D9E2B3]">
                 Editorial
@@ -325,7 +325,7 @@ export function FusionScannerTerminal() {
                 <span className="text-[11px] font-mono uppercase tracking-wider text-[#78716C] block">
                   Sensor Óptico
                 </span>
-                <h3 className="text-lg font-serif font-bold text-[#1C1917]">
+                <h3 className="text-lg font-serif font-normal text-[#1C1917]">
                   Escaneo QR de Mostrador
                 </h3>
               </div>
@@ -344,7 +344,7 @@ export function FusionScannerTerminal() {
                   <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mb-3 backdrop-blur-xs">
                     <Camera className="w-7 h-7 text-[#B2C248]" />
                   </div>
-                  <h4 className="text-base font-serif font-bold mb-1">
+                  <h4 className="text-base font-serif font-normal mb-1">
                     Cámara en Espera
                   </h4>
                   <p className="text-xs text-white/70 max-w-xs mb-5">
@@ -391,7 +391,7 @@ export function FusionScannerTerminal() {
           {/* Quick Manual Search & Client Selector */}
           <div className="bg-[#FFFDF9] rounded-[28px] border border-[#EAE4D5] p-6 shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-serif font-bold text-[#1C1917]">
+              <h4 className="text-sm font-serif font-normal text-[#1C1917]">
                 Buscar Cliente Registrado
               </h4>
               <span className="text-[11px] font-mono text-[#78716C]">
@@ -426,7 +426,7 @@ export function FusionScannerTerminal() {
                     <span className="font-semibold text-[#1C1917]">{st.name}</span>
                     <span className="text-[10px] text-[#78716C] font-mono">{st.phone}</span>
                   </div>
-                  <span className="font-serif font-bold text-xs text-[#1C1917]">
+                  <span className="font-serif font-normal text-xs text-[#1C1917]">
                     {st.stamps}/{maxStamps} sellos
                   </span>
                 </button>
@@ -445,7 +445,7 @@ export function FusionScannerTerminal() {
                   <span className="text-[11px] font-mono uppercase tracking-wider text-[#5B6F00] font-bold">
                     Cliente Seleccionado
                   </span>
-                  <h3 className="text-xl font-serif font-bold text-[#1C1917] leading-tight mt-0.5">
+                  <h3 className="text-xl font-serif font-normal text-[#1C1917] leading-tight mt-0.5">
                     {currentStudent.name}
                   </h3>
                   <div className="flex items-center gap-2 text-xs text-[#78716C] mt-1 font-mono">
@@ -468,7 +468,7 @@ export function FusionScannerTerminal() {
               <div className="space-y-2 mb-6">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-[#57534E] font-medium">Progreso acumulado:</span>
-                  <span className="font-serif font-bold text-sm text-[#1C1917]">
+                  <span className="font-serif font-normal text-sm text-[#1C1917]">
                     {currentStamps} de {maxStamps} sellos
                   </span>
                 </div>
@@ -532,7 +532,7 @@ export function FusionScannerTerminal() {
           ) : (
             <div className="bg-[#FFFDF9] rounded-[28px] border border-[#EAE4D5] p-8 text-center text-[#78716C]">
               <QrCode className="w-10 h-10 mx-auto text-[#A89F91] mb-3" />
-              <p className="text-sm font-serif font-bold text-[#1C1917]">Sin cliente seleccionado</p>
+              <p className="text-sm font-serif font-normal text-[#1C1917]">Sin cliente seleccionado</p>
               <p className="text-xs text-[#57534E] mt-1">
                 Escanea un código QR con la cámara o busca un alumno en la lista.
               </p>
@@ -541,7 +541,7 @@ export function FusionScannerTerminal() {
 
           {/* Recent Operations Log */}
           <div className="bg-[#FFFDF9] rounded-[28px] border border-[#EAE4D5] p-5 shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
-            <h4 className="text-xs font-serif font-bold text-[#1C1917] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <h4 className="text-xs font-serif font-normal text-[#1C1917] uppercase tracking-wider mb-3 flex items-center gap-1.5">
               <History className="w-3.5 h-3.5 text-[#5B6F00]" />
               <span>Últimos Movimientos de Caja</span>
             </h4>

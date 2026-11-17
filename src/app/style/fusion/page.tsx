@@ -88,7 +88,16 @@ export default function FusionStylePage() {
 
   return (
     <div
-      className={`relative min-h-screen bg-[#FDFBF7] text-[#1C1917] selection:bg-[#5B6F00] selection:text-white antialiased ${libreBaskerville.variable} ${dmSans.variable} font-sans`}
+      style={{
+        fontFamily: dmSans.style.fontFamily,
+        ['--font-serif' as any]: libreBaskerville.style.fontFamily,
+        ['--font-sans' as any]: dmSans.style.fontFamily,
+        ['--font-granola-serif' as any]: libreBaskerville.style.fontFamily,
+        ['--font-granola-sans' as any]: dmSans.style.fontFamily,
+        ['--font-fusion-serif' as any]: libreBaskerville.style.fontFamily,
+        ['--font-fusion-sans' as any]: dmSans.style.fontFamily,
+      }}
+      className={`style-fusion relative min-h-screen bg-[#FDFBF7] text-[#1C1917] selection:bg-[#5B6F00] selection:text-white antialiased ${libreBaskerville.variable} ${dmSans.variable} font-sans`}
     >
       {/* ── Fixed Airbnb-Structure Navigation with Granola Styling ── */}
       <FusionNavigation onOpenDemo={() => setIsRegisterModalOpen(true)} />
@@ -102,8 +111,8 @@ export default function FusionStylePage() {
           {/* Left Column: 476px compact centered copy block */}
           <div className="lg:col-span-6 max-w-[520px] mx-auto lg:mx-0 text-left space-y-6">
 
-            {/* Display Headline in Libre Baskerville Serif */}
-            <h1 className="text-[38px] sm:text-[50px] lg:text-[56px] leading-[44px] sm:leading-[56px] lg:leading-[62px] font-serif font-bold text-[#1C1917] tracking-tight">
+            {/* Display Headline in Libre Baskerville Serif (Signature Granola Style) */}
+            <h1 className="text-[38px] sm:text-[54px] lg:text-[64px] xl:text-[72px] leading-[0.98] font-serif font-normal text-[#1C1917] tracking-[-0.025em]">
               Fideliza clientes con tarjetas de sellos en su celular.
             </h1>
 
@@ -186,7 +195,7 @@ export default function FusionStylePage() {
       <section id="beneficios" className="py-24 px-6 sm:px-12 lg:px-20 max-w-[1440px] mx-auto w-full border-t border-[#EAE4D5]">
         {/* Centered Chapter Heading */}
         <div className="max-w-[640px] mx-auto text-center mb-16 space-y-4">
-          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[40px] sm:leading-[50px] lg:leading-[56px] font-serif font-bold text-[#1C1917] tracking-tight">
+          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[1.05] font-serif font-normal text-[#1C1917] tracking-tight">
             Todo lo que necesitas para fidelizar sin esfuerzo.
           </h2>
           <p className="text-[18px] sm:text-[21px] leading-[28px] sm:leading-[32px] text-[#57534E] font-normal">
@@ -200,7 +209,7 @@ export default function FusionStylePage() {
           <div className="flex items-start gap-5 p-6 rounded-3xl hover:bg-[#FAF7F2] border border-transparent hover:border-[#EAE4D5] transition-all">
             <FusionMiniature type="stamp" size={88} />
             <div className="space-y-1.5 pt-1 text-left">
-              <h3 className="text-[18px] leading-[24px] font-serif font-bold text-[#1C1917]">
+              <h3 className="text-[19px] leading-[24px] font-serif font-normal text-[#1C1917]">
                 Un toque en mostrador
               </h3>
               <p className="text-[15px] leading-[22px] text-[#57534E]">
@@ -213,7 +222,7 @@ export default function FusionStylePage() {
           <div className="flex items-start gap-5 p-6 rounded-3xl hover:bg-[#FAF7F2] border border-transparent hover:border-[#EAE4D5] transition-all">
             <FusionMiniature type="wallet" size={88} />
             <div className="space-y-1.5 pt-1 text-left">
-              <h3 className="text-[18px] leading-[24px] font-serif font-bold text-[#1C1917]">
+              <h3 className="text-[19px] leading-[24px] font-serif font-normal text-[#1C1917]">
                 Siempre en su billetera
               </h3>
               <p className="text-[15px] leading-[22px] text-[#57534E]">
@@ -226,7 +235,7 @@ export default function FusionStylePage() {
           <div className="flex items-start gap-5 p-6 rounded-3xl hover:bg-[#FAF7F2] border border-transparent hover:border-[#EAE4D5] transition-all">
             <FusionMiniature type="bell" size={88} />
             <div className="space-y-1.5 pt-1 text-left">
-              <h3 className="text-[18px] leading-[24px] font-serif font-bold text-[#1C1917]">
+              <h3 className="text-[19px] leading-[24px] font-serif font-normal text-[#1C1917]">
                 Alertas amigables
               </h3>
               <p className="text-[15px] leading-[22px] text-[#57534E]">
@@ -239,7 +248,7 @@ export default function FusionStylePage() {
           <div className="flex items-start gap-5 p-6 rounded-3xl hover:bg-[#FAF7F2] border border-transparent hover:border-[#EAE4D5] transition-all">
             <FusionMiniature type="scanner" size={88} />
             <div className="space-y-1.5 pt-1 text-left">
-              <h3 className="text-[18px] leading-[24px] font-serif font-bold text-[#1C1917]">
+              <h3 className="text-[19px] leading-[24px] font-serif font-normal text-[#1C1917]">
                 Cero hardware caro
               </h3>
               <p className="text-[15px] leading-[22px] text-[#57534E]">
@@ -252,7 +261,7 @@ export default function FusionStylePage() {
           <div className="flex items-start gap-5 p-6 rounded-3xl hover:bg-[#FAF7F2] border border-transparent hover:border-[#EAE4D5] transition-all">
             <FusionMiniature type="analytics" size={88} />
             <div className="space-y-1.5 pt-1 text-left">
-              <h3 className="text-[18px] leading-[24px] font-serif font-bold text-[#1C1917]">
+              <h3 className="text-[19px] leading-[24px] font-serif font-normal text-[#1C1917]">
                 Métricas de recurrencia
               </h3>
               <p className="text-[15px] leading-[22px] text-[#57534E]">
@@ -265,7 +274,7 @@ export default function FusionStylePage() {
           <div className="flex items-start gap-5 p-6 rounded-3xl hover:bg-[#FAF7F2] border border-transparent hover:border-[#EAE4D5] transition-all">
             <FusionMiniature type="gift" size={88} />
             <div className="space-y-1.5 pt-1 text-left">
-              <h3 className="text-[18px] leading-[24px] font-serif font-bold text-[#1C1917]">
+              <h3 className="text-[19px] leading-[24px] font-serif font-normal text-[#1C1917]">
                 Reglas a tu medida
               </h3>
               <p className="text-[15px] leading-[22px] text-[#57534E]">
@@ -281,7 +290,7 @@ export default function FusionStylePage() {
       ───────────────────────────────────────────────────────────── */}
       <section id="historias" className="py-24 px-6 sm:px-12 lg:px-20 max-w-[1440px] mx-auto w-full border-t border-[#EAE4D5]">
         <div className="max-w-[640px] mx-auto text-center mb-16 space-y-4">
-          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[40px] sm:leading-[50px] lg:leading-[56px] font-serif font-bold text-[#1C1917] tracking-tight">
+          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[1.05] font-serif font-normal text-[#1C1917] tracking-tight">
             Comercios reales que dijeron adiós al cartón.
           </h2>
           <p className="text-[18px] sm:text-[21px] leading-[28px] sm:leading-[32px] text-[#57534E] font-normal">
@@ -301,7 +310,7 @@ export default function FusionStylePage() {
                 alt="Café de especialidad y barista"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#FFFDF9]/95 backdrop-blur-xs text-[11px] font-serif font-bold text-[#1C1917] border border-[#EAE4D5]">
+              <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#FFFDF9]/95 backdrop-blur-xs text-[11px] font-serif font-normal text-[#1C1917] border border-[#EAE4D5]">
                 Café Varietale · Bogotá
               </div>
             </div>
@@ -309,7 +318,7 @@ export default function FusionStylePage() {
               <p className="text-[14px] leading-[20px] text-[#1C1917] font-normal max-w-[220px] mx-auto">
                 Elena reemplazó 2,000 tarjetas impresas con 84% de adopción en su primera semana.
               </p>
-              <span className="inline-block mt-3 text-xs font-serif font-bold text-[#5B6F00]">
+              <span className="inline-block mt-3 text-xs font-serif font-normal text-[#5B6F00]">
                 +42% cafés recurrentes
               </span>
             </div>
@@ -325,7 +334,7 @@ export default function FusionStylePage() {
                 alt="Barbería artesanal"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#FFFDF9]/95 backdrop-blur-xs text-[11px] font-serif font-bold text-[#1C1917] border border-[#EAE4D5]">
+              <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#FFFDF9]/95 backdrop-blur-xs text-[11px] font-serif font-normal text-[#1C1917] border border-[#EAE4D5]">
                 Grooming 93 · Medellín
               </div>
             </div>
@@ -333,7 +342,7 @@ export default function FusionStylePage() {
               <p className="text-[14px] leading-[20px] text-[#1C1917] font-normal max-w-[220px] mx-auto">
                 Mateo acortó el ciclo de visitas de 28 a 18 días premiando el 5º corte de barba.
               </p>
-              <span className="inline-block mt-3 text-xs font-serif font-bold text-[#5B6F00]">
+              <span className="inline-block mt-3 text-xs font-serif font-normal text-[#5B6F00]">
                 Clientes vuelven cada 18 días
               </span>
             </div>
@@ -349,7 +358,7 @@ export default function FusionStylePage() {
                 alt="Estudio de Yoga y bienestar"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#FFFDF9]/95 backdrop-blur-xs text-[11px] font-serif font-bold text-[#1C1917] border border-[#EAE4D5]">
+              <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#FFFDF9]/95 backdrop-blur-xs text-[11px] font-serif font-normal text-[#1C1917] border border-[#EAE4D5]">
                 Yoga Shala & Wellness · Bogotá
               </div>
             </div>
@@ -357,7 +366,7 @@ export default function FusionStylePage() {
               <p className="text-[14px] leading-[20px] text-[#1C1917] font-normal max-w-[220px] mx-auto">
                 Andrea eliminó las libretas de papel y gestiona 120 alumnas frecuentes sin perder un pase.
               </p>
-              <span className="inline-block mt-3 text-xs font-serif font-bold text-[#5B6F00]">
+              <span className="inline-block mt-3 text-xs font-serif font-normal text-[#5B6F00]">
                 120 pases activos
               </span>
             </div>
@@ -414,7 +423,7 @@ export default function FusionStylePage() {
           {/* Stacked Proof Statements in Serif */}
           <div className="space-y-8 max-w-[580px] mx-auto text-center divide-y divide-[#EAE4D5]">
             <div className="pt-2">
-              <div className="text-[32px] sm:text-[40px] leading-[38px] sm:leading-[46px] font-serif font-bold text-[#1C1917] tracking-tight">
+              <div className="text-[32px] sm:text-[40px] leading-[1.05] font-serif font-normal text-[#1C1917] tracking-tight">
                 +38% más visitas repetidas
               </div>
               <p className="text-[16px] text-[#57534E] mt-2">
@@ -423,7 +432,7 @@ export default function FusionStylePage() {
             </div>
 
             <div className="pt-8">
-              <div className="text-[32px] sm:text-[40px] leading-[38px] sm:leading-[46px] font-serif font-bold text-[#1C1917] tracking-tight">
+              <div className="text-[32px] sm:text-[40px] leading-[1.05] font-serif font-normal text-[#1C1917] tracking-tight">
                 Menos de 1 segundo por sello
               </div>
               <p className="text-[16px] text-[#57534E] mt-2">
@@ -432,7 +441,7 @@ export default function FusionStylePage() {
             </div>
 
             <div className="pt-8">
-              <div className="text-[32px] sm:text-[40px] leading-[38px] sm:leading-[46px] font-serif font-bold text-[#1C1917] tracking-tight">
+              <div className="text-[32px] sm:text-[40px] leading-[1.05] font-serif font-normal text-[#1C1917] tracking-tight">
                 94% de adopción frente al papel
               </div>
               <p className="text-[16px] text-[#57534E] mt-2">
@@ -449,7 +458,7 @@ export default function FusionStylePage() {
       ───────────────────────────────────────────────────────────── */}
       <section className="py-24 px-6 sm:px-12 lg:px-20 max-w-[1440px] mx-auto w-full border-t border-[#EAE4D5]">
         <div className="max-w-[640px] mx-auto text-center mb-16 space-y-4">
-          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[40px] sm:leading-[50px] lg:leading-[56px] font-serif font-bold text-[#1C1917] tracking-tight">
+          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[1.05] font-serif font-normal text-[#1C1917] tracking-tight">
             Dos lados de una experiencia impecable.
           </h2>
           <p className="text-[18px] sm:text-[21px] leading-[28px] sm:leading-[32px] text-[#57534E] font-normal">
@@ -472,7 +481,7 @@ export default function FusionStylePage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-[10px] font-mono uppercase font-bold text-[#78716C]">Google Wallet</span>
-                    <h4 className="text-sm font-serif font-bold text-[#1C1917]">Café Varietale</h4>
+                    <h4 className="text-sm font-serif font-normal text-[#1C1917]">Café Varietale</h4>
                   </div>
                   <span className="px-2 py-0.5 rounded-full bg-[#F1F5DC] text-[10px] font-bold text-[#5B6F00] border border-[#D9E2B3]">
                     7 / 10 Sellos
@@ -506,7 +515,7 @@ export default function FusionStylePage() {
 
             {/* Caption */}
             <div className="mt-6 max-w-[320px]">
-              <h3 className="text-[18px] leading-[24px] font-serif font-bold text-[#1C1917]">
+              <h3 className="text-[18px] leading-[24px] font-serif font-normal text-[#1C1917]">
                 Para tus clientes
               </h3>
               <p className="text-[15px] leading-[22px] text-[#57534E] mt-1.5">
@@ -547,7 +556,7 @@ export default function FusionStylePage() {
 
             {/* Caption */}
             <div className="mt-6 max-w-[320px]">
-              <h3 className="text-[18px] leading-[24px] font-serif font-bold text-[#1C1917]">
+              <h3 className="text-[19px] leading-[24px] font-serif font-normal text-[#1C1917]">
                 Para tu mostrador
               </h3>
               <p className="text-[15px] leading-[22px] text-[#57534E] mt-1.5">
@@ -569,7 +578,7 @@ export default function FusionStylePage() {
             <span className="text-xs font-mono uppercase tracking-wider text-[#5B6F00] font-bold">
               Acompañamiento personalizado
             </span>
-            <h3 className="text-[24px] sm:text-[28px] leading-[30px] sm:leading-[34px] font-serif font-bold text-[#1C1917] tracking-tight">
+            <h3 className="text-[24px] sm:text-[28px] leading-[30px] sm:leading-[34px] font-serif font-normal text-[#1C1917] tracking-tight">
               ¿Quieres que configuremos tu tarjeta juntos?
             </h3>
             <p className="text-[15px] leading-[22px] text-[#57534E]">
@@ -597,7 +606,7 @@ export default function FusionStylePage() {
           <span className="text-xs font-mono font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-[#F1F5DC] border border-[#D9E2B3] text-[#5B6F00]">
             Precios Claros
           </span>
-          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[40px] sm:leading-[50px] lg:leading-[56px] font-serif font-bold text-[#1C1917] tracking-tight">
+          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[1.05] font-serif font-normal text-[#1C1917] tracking-tight">
             Planes transparentes, sin ataduras.
           </h2>
           <p className="text-[18px] sm:text-[21px] leading-[28px] sm:leading-[32px] text-[#57534E] font-normal">
@@ -617,7 +626,7 @@ export default function FusionStylePage() {
                 Starter
               </span>
               <div className="flex items-baseline gap-1 my-3">
-                <span className="text-[44px] font-serif font-bold text-[#1C1917] tracking-tight">$0</span>
+                <span className="text-[44px] font-serif font-normal text-[#1C1917] tracking-tight">$0</span>
                 <span className="text-sm text-[#78716C]">/ mes</span>
               </div>
               <p className="text-[14px] text-[#57534E] leading-relaxed mb-6">
@@ -667,7 +676,7 @@ export default function FusionStylePage() {
                 Pro Negocios
               </span>
               <div className="flex items-baseline gap-1 my-3">
-                <span className="text-[44px] font-serif font-bold text-[#1C1917] tracking-tight">$29</span>
+                <span className="text-[44px] font-serif font-normal text-[#1C1917] tracking-tight">$29</span>
                 <span className="text-xs text-[#78716C] font-mono">USD / mes (o $79.000 COP)</span>
               </div>
               <p className="text-[14px] text-[#57534E] leading-relaxed mb-6">
@@ -721,7 +730,7 @@ export default function FusionStylePage() {
                 Enterprise
               </span>
               <div className="flex items-baseline gap-1 my-3">
-                <span className="text-[44px] font-serif font-bold text-[#1C1917] tracking-tight">$89</span>
+                <span className="text-[44px] font-serif font-normal text-[#1C1917] tracking-tight">$89</span>
                 <span className="text-xs text-[#78716C] font-mono">USD / mes (o $249.000 COP)</span>
               </div>
               <p className="text-[14px] text-[#57534E] leading-relaxed mb-6">
@@ -769,7 +778,7 @@ export default function FusionStylePage() {
           <span className="text-xs font-mono font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-[#FAF7F2] border border-[#EAE4D5] text-[#78716C]">
             Preguntas Frecuentes
           </span>
-          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[40px] sm:leading-[50px] lg:leading-[56px] font-serif font-bold text-[#1C1917] tracking-tight">
+          <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] leading-[1.05] font-serif font-normal text-[#1C1917] tracking-tight">
             Respuestas claras para tu negocio.
           </h2>
           <p className="text-[18px] sm:text-[21px] leading-[28px] sm:leading-[32px] text-[#57534E] font-normal">
@@ -786,7 +795,7 @@ export default function FusionStylePage() {
       ───────────────────────────────────────────────────────────── */}
       <section className="py-20 px-6 sm:px-12 lg:px-20 max-w-[1440px] mx-auto w-full border-t border-[#EAE4D5]">
         <div className="max-w-[720px] mx-auto text-center space-y-6">
-          <h2 className="text-[34px] sm:text-[44px] lg:text-[52px] leading-[40px] sm:leading-[50px] lg:leading-[58px] font-serif font-bold text-[#1C1917] tracking-tight">
+          <h2 className="text-[34px] sm:text-[44px] lg:text-[52px] leading-[1.05] font-serif font-normal text-[#1C1917] tracking-tight">
             Tus clientes ya tienen el celular en la mano.
           </h2>
           <p className="text-[18px] sm:text-[21px] leading-[28px] sm:leading-[32px] text-[#57534E]">
@@ -818,7 +827,7 @@ export default function FusionStylePage() {
       <footer className="border-t border-[#EAE4D5] py-12 px-6 sm:px-12 lg:px-20 bg-[#FAF7F2] text-xs text-[#78716C]">
         <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="font-serif font-bold text-sm text-[#1C1917]">loyal</span>
+            <span className="font-serif font-normal text-sm text-[#1C1917]">loyal</span>
             <span>·</span>
             <span>Pases de fidelización digital con estética editorial</span>
           </div>
