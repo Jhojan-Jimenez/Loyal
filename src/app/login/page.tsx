@@ -38,6 +38,26 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // If already logged in, redirect directly to their respective role dashboard
+  React.useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.session) {
+          const role = data.session.role;
+          const target =
+            redirectUrl ||
+            (role === 'superadmin'
+              ? '/superadmin'
+              : role === 'admin'
+              ? '/admin'
+              : '/scanner');
+          router.replace(target);
+        }
+      })
+      .catch(() => {});
+  }, [redirectUrl, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);

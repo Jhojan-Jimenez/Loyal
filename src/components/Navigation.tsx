@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLoyal } from '@/context/LoyalContext';
@@ -12,17 +12,31 @@ import {
   CreditCard,
   ArrowRight,
   LogOut,
+  Lock,
 } from 'lucide-react';
 
 export function Navigation() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [session, setSession] = useState<{ role: string; name: string } | null>(null);
   const { students } = useLoyal();
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.authenticated && d.session) {
+          setSession(d.session);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Pages that render their own complete, contextual navigation
   if (
     pathname === '/' ||
     pathname === '/scanner' ||
+    pathname === '/login' ||
     pathname?.startsWith('/card/') ||
     pathname?.startsWith('/style/')
   ) {
@@ -33,9 +47,11 @@ export function Navigation() {
 
   const navLinks = [
     { label: 'Inicio', href: '/' },
-    { label: 'Escáner', href: '/scanner' },
-    { label: 'Admin', href: '/admin' },
-    { label: 'SuperAdmin', href: '/superadmin' },
+    ...(session ? [{ label: 'Escáner', href: '/scanner' }] : []),
+    ...(session?.role === 'admin' || session?.role === 'superadmin'
+      ? [{ label: 'Admin', href: '/admin' }]
+      : []),
+    ...(session?.role === 'superadmin' ? [{ label: 'SuperAdmin', href: '/superadmin' }] : []),
   ];
 
   return (
@@ -84,60 +100,58 @@ export function Navigation() {
 
         {/* Right Actions */}
         <div className="hidden sm:flex items-center gap-3">
-          <Link
-            href="/scanner"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-all active:scale-95"
-          >
-            <QrCode className="w-3.5 h-3.5 text-[#5B6F00]" />
-            <span>Escáner</span>
-          </Link>
+          {session ? (
+            <>
+              <Link
+                href="/scanner"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-all active:scale-95"
+              >
+                <QrCode className="w-3.5 h-3.5 text-[#5B6F00]" />
+                <span>Escáner</span>
+              </Link>
 
-          {students.length > 0 ? (
-            <Link
-              href={`/card/${students[0].token}`}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-[#FAF7F2] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-all active:scale-95 shadow-2xs"
-            >
-              <CreditCard className="w-3.5 h-3.5 text-[#57534E]" />
-              <span>Ver Tarjeta ({students[0].name.split(' ')[0]})</span>
-            </Link>
+              {(session.role === 'admin' || session.role === 'superadmin') && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-xs font-semibold transition-all active:scale-95"
+                  title="Panel de Comercio"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#5B6F00]" />
+                  <span>Admin</span>
+                </Link>
+              )}
+
+              {session.role === 'superadmin' && (
+                <Link
+                  href="/superadmin"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1917] text-[#B2C248] border border-[#292524] text-xs font-bold hover:bg-black transition-all active:scale-95 shadow-xs"
+                  title="Consola Maestra del SaaS"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#B2C248] animate-pulse" />
+                  <span>SuperAdmin</span>
+                </Link>
+              )}
+
+              <button
+                onClick={async () => {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                  window.location.href = '/login';
+                }}
+                className="p-2 rounded-full hover:bg-[#FAF7F2] border border-[#EAE4D5] text-[#78716C] hover:text-[#C2410C] transition-colors cursor-pointer"
+                title="Cerrar Sesión"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </>
           ) : (
             <Link
-              href="/#registro"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-[#FAF7F2] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-all active:scale-95 shadow-2xs"
+              href="/login"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-all active:scale-95"
             >
-              <CreditCard className="w-3.5 h-3.5 text-[#57534E]" />
-              <span>Crear Tarjeta</span>
+              <Lock className="w-3.5 h-3.5 text-[#78716C]" />
+              <span>Acceso Comercio</span>
             </Link>
           )}
-
-          <Link
-            href="/admin"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-xs font-semibold transition-all active:scale-95"
-            title="Panel de Comercio"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-[#5B6F00]" />
-            <span>Admin</span>
-          </Link>
-
-          <Link
-            href="/superadmin"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1917] text-[#B2C248] border border-[#292524] text-xs font-bold hover:bg-black transition-all active:scale-95 shadow-xs"
-            title="Consola Maestra del SaaS"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#B2C248] animate-pulse" />
-            <span>SuperAdmin</span>
-          </Link>
-
-          <button
-            onClick={async () => {
-              await fetch('/api/auth/logout', { method: 'POST' });
-              window.location.href = '/login';
-            }}
-            className="p-2 rounded-full hover:bg-[#FAF7F2] border border-[#EAE4D5] text-[#78716C] hover:text-[#C2410C] transition-colors cursor-pointer"
-            title="Cerrar Sesión"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
         </div>
 
         {/* Mobile Hamburger Button */}
@@ -176,80 +190,74 @@ export function Navigation() {
           </nav>
 
           <div className="pt-4 border-t border-[#EAE4D5] flex flex-col gap-2.5">
-            {students.length > 0 ? (
-              <Link
-                href={`/card/${students[0].token}`}
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between p-3 rounded-2xl bg-[#FFFDF9] border border-[#EAE4D5] font-semibold text-xs text-[#1C1917]"
-              >
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-[#57534E]" />
-                  <span>Ver Tarjeta ({students[0].name.split(' ')[0]})</span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-[#78716C]" />
-              </Link>
+            {session ? (
+              <>
+                <Link
+                  href="/scanner"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-[#F5F1E8] border border-[#EAE4D5] font-semibold text-xs text-[#1C1917]"
+                >
+                  <div className="flex items-center gap-2">
+                    <QrCode className="w-4 h-4 text-[#5B6F00]" />
+                    <span>Recepción (Escáner QR)</span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-[#78716C]" />
+                </Link>
+
+                {(session.role === 'admin' || session.role === 'superadmin') && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-[#F5F1E8] border border-[#EAE4D5] font-semibold text-xs text-[#1C1917]"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-[#5B6F00]" />
+                      <span>Panel Admin Comercio</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-[#78716C]" />
+                  </Link>
+                )}
+
+                {session.role === 'superadmin' && (
+                  <Link
+                    href="/superadmin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-[#1C1917] border border-[#292524] text-[#B2C248] font-bold text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#B2C248] animate-pulse" />
+                      <span>Consola SuperAdmin (SaaS)</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-[#B2C248]" />
+                  </Link>
+                )}
+
+                <button
+                  onClick={async () => {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                    window.location.href = '/login';
+                  }}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-[#FFF5F2] border border-[#F5C7C0] text-[#C2410C] font-semibold text-xs cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <LogOut className="w-4 h-4 text-[#C2410C]" />
+                    <span>Cerrar Sesión</span>
+                  </div>
+                </button>
+              </>
             ) : (
               <Link
-                href="/#registro"
+                href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between p-3 rounded-2xl bg-[#FFFDF9] border border-[#EAE4D5] font-semibold text-xs text-[#1C1917]"
+                className="flex items-center justify-between p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] font-semibold text-xs text-[#1C1917]"
               >
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-[#57534E]" />
-                  <span>Crear Tarjeta</span>
+                  <Lock className="w-4 h-4 text-[#78716C]" />
+                  <span>Acceso Comercio / Admin</span>
                 </div>
                 <ArrowRight className="w-4 h-4 text-[#78716C]" />
               </Link>
             )}
-
-            <Link
-              href="/scanner"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3 rounded-2xl bg-[#F5F1E8] border border-[#EAE4D5] font-semibold text-xs text-[#1C1917]"
-            >
-              <div className="flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-[#5B6F00]" />
-                <span>Recepción (Escáner QR)</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#78716C]" />
-            </Link>
-
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3 rounded-2xl bg-[#F5F1E8] border border-[#EAE4D5] font-semibold text-xs text-[#1C1917]"
-            >
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#5B6F00]" />
-                <span>Panel Admin Comercio</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#78716C]" />
-            </Link>
-
-            <Link
-              href="/superadmin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3 rounded-2xl bg-[#1C1917] border border-[#292524] text-[#B2C248] font-bold text-xs"
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#B2C248] animate-pulse" />
-                <span>Consola SuperAdmin (SaaS)</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#B2C248]" />
-            </Link>
-
-            <button
-              onClick={async () => {
-                await fetch('/api/auth/logout', { method: 'POST' });
-                window.location.href = '/login';
-              }}
-              className="flex items-center justify-between p-3 rounded-2xl bg-[#FFF5F2] border border-[#F5C7C0] text-[#C2410C] font-semibold text-xs cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                <LogOut className="w-4 h-4 text-[#C2410C]" />
-                <span>Cerrar Sesión</span>
-              </div>
-            </button>
           </div>
         </div>
       )}

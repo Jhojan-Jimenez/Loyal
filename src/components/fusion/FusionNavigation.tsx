@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { QrCode, Menu, X, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
+import { QrCode, Menu, X, ShieldCheck, ArrowRight, Sparkles, LogOut, Lock } from 'lucide-react';
 
 interface FusionNavigationProps {
   onOpenDemo: () => void;
@@ -10,6 +10,24 @@ interface FusionNavigationProps {
 
 export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [session, setSession] = useState<{ role: string; name: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.authenticated && d.session) {
+          setSession(d.session);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    setSession(null);
+    window.location.reload();
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-[100] h-20 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EAE4D5]/80 transition-all font-sans">
@@ -75,25 +93,62 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
           </a>
         </nav>
 
-        {/* Right: Actions */}
+        {/* Right: Actions (Role-Aware) */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <Link
-            href="/scanner"
-            className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-colors"
-          >
-            <QrCode className="w-4 h-4 text-[#5B6F00]" />
-            <span>Escáner Mostrador</span>
-          </Link>
+          {session ? (
+            // LOGGED IN USER: Show only their authorized portal button + Logout
+            <>
+              {session.role === 'superadmin' && (
+                <Link
+                  href="/superadmin"
+                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#1C1917] text-[#B2C248] border border-[#292524] text-xs font-bold shadow-xs hover:bg-black transition-all"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#B2C248] animate-pulse" />
+                  <span>Consola SuperAdmin</span>
+                </Link>
+              )}
 
-          <Link
-            href="/admin"
-            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-[#F3EFE6] text-xs font-semibold text-[#57534E] hover:text-[#1C1917] transition-colors"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-[#5B6F00]" />
-            <span>Admin</span>
-          </Link>
+              {session.role === 'admin' && (
+                <Link
+                  href="/admin"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-all"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#5B6F00]" />
+                  <span>Panel Admin</span>
+                </Link>
+              )}
 
-          {/* Primary Action Button (Granola Olive Capsule) */}
+              {session.role === 'cashier' && (
+                <Link
+                  href="/scanner"
+                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-all"
+                >
+                  <QrCode className="w-4 h-4 text-[#5B6F00]" />
+                  <span>Escáner Mostrador</span>
+                </Link>
+              )}
+
+              <button
+                onClick={handleLogout}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-[#FAF7F2] border border-[#EAE4D5] text-xs font-semibold text-[#78716C] hover:text-[#C2410C] transition-colors cursor-pointer"
+                title="Cerrar sesión"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Salir</span>
+              </button>
+            </>
+          ) : (
+            // PUBLIC VISITOR / CLIENT: Clean "Acceso" link to /login
+            <Link
+              href="/login"
+              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#57534E] hover:text-[#1C1917] transition-colors"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#78716C]" />
+              <span>Acceso Comercio</span>
+            </Link>
+          )}
+
+          {/* Primary Action Button */}
           <button
             type="button"
             onClick={onOpenDemo}
@@ -102,7 +157,7 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
               background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)',
             }}
           >
-            <span>Crear Tarjeta Demo</span>
+            <span>Crear Pase Digital</span>
           </button>
 
           {/* Mobile Menu Toggle */}
@@ -159,41 +214,73 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
           </nav>
 
           <div className="pt-4 border-t border-[#EAE4D5] flex flex-col gap-2.5">
-            <Link
-              href="/scanner"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F5F1E8] text-[#1C1917] text-sm font-medium"
-            >
-              <div className="flex items-center gap-2.5">
-                <QrCode className="w-4 h-4 text-[#5B6F00]" />
-                <span>Abrir Escáner de Mostrador</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#78716C]" />
-            </Link>
+            {session ? (
+              <>
+                {session.role === 'superadmin' && (
+                  <Link
+                    href="/superadmin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1917] text-[#B2C248] text-sm font-semibold"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-2 h-2 rounded-full bg-[#B2C248] animate-pulse" />
+                      <span>Consola SuperAdmin (SaaS)</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-[#B2C248]" />
+                  </Link>
+                )}
 
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F5F1E8] text-[#1C1917] text-sm font-medium"
-            >
-              <div className="flex items-center gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-[#5B6F00]" />
-                <span>Panel Admin Comercio</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#78716C]" />
-            </Link>
+                {session.role === 'admin' && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F5F1E8] text-[#1C1917] text-sm font-medium"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ShieldCheck className="w-4 h-4 text-[#5B6F00]" />
+                      <span>Panel Admin Comercio</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-[#78716C]" />
+                  </Link>
+                )}
 
-            <Link
-              href="/superadmin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1917] text-[#B2C248] text-sm font-semibold"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="w-2 h-2 rounded-full bg-[#B2C248] animate-pulse" />
-                <span>Consola SuperAdmin (SaaS)</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#B2C248]" />
-            </Link>
+                {session.role === 'cashier' && (
+                  <Link
+                    href="/scanner"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F5F1E8] text-[#1C1917] text-sm font-medium"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <QrCode className="w-4 h-4 text-[#5B6F00]" />
+                      <span>Abrir Escáner de Mostrador</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-[#78716C]" />
+                  </Link>
+                )}
+
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FFF5F2] border border-[#F5C7C0] text-[#C2410C] text-sm font-semibold cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <LogOut className="w-4 h-4 text-[#C2410C]" />
+                    <span>Cerrar Sesión</span>
+                  </div>
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F5F1E8] text-[#1C1917] text-sm font-medium"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Lock className="w-4 h-4 text-[#5B6F00]" />
+                  <span>Acceso Comercio / Admin</span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-[#78716C]" />
+              </Link>
+            )}
           </div>
         </div>
       )}
