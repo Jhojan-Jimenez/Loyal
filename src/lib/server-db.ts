@@ -34,6 +34,7 @@ export interface DatabaseData {
 }
 
 let cachedDb: DatabaseData | null = null;
+let lastDbMtime = 0;
 
 // ─────────────────────────────────────────────────────────────
 // PASSWORD SECURITY & HASHING
@@ -97,11 +98,13 @@ function ensureDefaultSuperAdmin(db: DatabaseData) {
 }
 
 function loadDb(): DatabaseData {
-  if (cachedDb) return cachedDb;
-
   const dbPath = getDbPath();
   try {
     if (fs.existsSync(dbPath)) {
+      const stat = fs.statSync(dbPath);
+      if (cachedDb && stat.mtimeMs === lastDbMtime) {
+        return cachedDb;
+      }
       const raw = fs.readFileSync(dbPath, 'utf8');
       const parsed = JSON.parse(raw);
       if (parsed) {
@@ -115,6 +118,7 @@ function loadDb(): DatabaseData {
           config: parsed.config || DEFAULT_STUDIO_CONFIG,
           classes: Array.isArray(parsed.classes) ? parsed.classes : [],
         };
+        lastDbMtime = stat.mtimeMs;
         ensureDefaultSuperAdmin(cachedDb);
         return cachedDb;
       }
@@ -147,6 +151,10 @@ function saveDb(data: DatabaseData) {
   try {
     fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf8');
     fs.renameSync(tmpPath, dbPath);
+    try {
+      const stat = fs.statSync(dbPath);
+      lastDbMtime = stat.mtimeMs;
+    } catch {}
   } catch (err) {
     console.error('[ServerDB] Error saving DB to disk:', err);
   }
@@ -228,9 +236,16 @@ export function getTenantsServer(): TenantBusiness[] {
 }
 
 export function getTenantBySlug(slug: string): TenantBusiness | undefined {
+  if (!slug) return undefined;
   const db = loadDb();
-  const cleanSlug = slug.toLowerCase().trim();
-  return (db.tenants || []).find((t) => t.slug.toLowerCase() === cleanSlug);
+  let cleanSlug = slug;
+  try {
+    cleanSlug = decodeURIComponent(slug);
+  } catch {}
+  cleanSlug = cleanSlug.toLowerCase().trim();
+  return (db.tenants || []).find(
+    (t) => t.slug.toLowerCase().trim() === cleanSlug
+  );
 }
 
 export function createTenantServer(data: {

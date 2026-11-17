@@ -12,7 +12,13 @@ export default async function TenantScannerPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tenant = getTenantBySlug(slug);
+  let cleanSlug = slug;
+  try {
+    cleanSlug = decodeURIComponent(slug);
+  } catch {}
+  cleanSlug = cleanSlug.toLowerCase().trim();
+
+  const tenant = getTenantBySlug(cleanSlug);
 
   if (!tenant) {
     return (
@@ -24,7 +30,7 @@ export default async function TenantScannerPage({
           <h1 className="text-xl font-serif text-[#1C1917]">Comercio no encontrado</h1>
           <p className="text-xs text-[#78716C] mt-2 mb-6">
             No existe ningún mostrador para{' '}
-            <span className="font-mono font-bold text-[#1C1917]">/{slug}</span>.
+            <span className="font-mono font-bold text-[#1C1917]">/{cleanSlug}</span>.
           </p>
           <Link
             href="/"
@@ -40,7 +46,7 @@ export default async function TenantScannerPage({
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#1C1917] selection:bg-[#5B6F00] selection:text-white">
-      <FusionScannerTerminal tenantSlug={slug} />
+      <FusionScannerTerminal tenantSlug={cleanSlug} />
     </div>
   );
 }

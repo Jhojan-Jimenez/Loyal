@@ -43,7 +43,12 @@ export async function middleware(req: NextRequest) {
   // 4. Proteger /[slug]/admin (SuperAdmin o el Administrador del Tenant correspondiente)
   const slugAdminMatch = pathname.match(/^\/([^\/]+)\/admin(\/.*)?$/);
   if (slugAdminMatch) {
-    const targetSlug = slugAdminMatch[1];
+    let targetSlug = slugAdminMatch[1];
+    try {
+      targetSlug = decodeURIComponent(targetSlug);
+    } catch {}
+    targetSlug = targetSlug.toLowerCase().trim();
+
     // Evitar falsos positivos en rutas del sistema
     if (!['api', 'superadmin', 'admin', 'login', 'invite', 'card', '_next'].includes(targetSlug)) {
       if (!session) {
@@ -58,7 +63,7 @@ export async function middleware(req: NextRequest) {
       }
 
       // Si el usuario pertenece a este tenant específico
-      if (session.activeTenant?.slug === targetSlug) {
+      if (session.activeTenant?.slug?.toLowerCase().trim() === targetSlug) {
         return NextResponse.next();
       }
 
