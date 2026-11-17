@@ -40,6 +40,8 @@ export interface StudioConfig {
   wifiPassword: string;
   whatsappNumber: string;
   instagramHandle: string;
+  adminPin?: string; // PIN para ingresar a /admin (default: '1234')
+  cashierPin?: string; // PIN para ingresar al escáner de caja (default: '0000')
 }
 
 export interface YogaClass {
@@ -71,4 +73,15 @@ export interface TenantBusiness {
   createdAt: string;
   totalStudentsCount?: number;
   totalStampsCount?: number;
+  adminPin?: string;
+  cashierPin?: string;
+}
+
+export type AuthRole = 'superadmin' | 'admin' | 'cashier';
+
+export interface AuthSession {
+  role: AuthRole;
+  tenantSlug?: string;
+  name: string;
+  expiresAt: number;
 }

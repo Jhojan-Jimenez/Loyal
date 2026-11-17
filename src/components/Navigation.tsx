@@ -11,6 +11,7 @@ import {
   X,
   CreditCard,
   ArrowRight,
+  LogOut,
 } from 'lucide-react';
 
 export function Navigation() {
@@ -126,6 +127,17 @@ export function Navigation() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#B2C248] animate-pulse" />
             <span>SuperAdmin</span>
           </Link>
+
+          <button
+            onClick={async () => {
+              await fetch('/api/auth/logout', { method: 'POST' });
+              window.location.href = '/login';
+            }}
+            className="p-2 rounded-full hover:bg-[#FAF7F2] border border-[#EAE4D5] text-[#78716C] hover:text-[#C2410C] transition-colors cursor-pointer"
+            title="Cerrar Sesión"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* Mobile Hamburger Button */}
@@ -225,6 +237,19 @@ export function Navigation() {
               </div>
               <ArrowRight className="w-4 h-4 text-[#B2C248]" />
             </Link>
+
+            <button
+              onClick={async () => {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/login';
+              }}
+              className="flex items-center justify-between p-3 rounded-2xl bg-[#FFF5F2] border border-[#F5C7C0] text-[#C2410C] font-semibold text-xs cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <LogOut className="w-4 h-4 text-[#C2410C]" />
+                <span>Cerrar Sesión</span>
+              </div>
+            </button>
           </div>
         </div>
       )}

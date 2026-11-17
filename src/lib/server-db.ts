@@ -308,6 +308,8 @@ export function createTenantServer(data: {
   ownerPhone: string;
   plan?: 'starter' | 'pro' | 'enterprise';
   monthlyFeeCop?: number;
+  adminPin?: string;
+  cashierPin?: string;
 }): TenantBusiness {
   const db = loadDb();
   
@@ -344,6 +346,8 @@ export function createTenantServer(data: {
     createdAt: new Date().toISOString(),
     totalStudentsCount: 0,
     totalStampsCount: 0,
+    adminPin: data.adminPin || '1234',
+    cashierPin: data.cashierPin || '0000',
   };
 
   db.tenants = [newTenant, ...(db.tenants || [])];

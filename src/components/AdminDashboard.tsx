@@ -28,6 +28,7 @@ import {
   AlertTriangle,
   X,
   Phone,
+  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -174,6 +175,18 @@ export function AdminDashboard() {
             >
               <Download className="w-4 h-4 text-[#A89F91]" />
               <span>Exportar CSV</span>
+            </button>
+
+            <button
+              onClick={async () => {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/login?role=admin';
+              }}
+              className="flex items-center gap-2 h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-xs font-semibold text-[#F5C7C0] hover:bg-[#3E3832] hover:text-[#C2410C] active:scale-95 transition-all cursor-pointer"
+              title="Cerrar Sesión de Comercio"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Salir</span>
             </button>
           </div>
         </div>

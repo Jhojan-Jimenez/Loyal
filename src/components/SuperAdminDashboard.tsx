@@ -25,6 +25,7 @@ import {
   QrCode,
   ShieldCheck,
   Zap,
+  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -232,6 +233,18 @@ export function SuperAdminDashboard() {
               >
                 Ver App Pública
               </Link>
+
+              <button
+                onClick={async () => {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                  window.location.href = '/login?role=superadmin';
+                }}
+                className="h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-xs font-semibold text-[#F5C7C0] hover:bg-[#3E3832] hover:text-[#C2410C] transition-all flex items-center gap-1.5 cursor-pointer"
+                title="Cerrar sesión de SuperAdmin"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Salir</span>
+              </button>
 
               <button
                 onClick={() => setShowAddModal(true)}

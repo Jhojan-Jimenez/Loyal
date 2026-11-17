@@ -14,6 +14,8 @@ export const DEFAULT_STUDIO_CONFIG: StudioConfig = {
   wifiPassword: 'clave_de_acceso',
   whatsappNumber: '+57 300 000 0000',
   instagramHandle: '@tu_negocio',
+  adminPin: '1234',
+  cashierPin: '0000',
 };
 
 export const INITIAL_STUDENTS: Student[] = [];
