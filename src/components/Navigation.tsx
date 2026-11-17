@@ -19,7 +19,8 @@ export function Navigation() {
 
   if (
     pathname?.startsWith('/style/granola') ||
-    pathname?.startsWith('/style/airbnb')
+    pathname?.startsWith('/style/airbnb') ||
+    pathname?.startsWith('/style/fusion')
   ) {
     return null;
   }

@@ -250,7 +250,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
               <div className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] flex flex-col items-center mb-6">
                 <div className="p-3.5 bg-white rounded-2xl border border-[#EAE4D5] shadow-xs relative">
                   <QRCodeSVG
-                    value={`https://loyal.jhojan.cloud/card/${student.token}?totp=${totp}`}
+                    value={`https://loyal.jhojan.cloud/style/fusion/card/${student.token}?totp=${totp}`}
                     size={180}
                     level="H"
                     fgColor="#1C1917"
