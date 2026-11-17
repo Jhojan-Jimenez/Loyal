@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { FusionNavigation } from '@/components/fusion/FusionNavigation';
 import { FusionLoyaltyCard } from '@/components/fusion/FusionLoyaltyCard';
+import { GranolaHeroTicket } from '@/components/granola/GranolaHeroTicket';
 import { FusionMiniature } from '@/components/fusion/FusionMiniature';
 import { FusionAccordion, AccordionItem } from '@/components/fusion/FusionAccordion';
 import { FusionRegisterModal } from '@/components/fusion/FusionRegisterModal';
@@ -151,8 +152,8 @@ export default function FusionStylePage() {
             </div>
           </div>
 
-          {/* Right Column: Media stage with tactile loyalty card */}
-          <div className="lg:col-span-6 relative flex items-center justify-center">
+          {/* Right Column: Compact Granola Punch Ticket (Exact Content from Granola) */}
+          <div className="lg:col-span-6 relative flex items-center justify-center lg:justify-end">
             {/* Ground radial shadow in warm tone */}
             <div
               className="absolute -bottom-8 w-[80%] h-20 rounded-full pointer-events-none"
@@ -161,34 +162,11 @@ export default function FusionStylePage() {
               }}
             />
 
-            {/* Interactive Tactile Loyalty Card */}
-            <div id="experiencia" className="relative z-10 w-full max-w-[440px]">
-              <FusionLoyaltyCard
-                initialStamps={7}
-                totalStamps={10}
-                businessName="Café & Panadería Magnolia"
-                customerName="Camila Restrepo"
-                rewardText="1 Café de Especialidad o Croissant Gratis"
+            <div id="experiencia" className="relative z-10 w-full max-w-[400px] flex justify-center">
+              <GranolaHeroTicket
+                onOpenRegister={() => setIsRegisterModalOpen(true)}
               />
-
-              {/* Floating Social Proof Badge */}
-              <div
-                className="absolute -bottom-4 -left-2 sm:-left-6 bg-[#FFFDF9] rounded-2xl px-4 py-2.5 border border-[#EAE4D5] flex items-center gap-2.5 z-20 animate-in fade-in duration-300 shadow-[0_8px_20px_rgba(40,30,10,0.08)]"
-              >
-                <div className="w-7 h-7 rounded-full bg-[#F1F5DC] border border-[#D9E2B3] flex items-center justify-center text-[#5B6F00]">
-                  <TrendingUp className="w-4 h-4" />
-                </div>
-                <div className="text-left">
-                  <span className="block text-xs font-serif font-bold text-[#1C1917]">
-                    +38% Visitas Recurrentes
-                  </span>
-                  <span className="block text-[11px] text-[#78716C]">
-                    En cafeterías y tiendas locales
-                  </span>
-                </div>
-              </div>
             </div>
-
           </div>
 
         </div>
