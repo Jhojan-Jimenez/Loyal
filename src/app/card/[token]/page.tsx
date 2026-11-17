@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { StudentCardView } from './StudentCardView';
+import { FusionStudentCardView } from '@/components/fusion/FusionStudentCardView';
 import { Loader2 } from 'lucide-react';
 import { INITIAL_STUDENTS } from '@/lib/store';
 
@@ -17,15 +17,17 @@ export default async function StudentCardPage({
   const { token } = await params;
 
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
-          <Loader2 className="w-8 h-8 text-neutral-900 animate-spin" />
-          <p className="text-xs text-neutral-600 mt-3 font-medium">Cargando pase digital...</p>
-        </div>
-      }
-    >
-      <StudentCardView token={token} />
-    </Suspense>
+    <div className="font-sans min-h-screen bg-[#FDFBF7] text-[#1C1917] selection:bg-[#5B6F00] selection:text-white">
+      <Suspense
+        fallback={
+          <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
+            <Loader2 className="w-8 h-8 text-[#5B6F00] animate-spin" />
+            <p className="text-xs text-[#78716C] mt-3 font-semibold">Cargando pase digital...</p>
+          </div>
+        }
+      >
+        <FusionStudentCardView token={token} />
+      </Suspense>
+    </div>
   );
 }

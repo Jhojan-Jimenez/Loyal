@@ -258,7 +258,7 @@ export function FusionScannerTerminal() {
       <header className="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EAE4D5] px-6 sm:px-10 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href="/style/fusion"
+            href="/"
             className="w-9 h-9 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] flex items-center justify-center text-[#1C1917] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -455,7 +455,7 @@ export function FusionScannerTerminal() {
                 </div>
 
                 <Link
-                  href={`/style/fusion/card/${currentStudent.token}`}
+                  href={`/card/${currentStudent.token}`}
                   target="_blank"
                   className="p-2 rounded-full hover:bg-[#FAF7F2] text-[#78716C] hover:text-[#1C1917] transition-colors"
                   title="Ver tarjeta digital pública"

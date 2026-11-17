@@ -4,13 +4,13 @@ import React, { useState } from 'react';
 import { ShieldCheck, Gift, TrendingUp, Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-interface GranolaHeroTicketProps {
+interface FusionHeroTicketProps {
   onOpenRegister?: () => void;
   size?: 'default' | 'lg';
   className?: string;
 }
 
-export function GranolaHeroTicket({ onOpenRegister, size = 'default', className = '' }: GranolaHeroTicketProps) {
+export function FusionHeroTicket({ onOpenRegister, size = 'default', className = '' }: FusionHeroTicketProps) {
   const isLg = size === 'lg';
   const [stamps, setStamps] = useState<number>(7);
   const totalRequired = 10;
@@ -136,9 +136,7 @@ export function GranolaHeroTicket({ onOpenRegister, size = 'default', className 
           </span>
         </div>
       </div>
-
-      {/* Subtitle prompt */}
-      
     </div>
   );
 }
+export { FusionHeroTicket as GranolaHeroTicket };

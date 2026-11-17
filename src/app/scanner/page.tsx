@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { ScannerTerminal } from '@/components/ScannerTerminal';
+import { FusionScannerTerminal } from '@/components/fusion/FusionScannerTerminal';
 
 export default function ScannerPage() {
   return (
-    <div className="py-8 px-4 bg-white min-h-screen text-neutral-900">
-      <ScannerTerminal />
+    <div className="min-h-screen bg-[#FDFBF7] text-[#1C1917] selection:bg-[#5B6F00] selection:text-white">
+      <FusionScannerTerminal />
     </div>
   );
 }

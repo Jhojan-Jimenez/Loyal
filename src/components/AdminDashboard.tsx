@@ -27,6 +27,7 @@ import {
   Sparkles,
   AlertTriangle,
   X,
+  Phone,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -124,7 +125,7 @@ export function AdminDashboard() {
 
     img.onload = () => {
       if (ctx) {
-        ctx.fillStyle = '#FFFFFF';
+        ctx.fillStyle = '#FAF7F2';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 100, 100, 1000, 1000);
         const pngUrl = canvas.toDataURL('image/png');
@@ -141,96 +142,98 @@ export function AdminDashboard() {
   const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/` : 'https://loyal.jhojan.cloud/';
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 font-sans">
-      {/* Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-neutral-950 p-6 sm:p-8 text-white shadow-xl border border-neutral-800">
+    <div className="w-full max-w-5xl mx-auto space-y-6 font-sans text-[#1C1917]">
+      {/* Header: Warm Dark Ink Hero with Granola Olive Accents */}
+      <div className="relative overflow-hidden rounded-[32px] bg-[#1C1917] p-6 sm:p-8 text-white shadow-xl border border-[#292524]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-800 text-neutral-300 border border-neutral-700">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#292524] text-[#B2C248] border border-[#3E3832]">
               <Settings className="w-3.5 h-3.5" />
               Panel de Control Administrativo
             </span>
-            <h1 className="text-2xl sm:text-3xl font-bold mt-2 tracking-tight">Gestión del Comercio & Clientes</h1>
-            <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-              Administra tus clientes, descarga el QR de mostrador y ajusta las reglas de tu programa
+            <h1 className="text-2xl sm:text-3xl font-serif font-normal mt-2 tracking-tight text-white">
+              Gestión del Comercio & Clientes
+            </h1>
+            <p className="text-xs sm:text-sm text-[#A89F91] mt-1 font-normal">
+              Administra tus miembros frecuentes, descarga el QR de mostrador y ajusta las reglas de tu programa
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-neutral-950 text-xs font-bold shadow-md hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
+              className="flex items-center gap-2 h-11 px-5 rounded-full bg-[#5B6F00] text-white text-xs font-bold shadow-md hover:bg-[#4D5E00] active:scale-95 transition-all cursor-pointer"
             >
-              <UserPlus className="w-4 h-4 text-neutral-950" />
+              <UserPlus className="w-4 h-4 text-[#B2C248]" />
               <span>+ Registrar Cliente</span>
             </button>
 
             <button
               onClick={handleExportStudents}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-900 border border-neutral-700 text-neutral-300 text-xs font-semibold hover:bg-neutral-800 transition-all cursor-pointer"
+              className="flex items-center gap-2 h-11 px-5 rounded-full bg-[#292524] border border-[#3E3832] text-white/90 text-xs font-semibold hover:bg-[#3E3832] active:scale-95 transition-all cursor-pointer"
             >
-              <Download className="w-4 h-4 text-neutral-400" />
+              <Download className="w-4 h-4 text-[#A89F91]" />
               <span>Exportar CSV</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* KPI Cards Row */}
+      {/* KPI Cards Row: Warm Paper & Serif Numbers */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-3xl p-5 border border-neutral-200 shadow-xs">
-          <div className="flex items-center justify-between text-neutral-500 mb-2">
-            <Users className="w-5 h-5 text-neutral-900" />
-            <span className="text-[10px] font-bold bg-neutral-100 text-neutral-800 px-2 py-0.5 rounded-md">
+        <div className="bg-[#FFFDF9] rounded-[28px] p-5 sm:p-6 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
+          <div className="flex items-center justify-between text-[#78716C] mb-2">
+            <Users className="w-5 h-5 text-[#5B6F00]" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-[#F1F5DC] text-[#5B6F00] px-2 py-0.5 rounded-full border border-[#D9E2B3]">
               Clientes
             </span>
           </div>
-          <p className="text-2xl font-black text-neutral-950">{totalStudents}</p>
-          <p className="text-xs text-neutral-500 mt-1">Total Registrados</p>
+          <p className="text-3xl font-serif font-normal text-[#1C1917]">{totalStudents}</p>
+          <p className="text-xs text-[#78716C] mt-1">Total Registrados</p>
         </div>
 
-        <div className="bg-white rounded-3xl p-5 border border-neutral-200 shadow-xs">
-          <div className="flex items-center justify-between text-neutral-500 mb-2">
-            <CalendarCheck className="w-5 h-5 text-neutral-900" />
-            <span className="text-[10px] font-bold bg-neutral-100 text-neutral-800 px-2 py-0.5 rounded-md">
+        <div className="bg-[#FFFDF9] rounded-[28px] p-5 sm:p-6 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
+          <div className="flex items-center justify-between text-[#78716C] mb-2">
+            <CalendarCheck className="w-5 h-5 text-[#5B6F00]" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-[#F1F5DC] text-[#5B6F00] px-2 py-0.5 rounded-full border border-[#D9E2B3]">
               Visitas
             </span>
           </div>
-          <p className="text-2xl font-black text-neutral-950">{totalClassesRecorded}</p>
-          <p className="text-xs text-neutral-500 mt-1">Sellos Estampados</p>
+          <p className="text-3xl font-serif font-normal text-[#1C1917]">{totalClassesRecorded}</p>
+          <p className="text-xs text-[#78716C] mt-1">Sellos Estampados</p>
         </div>
 
-        <div className="bg-white rounded-3xl p-5 border border-neutral-200 shadow-xs">
-          <div className="flex items-center justify-between text-neutral-500 mb-2">
-            <Gift className="w-5 h-5 text-neutral-900" />
-            <span className="text-[10px] font-bold bg-neutral-100 text-neutral-800 px-2 py-0.5 rounded-md">
+        <div className="bg-[#FFFDF9] rounded-[28px] p-5 sm:p-6 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
+          <div className="flex items-center justify-between text-[#78716C] mb-2">
+            <Gift className="w-5 h-5 text-[#5B6F00]" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-[#F1F5DC] text-[#5B6F00] px-2 py-0.5 rounded-full border border-[#D9E2B3]">
               Premios
             </span>
           </div>
-          <p className="text-2xl font-black text-neutral-950">{totalRewardsRedeemed}</p>
-          <p className="text-xs text-neutral-500 mt-1">Beneficios Canjeados</p>
+          <p className="text-3xl font-serif font-normal text-[#1C1917]">{totalRewardsRedeemed}</p>
+          <p className="text-xs text-[#78716C] mt-1">Beneficios Canjeados</p>
         </div>
 
-        <div className="bg-white rounded-3xl p-5 border border-neutral-200 shadow-xs">
-          <div className="flex items-center justify-between text-neutral-500 mb-2">
-            <TrendingUp className="w-5 h-5 text-neutral-900" />
-            <span className="text-[10px] font-bold bg-neutral-100 text-neutral-800 px-2 py-0.5 rounded-md">
+        <div className="bg-[#FFFDF9] rounded-[28px] p-5 sm:p-6 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
+          <div className="flex items-center justify-between text-[#78716C] mb-2">
+            <TrendingUp className="w-5 h-5 text-[#5B6F00]" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-[#F1F5DC] text-[#5B6F00] px-2 py-0.5 rounded-full border border-[#D9E2B3]">
               Retención
             </span>
           </div>
-          <p className="text-2xl font-black text-neutral-950">{retentionRate}%</p>
-          <p className="text-xs text-neutral-500 mt-1">Clientes Activos</p>
+          <p className="text-3xl font-serif font-normal text-[#1C1917]">{retentionRate}%</p>
+          <p className="text-xs text-[#78716C] mt-1">Clientes Frecuentes</p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex bg-neutral-100 p-1.5 rounded-2xl border border-neutral-200">
+      {/* Tabs: Warm Paper Segmented Pills */}
+      <div className="flex bg-[#FAF7F2] p-1.5 rounded-full border border-[#EAE4D5]">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex-1 py-2.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
             activeTab === 'overview'
-              ? 'bg-white text-neutral-950 shadow-xs'
-              : 'text-neutral-500 hover:text-neutral-900'
+              ? 'bg-[#5B6F00] text-white shadow-xs font-bold'
+              : 'text-[#57534E] hover:text-[#1C1917]'
           }`}
         >
           Directorio de Clientes ({students.length})
@@ -238,104 +241,110 @@ export function AdminDashboard() {
 
         <button
           onClick={() => setActiveTab('counter_qr')}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex-1 py-2.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
             activeTab === 'counter_qr'
-              ? 'bg-white text-neutral-950 shadow-xs'
-              : 'text-neutral-500 hover:text-neutral-900'
+              ? 'bg-[#5B6F00] text-white shadow-xs font-bold'
+              : 'text-[#57534E] hover:text-[#1C1917]'
           }`}
         >
-          QR & Cartel para Mostrador
+          QR & Cartel de Mostrador
         </button>
 
         <button
           onClick={() => setActiveTab('settings')}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex-1 py-2.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
             activeTab === 'settings'
-              ? 'bg-white text-neutral-950 shadow-xs'
-              : 'text-neutral-500 hover:text-neutral-900'
+              ? 'bg-[#5B6F00] text-white shadow-xs font-bold'
+              : 'text-[#57534E] hover:text-[#1C1917]'
           }`}
         >
           Reglas del Programa & Marca
         </button>
       </div>
 
-      {/* Tab: Directory of Students */}
+      {/* Tab 1: Directory of Students */}
       {activeTab === 'overview' && (
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="bg-[#FFFDF9] rounded-[32px] border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)] overflow-hidden">
+          <div className="p-6 border-b border-[#EAE4D5] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-bold text-neutral-950">Clientes Inscritos ({filteredStudents.length})</h3>
-              <p className="text-xs text-neutral-500">Supervisa sellos, revisa tarjetas o elimina clientes del sistema</p>
+              <h3 className="text-base font-serif font-normal text-[#1C1917]">
+                Clientes Inscritos ({filteredStudents.length})
+              </h3>
+              <p className="text-xs text-[#78716C]">
+                Supervisa sellos, revisa tarjetas o elimina clientes del sistema
+              </p>
             </div>
 
             {/* Search input */}
-            <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-3" />
+            <div className="relative w-full sm:w-72">
+              <Search className="w-3.5 h-3.5 text-[#78716C] absolute left-3.5 top-3" />
               <input
                 type="text"
-                placeholder="Buscar por nombre o celular..."
+                placeholder="Buscar por nombre, teléfono o ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-xs rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 focus:outline-hidden focus:bg-white focus:border-neutral-950"
+                className="w-full pl-9 pr-4 py-2 text-xs rounded-full bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] placeholder:text-[#A89F91] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
               />
             </div>
           </div>
 
           <div className="overflow-x-auto">
             {filteredStudents.length === 0 ? (
-              <div className="p-8 text-center text-neutral-500 text-xs">
+              <div className="p-12 text-center text-[#78716C] text-xs">
                 No se encontraron clientes registrados con esa búsqueda.
               </div>
             ) : (
               <table className="w-full text-left text-xs">
-                <thead className="bg-neutral-50 text-neutral-700 uppercase font-semibold text-[10px] tracking-wider border-b border-neutral-200">
+                <thead className="bg-[#FAF7F2] text-[#78716C] uppercase font-bold text-[10px] tracking-wider border-b border-[#EAE4D5]">
                   <tr>
-                    <th className="py-3 px-4">Cliente</th>
-                    <th className="py-3 px-4">Contacto</th>
-                    <th className="py-3 px-4">Progreso de Sellos</th>
-                    <th className="py-3 px-4">Premios Canjeados</th>
-                    <th className="py-3 px-4">Última Visita</th>
-                    <th className="py-3 px-4 text-right">Acciones</th>
+                    <th className="py-3 px-5">Cliente</th>
+                    <th className="py-3 px-5">Contacto</th>
+                    <th className="py-3 px-5">Progreso de Sellos</th>
+                    <th className="py-3 px-5">Premios Canjeados</th>
+                    <th className="py-3 px-5">Última Visita</th>
+                    <th className="py-3 px-5 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-200">
+                <tbody className="divide-y divide-[#EAE4D5]">
                   {filteredStudents.map((s) => {
                     const isReady = s.stamps >= config.totalStampsRequired;
                     return (
-                      <tr key={s.id} className="hover:bg-neutral-50/70 transition-colors">
-                        <td className="py-3.5 px-4">
-                          <div className="font-bold text-neutral-950">{s.name}</div>
-                          <span className="text-[11px] text-neutral-400 font-mono">ID: {s.token}</span>
+                      <tr key={s.id} className="hover:bg-[#FAF7F2]/60 transition-colors">
+                        <td className="py-4 px-5">
+                          <div className="font-semibold text-[#1C1917]">{s.name}</div>
+                          <span className="text-[11px] text-[#78716C] font-mono">ID: {s.token}</span>
                         </td>
-                        <td className="py-3.5 px-4 text-neutral-700">
-                          <div>{s.phone}</div>
-                          {s.email && <div className="text-[11px] text-neutral-400">{s.email}</div>}
+                        <td className="py-4 px-5 text-[#57534E]">
+                          <div className="font-mono text-xs">{s.phone}</div>
+                          {s.email && <div className="text-[11px] text-[#78716C]">{s.email}</div>}
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-4 px-5">
                           <span
-                            className={`inline-flex items-center gap-1 font-bold px-2.5 py-1 rounded-full text-xs ${
+                            className={`inline-flex items-center gap-1.5 font-bold px-3 py-1 rounded-full text-xs ${
                               isReady
-                                ? 'bg-neutral-950 text-white shadow-xs'
-                                : 'bg-neutral-100 text-neutral-800 border border-neutral-200'
+                                ? 'bg-[#5B6F00] text-white shadow-xs'
+                                : 'bg-[#F1F5DC] text-[#5B6F00] border border-[#D9E2B3]'
                             }`}
                           >
                             {isReady ? '🎁 ' : '✦ '}
                             {s.stamps} / {config.totalStampsRequired} sellos
                           </span>
                         </td>
-                        <td className="py-3.5 px-4">
-                          <span className="font-semibold text-neutral-900">{s.totalCompletedCycles} ciclo(s)</span>
+                        <td className="py-4 px-5">
+                          <span className="font-serif font-normal text-sm text-[#1C1917]">
+                            {s.totalCompletedCycles} ciclo(s)
+                          </span>
                         </td>
-                        <td className="py-3.5 px-4 text-neutral-600">
+                        <td className="py-4 px-5 text-[#78716C]">
                           {s.lastVisitAt
                             ? new Date(s.lastVisitAt).toLocaleDateString('es-CO')
                             : 'Sin visitas aún'}
                         </td>
-                        <td className="py-3.5 px-4 text-right space-x-2">
+                        <td className="py-4 px-5 text-right space-x-2">
                           <Link
                             href={`/card/${s.token}`}
                             target="_blank"
-                            className="inline-flex items-center gap-1 text-neutral-950 hover:underline font-semibold"
+                            className="inline-flex items-center gap-1 text-[#5B6F00] hover:text-[#4D5E00] font-semibold hover:underline"
                           >
                             Ver Pase <ExternalLink className="w-3 h-3" />
                           </Link>
@@ -343,7 +352,7 @@ export function AdminDashboard() {
                           <button
                             onClick={() => handleDeleteStudent(s.token, s.name)}
                             disabled={deleteLoading === s.token}
-                            className="inline-flex items-center gap-1 text-rose-600 hover:text-rose-800 font-semibold p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[#C26748] hover:text-[#A34F33] font-semibold p-1.5 rounded-full hover:bg-[#FBF4EE] transition-colors cursor-pointer"
                             title="Eliminar cliente"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -359,16 +368,18 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* Tab: Counter QR Poster */}
+      {/* Tab 2: Counter QR Poster */}
       {activeTab === 'counter_qr' && (
-        <div className="bg-white rounded-3xl p-8 border border-neutral-200 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-neutral-200">
+        <div className="bg-[#FFFDF9] rounded-[32px] p-6 sm:p-8 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)] space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#EAE4D5]">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 bg-neutral-100 px-3 py-1 rounded-full">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6F00] bg-[#F1F5DC] px-3 py-1 rounded-full border border-[#D9E2B3]">
                 Material de Mostrador / Recepción
               </span>
-              <h2 className="text-xl font-bold text-neutral-950 mt-2">Cartel de Auto-Registro en Mostrador</h2>
-              <p className="text-xs text-neutral-500 mt-1 max-w-xl">
+              <h2 className="text-xl font-serif font-normal text-[#1C1917] mt-2">
+                Cartel de Auto-Registro en Mostrador
+              </h2>
+              <p className="text-xs text-[#57534E] mt-1 max-w-xl">
                 Coloca este código QR en un cartel o soporte de acrílico en tu caja. Los clientes lo escanean mientras esperan y obtienen su pase digital en 10 segundos sin que tengas que teclear nada.
               </p>
             </div>
@@ -376,42 +387,43 @@ export function AdminDashboard() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleDownloadQrPng}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-neutral-950 text-white text-xs font-bold shadow-md hover:bg-black active:scale-95 transition-all cursor-pointer"
+                className="flex items-center gap-2 h-12 px-6 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-[#B2C248]" />
                 <span>Descargar QR (Imagen PNG)</span>
               </button>
             </div>
           </div>
 
           {/* Printable Preview Card */}
-          <div className="max-w-md mx-auto bg-neutral-50 p-8 rounded-3xl border border-neutral-200 text-center shadow-lg">
-            <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest block mb-2">
+          <div className="max-w-md mx-auto bg-[#FAF7F2] p-8 rounded-[32px] border border-[#EAE4D5] text-center shadow-lg">
+            <span className="text-xs font-bold text-[#78716C] uppercase tracking-widest block mb-2 font-mono">
               {config.studioName}
             </span>
-            <h3 className="text-xl font-black text-neutral-950 tracking-tight">
+            <h3 className="text-2xl font-serif font-normal text-[#1C1917] tracking-tight">
               ¡Gana tu recompensa exclusiva!
             </h3>
-            <p className="text-xs text-neutral-600 mt-1 mb-5">
+            <p className="text-xs text-[#57534E] mt-1 mb-5">
               Escanea con la cámara de tu celular y obtén tu tarjeta digital de sellos en 5 segundos.
             </p>
 
-            <div className="p-6 bg-white rounded-3xl border border-neutral-200 shadow-inner inline-block my-2">
+            <div className="p-6 bg-white rounded-3xl border border-[#EAE4D5] shadow-xs inline-block my-2">
               <QRCodeSVG
                 id="counter-qr-svg"
                 value={joinUrl}
                 size={220}
                 level="H"
                 includeMargin={false}
+                fgColor="#1C1917"
                 className="mx-auto"
               />
             </div>
 
-            <div className="mt-4 pt-4 border-t border-neutral-200 space-y-1">
-              <p className="text-xs font-semibold text-neutral-900">
+            <div className="mt-4 pt-4 border-t border-[#EAE4D5] space-y-1">
+              <p className="text-xs font-serif font-normal text-[#1C1917]">
                 🎁 {config.currentRewardTitle}
               </p>
-              <p className="text-[11px] text-neutral-500">
+              <p className="text-[11px] text-[#78716C]">
                 Completa tus {config.totalStampsRequired} sellos y canjea tu beneficio
               </p>
             </div>
@@ -419,37 +431,41 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* Tab: Settings */}
+      {/* Tab 3: Settings */}
       {activeTab === 'settings' && (
-        <div className="bg-white rounded-3xl p-8 border border-neutral-200 shadow-sm">
+        <div className="bg-[#FFFDF9] rounded-[32px] p-6 sm:p-8 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
           <form onSubmit={handleSaveConfig} className="space-y-6 max-w-2xl">
             {saveSuccess && (
-              <div className="p-4 rounded-xl bg-neutral-950 text-white text-xs font-semibold flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-400" />
+              <div className="p-4 rounded-2xl bg-[#F1F5DC] text-[#5B6F00] border border-[#D9E2B3] text-xs font-bold flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-[#5B6F00]" />
                 <span>Configuración actualizada con éxito. Todos los clientes verán los cambios.</span>
               </div>
             )}
 
             <div>
-              <h3 className="text-base font-bold text-neutral-950">Ajustes del Programa de Fidelización</h3>
-              <p className="text-xs text-neutral-500 mt-0.5">
+              <h3 className="text-lg font-serif font-normal text-[#1C1917]">
+                Ajustes del Programa de Fidelización
+              </h3>
+              <p className="text-xs text-[#78716C] mt-0.5">
                 Modifica la meta de visitas y las recompensas sin necesidad de tocar código
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-800 mb-1">Nombre del Comercio / Marca</label>
+                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                  Nombre del Comercio / Marca
+                </label>
                 <input
                   type="text"
                   value={formData.studioName}
                   onChange={(e) => setFormData({ ...formData, studioName: e.target.value })}
-                  className="w-full text-xs p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 focus:outline-hidden focus:border-neutral-950"
+                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-800 mb-1">
+                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
                   Meta de Sellos para Recompensa
                 </label>
                 <input
@@ -458,53 +474,57 @@ export function AdminDashboard() {
                   max="20"
                   value={formData.totalStampsRequired}
                   onChange={(e) => setFormData({ ...formData, totalStampsRequired: Number(e.target.value) })}
-                  className="w-full text-xs p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 font-bold focus:outline-hidden focus:border-neutral-950"
+                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] font-bold focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-neutral-800 mb-1">
+              <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
                 Título de la Recompensa Activa
               </label>
               <input
                 type="text"
                 value={formData.currentRewardTitle}
                 onChange={(e) => setFormData({ ...formData, currentRewardTitle: e.target.value })}
-                className="w-full text-xs p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 focus:outline-hidden focus:border-neutral-950"
+                className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-neutral-800 mb-1">
+              <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
                 Descripción / Condiciones del Premio
               </label>
               <textarea
                 rows={3}
                 value={formData.currentRewardDescription}
                 onChange={(e) => setFormData({ ...formData, currentRewardDescription: e.target.value })}
-                className="w-full text-xs p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 focus:outline-hidden focus:border-neutral-950"
+                className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-neutral-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-[#EAE4D5]">
               <div>
-                <label className="block text-xs font-bold text-neutral-800 mb-1">Nombre Red Wi-Fi (SSID)</label>
+                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                  Nombre Red Wi-Fi (SSID)
+                </label>
                 <input
                   type="text"
                   value={formData.wifiSsid}
                   onChange={(e) => setFormData({ ...formData, wifiSsid: e.target.value })}
-                  className="w-full text-xs p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 focus:outline-hidden focus:border-neutral-950"
+                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-800 mb-1">Contraseña del Wi-Fi</label>
+                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                  Contraseña del Wi-Fi
+                </label>
                 <input
                   type="text"
                   value={formData.wifiPassword}
                   onChange={(e) => setFormData({ ...formData, wifiPassword: e.target.value })}
-                  className="w-full text-xs p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 font-mono focus:outline-hidden focus:border-neutral-950"
+                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] font-mono focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                 />
               </div>
             </div>
@@ -512,9 +532,9 @@ export function AdminDashboard() {
             <div className="flex items-center justify-between pt-4">
               <button
                 type="submit"
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-neutral-950 hover:bg-black text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer"
+                className="flex items-center gap-2 h-12 px-7 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-4 h-4 text-[#B2C248]" />
                 <span>Guardar Cambios</span>
               </button>
 
@@ -526,7 +546,7 @@ export function AdminDashboard() {
                     alert('Datos restablecidos.');
                   }
                 }}
-                className="flex items-center gap-1.5 text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer"
+                className="flex items-center gap-1.5 text-xs text-[#C26748] hover:text-[#A34F33] font-semibold cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Restablecer Datos Iniciales</span>
@@ -538,68 +558,79 @@ export function AdminDashboard() {
 
       {/* Modal: Add New Student */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-neutral-200">
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-200">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FFFDF9] rounded-[32px] p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#EAE4D5]">
+            <div className="flex items-center justify-between pb-4 border-b border-[#EAE4D5]">
               <div className="flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-neutral-950" />
-                <h3 className="text-base font-bold text-neutral-950">Inscribir Nuevo Alumno</h3>
+                <div className="w-9 h-9 rounded-2xl bg-[#F1F5DC] text-[#5B6F00] flex items-center justify-center border border-[#D9E2B3]">
+                  <UserPlus className="w-5 h-5 text-[#5B6F00]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-serif font-normal text-[#1C1917]">Inscribir Nuevo Alumno</h3>
+                  <p className="text-xs text-[#78716C]">Genera su pase digital de inmediato</p>
+                </div>
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-neutral-400 hover:text-neutral-950 cursor-pointer"
+                className="p-2 rounded-full hover:bg-[#FAF7F2] text-[#78716C] hover:text-[#1C1917] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateStudent} className="space-y-4 mt-4">
+            <form onSubmit={handleCreateStudent} className="space-y-4 mt-5">
               <div>
-                <label className="block text-xs font-bold text-neutral-800 mb-1">Nombre Completo *</label>
+                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1">
+                  Nombre Completo *
+                </label>
                 <input
                   type="text"
                   required
                   placeholder="Ej: Laura Gómez"
                   value={newStudentName}
                   onChange={(e) => setNewStudentName(e.target.value)}
-                  className="w-full text-xs p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 focus:outline-hidden focus:bg-white focus:border-neutral-950"
+                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-800 mb-1">WhatsApp / Teléfono *</label>
+                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1">
+                  WhatsApp / Teléfono *
+                </label>
                 <input
                   type="tel"
                   required
                   placeholder="Ej: +57 310 123 4567"
                   value={newStudentPhone}
                   onChange={(e) => setNewStudentPhone(e.target.value)}
-                  className="w-full text-xs p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 focus:outline-hidden focus:bg-white focus:border-neutral-950"
+                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] font-mono focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-800 mb-1">Correo Electrónico (Opcional)</label>
+                <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1">
+                  Correo Electrónico (Opcional)
+                </label>
                 <input
                   type="email"
                   placeholder="Ej: laura@gmail.com"
                   value={newStudentEmail}
                   onChange={(e) => setNewStudentEmail(e.target.value)}
-                  className="w-full text-xs p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-950 focus:outline-hidden focus:bg-white focus:border-neutral-950"
+                  className="w-full text-xs p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2">
+              <div className="pt-3 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-neutral-600 hover:text-neutral-950 cursor-pointer"
+                  className="px-5 py-2.5 rounded-full text-xs font-semibold text-[#57534E] hover:text-[#1C1917] cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-neutral-950 text-white text-xs font-bold shadow-md hover:bg-black active:scale-95 transition-all cursor-pointer"
+                  className="px-6 py-2.5 rounded-full bg-[#5B6F00] text-white text-xs font-bold shadow-md hover:bg-[#4D5E00] active:scale-95 transition-all cursor-pointer"
                 >
                   Crear Tarjeta Digital
                 </button>

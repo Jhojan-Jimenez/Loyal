@@ -78,13 +78,13 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
           </p>
           <div className="flex flex-col gap-2">
             <Link
-              href="/style/fusion"
+              href="/"
               className="py-3 rounded-full bg-[#5B6F00] text-white text-xs font-bold hover:bg-[#4D5E00] transition-all shadow-xs"
             >
               Crear una Nueva Tarjeta
             </Link>
             <Link
-              href="/style/fusion/card/camila-restrepo-yoga"
+              href="/card/camila-restrepo-yoga"
               className="py-3 rounded-full bg-white text-[#1C1917] text-xs font-bold hover:bg-[#FAF7F2] transition-all border border-[#EAE4D5]"
             >
               Ver Pase Demo de Camila
@@ -160,7 +160,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
       <header className="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EAE4D5] px-6 sm:px-10 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href="/style/fusion"
+            href="/"
             className="w-9 h-9 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] flex items-center justify-center text-[#1C1917] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -250,7 +250,7 @@ export function FusionStudentCardView({ token }: FusionStudentCardViewProps) {
               <div className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] flex flex-col items-center mb-6">
                 <div className="p-3.5 bg-white rounded-2xl border border-[#EAE4D5] shadow-xs relative">
                   <QRCodeSVG
-                    value={`https://loyal.jhojan.cloud/style/fusion/card/${student.token}?totp=${totp}`}
+                    value={`https://loyal.jhojan.cloud/card/${student.token}?totp=${totp}`}
                     size={180}
                     level="H"
                     fgColor="#1C1917"

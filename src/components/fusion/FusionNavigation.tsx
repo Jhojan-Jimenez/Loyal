@@ -15,7 +15,7 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
     <header className="fixed top-0 left-0 right-0 z-[100] h-20 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EAE4D5]/80 transition-all font-sans">
       <div className="max-w-[1440px] mx-auto h-full px-6 sm:px-12 lg:px-20 flex items-center justify-between">
         {/* Left: Brand Symbol & Wordmark */}
-        <Link href="/style/fusion" className="flex items-center gap-2.5 group">
+        <Link href="/" className="flex items-center gap-2.5 group">
           {/* Artisanal Olive Seal Stamp */}
           <div className="w-10 h-10 rounded-2xl bg-[#5B6F00] text-white flex items-center justify-center transition-transform duration-200 group-hover:scale-105 shadow-[0_2px_8px_rgba(91,111,0,0.25)]">
             <svg
@@ -36,7 +36,7 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
               loyal
             </span>
             <span className="text-[11px] font-mono uppercase tracking-wider text-[#5B6F00] font-bold px-1.5 py-0.5 rounded-md bg-[#F1F5DC] border border-[#D9E2B3] hidden sm:inline">
-              editorial
+              saas
             </span>
           </div>
         </Link>
@@ -76,13 +76,21 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
         </nav>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Link
-            href="/style/fusion/scanner"
+            href="/scanner"
             className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-colors"
           >
             <QrCode className="w-4 h-4 text-[#5B6F00]" />
             <span>Escáner Mostrador</span>
+          </Link>
+
+          <Link
+            href="/admin"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-[#F3EFE6] text-xs font-semibold text-[#57534E] hover:text-[#1C1917] transition-colors"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-[#5B6F00]" />
+            <span>Admin</span>
           </Link>
 
           {/* Primary Action Button (Granola Olive Capsule) */}
@@ -152,7 +160,7 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
 
           <div className="pt-4 border-t border-[#EAE4D5] flex flex-col gap-2.5">
             <Link
-              href="/style/fusion/scanner"
+              href="/scanner"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F5F1E8] text-[#1C1917] text-sm font-medium"
             >
@@ -170,9 +178,21 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
             >
               <div className="flex items-center gap-2.5">
                 <ShieldCheck className="w-4 h-4 text-[#5B6F00]" />
-                <span>Panel de Administración</span>
+                <span>Panel Admin Comercio</span>
               </div>
               <ArrowRight className="w-4 h-4 text-[#78716C]" />
+            </Link>
+
+            <Link
+              href="/superadmin"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1917] text-[#B2C248] text-sm font-semibold"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-[#B2C248] animate-pulse" />
+                <span>Consola SuperAdmin (SaaS)</span>
+              </div>
+              <ArrowRight className="w-4 h-4 text-[#B2C248]" />
             </Link>
           </div>
         </div>

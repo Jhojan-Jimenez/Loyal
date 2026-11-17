@@ -1,24 +1,28 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Libre_Baskerville, DM_Sans } from 'next/font/google';
 import './globals.css';
 import { LoyalProvider } from '@/context/LoyalContext';
 import { Navigation } from '@/components/Navigation';
-import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Suspense } from 'react';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const libreBaskerville = Libre_Baskerville({
+  weight: ['400', '700'],
   subsets: ['latin'],
+  variable: '--font-libre-baskerville',
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const dmSans = DM_Sans({
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: 'Loyal · Tarjetas de Sellos Digitales & Pases para Negocios',
-  description: 'Plataforma SaaS de fidelización digital para comercios. Pases de sellos en Google Wallet, escáner QR en mostrador y recompensas de recurrencia sin apps pesadas.',
+  description:
+    'Plataforma SaaS de fidelización digital para comercios. Pases de sellos en Google Wallet, escáner QR en mostrador y recompensas de recurrencia sin apps pesadas.',
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
@@ -27,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#09090B',
+  themeColor: '#5B6F00',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -43,15 +47,14 @@ export default function RootLayout({
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${libreBaskerville.variable} ${dmSans.variable} font-sans h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white">
+      <body className="min-h-full flex flex-col bg-[#FDFBF7] text-[#1C1917] font-sans selection:bg-[#5B6F00] selection:text-white">
         <LoyalProvider>
-          <Suspense fallback={<div className="h-20 border-b border-neutral-200 bg-white" />}>
+          <Suspense fallback={<div className="h-20 border-b border-[#EAE4D5] bg-[#FDFBF7]" />}>
             <Navigation />
           </Suspense>
           <main className="flex-1">{children}</main>
-          <ThemeSwitcher />
         </LoyalProvider>
       </body>
     </html>

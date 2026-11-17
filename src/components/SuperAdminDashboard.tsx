@@ -122,7 +122,10 @@ export function SuperAdminDashboard() {
   // Create new tenant
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim() || !formOwnerName.trim() || !formOwnerPhone.trim()) return;
+    if (!formName.trim() || !formOwnerName.trim() || !formOwnerPhone.trim()) {
+      alert('Por favor completa los campos requeridos');
+      return;
+    }
 
     setActionLoading('create');
     try {
@@ -190,118 +193,128 @@ export function SuperAdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0C] text-neutral-100 font-sans p-4 sm:p-8">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#1C1917] font-sans p-4 sm:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Top Navbar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-neutral-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold tracking-widest text-emerald-400 uppercase">
-                  LOYAL SAAS // MASTER CONSOLE
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-800 text-neutral-300 border border-neutral-700">
-                  SUPERADMIN
-                </span>
+        {/* Top Navbar: Warm Dark Ink Hero with Granola Olive Accents */}
+        <div className="relative overflow-hidden rounded-[32px] bg-[#1C1917] p-6 sm:p-8 text-white shadow-xl border border-[#292524]">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-[#292524] border border-[#3E3832] flex items-center justify-center text-[#B2C248] shadow-inner shrink-0">
+                <ShieldCheck className="w-6 h-6 text-[#B2C248]" />
               </div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-0.5">
-                Panel Maestro de Empresas & Suscripciones
-              </h1>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono font-bold tracking-widest text-[#B2C248] uppercase">
+                    LOYAL SAAS // MASTER CONSOLE
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#292524] text-white/90 border border-[#3E3832]">
+                    SUPERADMIN
+                  </span>
+                </div>
+                <h1 className="text-xl sm:text-2xl font-serif font-normal tracking-tight text-white mt-1">
+                  Panel Maestro de Empresas & Suscripciones
+                </h1>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={fetchTenants}
-              className="p-2.5 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-neutral-300 transition-colors cursor-pointer"
-              title="Refrescar datos"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                onClick={fetchTenants}
+                className="w-11 h-11 rounded-full bg-[#292524] border border-[#3E3832] hover:bg-[#3E3832] text-white/90 flex items-center justify-center transition-colors cursor-pointer"
+                title="Refrescar datos"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
 
-            <Link
-              href="/"
-              className="px-4 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-xs font-semibold text-neutral-300 hover:text-white hover:bg-neutral-800 transition-all"
-            >
-              Ver App Pública
-            </Link>
+              <Link
+                href="/"
+                className="h-11 px-5 rounded-full bg-[#292524] border border-[#3E3832] text-xs font-semibold text-white/90 hover:bg-[#3E3832] transition-all flex items-center"
+              >
+                Ver App Pública
+              </Link>
 
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span>+ Alta Nueva Empresa</span>
-            </button>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 h-11 px-6 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[3] text-[#B2C248]" />
+                <span>+ Alta Nueva Empresa</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Global SaaS KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* MRR */}
-          <div className="bg-neutral-900/60 rounded-3xl p-5 border border-neutral-800 backdrop-blur-md relative overflow-hidden">
-            <div className="flex items-center justify-between text-neutral-400 mb-2">
+          <div className="bg-[#FFFDF9] rounded-[28px] p-5 sm:p-6 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)] relative overflow-hidden">
+            <div className="flex items-center justify-between text-[#78716C] mb-2">
               <span className="text-xs font-medium">Facturación Mensual (MRR)</span>
-              <DollarSign className="w-4 h-4 text-emerald-400" />
+              <DollarSign className="w-4 h-4 text-[#5B6F00]" />
             </div>
-            <p className="text-2xl font-black text-white tracking-tight">{formatCOP(totalMrrCop)}</p>
-            <p className="text-[11px] text-emerald-400/90 mt-1 flex items-center gap-1">
-              <Zap className="w-3 h-3 fill-emerald-400" />
+            <p className="text-2xl sm:text-3xl font-serif font-normal text-[#1C1917] tracking-tight">
+              {formatCOP(totalMrrCop)}
+            </p>
+            <p className="text-[11px] text-[#5B6F00] font-semibold mt-1 flex items-center gap-1">
+              <Zap className="w-3 h-3 fill-[#5B6F00]" />
               <span>{activeTenants.length} empresas facturando activo</span>
             </p>
           </div>
 
           {/* Tenants Count */}
-          <div className="bg-neutral-900/60 rounded-3xl p-5 border border-neutral-800 backdrop-blur-md">
-            <div className="flex items-center justify-between text-neutral-400 mb-2">
+          <div className="bg-[#FFFDF9] rounded-[28px] p-5 sm:p-6 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
+            <div className="flex items-center justify-between text-[#78716C] mb-2">
               <span className="text-xs font-medium">Empresas Clientes</span>
-              <Building2 className="w-4 h-4 text-neutral-300" />
+              <Building2 className="w-4 h-4 text-[#5B6F00]" />
             </div>
-            <p className="text-2xl font-black text-white tracking-tight">{tenants.length}</p>
-            <p className="text-[11px] text-neutral-400 mt-1">
+            <p className="text-2xl sm:text-3xl font-serif font-normal text-[#1C1917] tracking-tight">
+              {tenants.length}
+            </p>
+            <p className="text-[11px] text-[#78716C] mt-1">
               {activeTenants.length} activas · {trialTenants.length} en prueba · {suspendedTenants.length} pausadas
             </p>
           </div>
 
           {/* Total End-users */}
-          <div className="bg-neutral-900/60 rounded-3xl p-5 border border-neutral-800 backdrop-blur-md">
-            <div className="flex items-center justify-between text-neutral-400 mb-2">
+          <div className="bg-[#FFFDF9] rounded-[28px] p-5 sm:p-6 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
+            <div className="flex items-center justify-between text-[#78716C] mb-2">
               <span className="text-xs font-medium">Usuarios Finales (Red)</span>
-              <Users className="w-4 h-4 text-neutral-300" />
+              <Users className="w-4 h-4 text-[#5B6F00]" />
             </div>
-            <p className="text-2xl font-black text-white tracking-tight">{totalStudentsInSaaS}</p>
-            <p className="text-[11px] text-neutral-400 mt-1">Tarjetas digitales activas</p>
+            <p className="text-2xl sm:text-3xl font-serif font-normal text-[#1C1917] tracking-tight">
+              {totalStudentsInSaaS}
+            </p>
+            <p className="text-[11px] text-[#78716C] mt-1">Tarjetas digitales activas</p>
           </div>
 
           {/* Total Stamps */}
-          <div className="bg-neutral-900/60 rounded-3xl p-5 border border-neutral-800 backdrop-blur-md">
-            <div className="flex items-center justify-between text-neutral-400 mb-2">
+          <div className="bg-[#FFFDF9] rounded-[28px] p-5 sm:p-6 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
+            <div className="flex items-center justify-between text-[#78716C] mb-2">
               <span className="text-xs font-medium">Sellos del Mes</span>
-              <Sparkles className="w-4 h-4 text-neutral-300" />
+              <Sparkles className="w-4 h-4 text-[#5B6F00]" />
             </div>
-            <p className="text-2xl font-black text-white tracking-tight">{totalStampsInSaaS}</p>
-            <p className="text-[11px] text-neutral-400 mt-1">Visitas auditadas con QR</p>
+            <p className="text-2xl sm:text-3xl font-serif font-normal text-[#1C1917] tracking-tight">
+              {totalStampsInSaaS}
+            </p>
+            <p className="text-[11px] text-[#78716C] mt-1">Visitas auditadas con QR</p>
           </div>
         </div>
 
         {/* Search & Filter Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-neutral-900/40 p-3 rounded-2xl border border-neutral-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAF7F2] p-2.5 rounded-full border border-[#EAE4D5]">
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3" />
+            <Search className="w-3.5 h-3.5 text-[#78716C] absolute left-4 top-3" />
             <input
               type="text"
               placeholder="Buscar por nombre de negocio, slug o dueño..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-500 focus:outline-hidden focus:border-emerald-500/50"
+              className="w-full pl-10 pr-4 py-2 text-xs rounded-full bg-white border border-[#EAE4D5] text-[#1C1917] placeholder-[#A89F91] focus:outline-hidden focus:border-[#5B6F00]"
             />
           </div>
 
           {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto">
+          <div className="flex items-center gap-1.5 overflow-x-auto px-2">
             {(['all', 'active', 'trial', 'suspended'] as const).map((status) => {
               const label =
                 status === 'all'
@@ -316,10 +329,10 @@ export function SuperAdminDashboard() {
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     statusFilter === status
-                      ? 'bg-neutral-800 text-white border border-neutral-700'
-                      : 'text-neutral-400 hover:text-white'
+                      ? 'bg-[#5B6F00] text-white shadow-xs font-bold'
+                      : 'text-[#57534E] hover:text-[#1C1917]'
                   }`}
                 >
                   {label}
@@ -330,23 +343,23 @@ export function SuperAdminDashboard() {
         </div>
 
         {/* Businesses Table */}
-        <div className="bg-neutral-900/60 rounded-3xl border border-neutral-800 overflow-hidden shadow-2xl">
-          <div className="p-5 border-b border-neutral-800 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-emerald-400" />
+        <div className="bg-[#FFFDF9] rounded-[32px] border border-[#EAE4D5] overflow-hidden shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
+          <div className="p-6 border-b border-[#EAE4D5] flex items-center justify-between">
+            <h2 className="text-base font-serif font-normal text-[#1C1917] flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#5B6F00]" />
               <span>Empresas Registradas ({filteredTenants.length})</span>
             </h2>
-            <span className="text-xs text-neutral-400">Plataforma Multi-Tenant Activa</span>
+            <span className="text-xs text-[#78716C]">Plataforma Multi-Tenant Activa</span>
           </div>
 
           <div className="overflow-x-auto">
             {filteredTenants.length === 0 ? (
-              <div className="p-12 text-center text-neutral-500 text-xs">
+              <div className="p-12 text-center text-[#78716C] text-xs">
                 No hay comercios asociados que coincidan con la búsqueda.
               </div>
             ) : (
               <table className="w-full text-left text-xs">
-                <thead className="bg-neutral-950/80 text-neutral-400 uppercase font-bold text-[10px] tracking-wider border-b border-neutral-800">
+                <thead className="bg-[#FAF7F2] text-[#78716C] uppercase font-bold text-[10px] tracking-wider border-b border-[#EAE4D5]">
                   <tr>
                     <th className="py-3.5 px-5">Empresa / Comercio</th>
                     <th className="py-3.5 px-4">Contacto Dueño</th>
@@ -356,38 +369,38 @@ export function SuperAdminDashboard() {
                     <th className="py-3.5 px-5 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-800/60">
+                <tbody className="divide-y divide-[#EAE4D5]">
                   {filteredTenants.map((tenant) => {
                     return (
-                      <tr key={tenant.id} className="hover:bg-neutral-800/30 transition-colors">
+                      <tr key={tenant.id} className="hover:bg-[#FAF7F2]/60 transition-colors">
                         {/* Company Info */}
                         <td className="py-4 px-5">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center font-bold text-neutral-200 shrink-0">
+                            <div className="w-9 h-9 rounded-2xl bg-[#F1F5DC] border border-[#D9E2B3] flex items-center justify-center font-serif font-normal text-[#5B6F00] shrink-0 text-sm">
                               {tenant.name.substring(0, 2).toUpperCase()}
                             </div>
                             <div>
-                              <div className="font-bold text-white text-sm">{tenant.name}</div>
+                              <div className="font-semibold text-[#1C1917] text-sm">{tenant.name}</div>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[11px] font-mono text-emerald-400">/{tenant.slug}</span>
-                                <span className="text-neutral-500">·</span>
-                                <span className="text-[11px] text-neutral-400">{tenant.category}</span>
+                                <span className="text-[11px] font-mono text-[#5B6F00]">/{tenant.slug}</span>
+                                <span className="text-[#A89F91]">·</span>
+                                <span className="text-[11px] text-[#78716C]">{tenant.category}</span>
                               </div>
                             </div>
                           </div>
                         </td>
 
                         {/* Owner Contact */}
-                        <td className="py-4 px-4 text-neutral-300">
-                          <div className="font-medium text-white">{tenant.ownerName}</div>
-                          <div className="flex items-center gap-2 mt-1 text-[11px] text-neutral-400">
+                        <td className="py-4 px-4 text-[#57534E]">
+                          <div className="font-semibold text-[#1C1917]">{tenant.ownerName}</div>
+                          <div className="flex items-center gap-2 mt-1 text-[11px] text-[#78716C]">
                             <a
                               href={`https://wa.me/${tenant.ownerPhone.replace(/\D/g, '')}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1 text-emerald-400 hover:underline"
+                              className="inline-flex items-center gap-1 text-[#5B6F00] hover:underline"
                             >
-                              <Phone className="w-3 h-3" />
+                              <Phone className="w-3 h-3 text-[#5B6F00]" />
                               <span>{tenant.ownerPhone}</span>
                             </a>
                             {tenant.ownerEmail && (
@@ -402,17 +415,17 @@ export function SuperAdminDashboard() {
                         <td className="py-4 px-4">
                           <div className="space-y-1">
                             <span
-                              className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                              className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
                                 tenant.plan === 'enterprise'
-                                  ? 'bg-purple-950/80 text-purple-300 border border-purple-500/40'
+                                  ? 'bg-[#EAE4D5] text-[#1C1917] border border-[#D5D0C2]'
                                   : tenant.plan === 'pro'
-                                  ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40'
-                                  : 'bg-neutral-800 text-neutral-300 border border-neutral-700'
+                                  ? 'bg-[#F1F5DC] text-[#5B6F00] border border-[#D9E2B3]'
+                                  : 'bg-[#FAF7F2] text-[#78716C] border border-[#EAE4D5]'
                               }`}
                             >
                               Plan {tenant.plan}
                             </span>
-                            <div className="text-[11px] text-neutral-400 font-mono">
+                            <div className="text-[11px] text-[#78716C] font-mono">
                               {formatCOP(tenant.monthlyFeeCop)}/mes
                             </div>
                           </div>
@@ -421,10 +434,10 @@ export function SuperAdminDashboard() {
                         {/* Usage Metrics */}
                         <td className="py-4 px-4">
                           <div className="space-y-0.5">
-                            <div className="font-semibold text-white">
+                            <div className="font-semibold text-[#1C1917]">
                               {tenant.totalStudentsCount ?? 0} clientes
                             </div>
-                            <div className="text-[11px] text-neutral-400">
+                            <div className="text-[11px] text-[#78716C]">
                               {tenant.totalStampsCount ?? 0} sellos estampados
                             </div>
                           </div>
@@ -435,19 +448,19 @@ export function SuperAdminDashboard() {
                           <span
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${
                               tenant.status === 'active'
-                                ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30'
+                                ? 'bg-[#F1F5DC] text-[#5B6F00] border border-[#D9E2B3]'
                                 : tenant.status === 'trial'
-                                ? 'bg-amber-950/80 text-amber-300 border border-amber-500/30'
-                                : 'bg-rose-950/80 text-rose-300 border border-rose-500/30'
+                                ? 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]'
+                                : 'bg-[#FEE2E2] text-[#B91C1C] border border-[#FECDD3]'
                             }`}
                           >
                             <span
                               className={`w-1.5 h-1.5 rounded-full ${
                                 tenant.status === 'active'
-                                  ? 'bg-emerald-400 animate-pulse'
+                                  ? 'bg-[#5B6F00] animate-pulse'
                                   : tenant.status === 'trial'
-                                  ? 'bg-amber-400'
-                                  : 'bg-rose-400'
+                                  ? 'bg-[#B45309]'
+                                  : 'bg-[#B91C1C]'
                               }`}
                             />
                             <span>
@@ -466,21 +479,21 @@ export function SuperAdminDashboard() {
                             {/* Impersonate button (Entrar como comercio) */}
                             <Link
                               href="/admin"
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold transition-colors"
+                              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-xs font-semibold transition-colors"
                               title="Entrar a administrar este comercio"
                             >
                               <span>Entrar</span>
-                              <ExternalLink className="w-3 h-3" />
+                              <ExternalLink className="w-3 h-3 text-[#78716C]" />
                             </Link>
 
                             {/* Suspend / Resume toggle button */}
                             <button
                               onClick={() => handleToggleStatus(tenant.slug, tenant.status)}
                               disabled={actionLoading === tenant.slug}
-                              className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                              className={`p-2 rounded-full transition-colors cursor-pointer ${
                                 tenant.status === 'active'
-                                  ? 'bg-amber-950/40 border border-amber-800/60 text-amber-300 hover:bg-amber-900/60'
-                                  : 'bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 hover:bg-emerald-900/60'
+                                  ? 'bg-[#FEF3C7] text-[#B45309] hover:bg-[#FDE68A] border border-[#FDE68A]'
+                                  : 'bg-[#F1F5DC] text-[#5B6F00] hover:bg-[#E5EACD] border border-[#D9E2B3]'
                               }`}
                               title={tenant.status === 'active' ? 'Pausar servicio (por no pago)' : 'Reactivar servicio'}
                             >
@@ -491,7 +504,7 @@ export function SuperAdminDashboard() {
                             <button
                               onClick={() => handleDeleteTenant(tenant.slug, tenant.name)}
                               disabled={actionLoading === tenant.slug}
-                              className="p-2 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-400 hover:bg-rose-900/60 transition-colors cursor-pointer"
+                              className="p-2 rounded-full bg-[#FBF4EE] border border-[#F1DED1] text-[#C26748] hover:bg-[#F8EAE1] transition-colors cursor-pointer"
                               title="Eliminar comercio definitivamente"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -510,16 +523,21 @@ export function SuperAdminDashboard() {
 
       {/* Modal: Create New Tenant Business */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-neutral-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-neutral-800 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-800">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-base font-bold text-white">Dar de Alta Nueva Empresa Cliente</h3>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FFFDF9] rounded-[32px] p-6 sm:p-8 max-w-lg w-full border border-[#EAE4D5] shadow-2xl">
+            <div className="flex items-center justify-between pb-4 border-b border-[#EAE4D5]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-[#F1F5DC] border border-[#D9E2B3] flex items-center justify-center text-[#5B6F00]">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-serif font-normal text-[#1C1917]">Dar de Alta Nueva Empresa Cliente</h3>
+                  <p className="text-xs text-[#78716C]">Habilita un nuevo espacio SaaS multi-tenant</p>
+                </div>
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-neutral-400 hover:text-white cursor-pointer"
+                className="p-2 rounded-full hover:bg-[#FAF7F2] text-[#78716C] hover:text-[#1C1917] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -527,7 +545,9 @@ export function SuperAdminDashboard() {
 
             <form onSubmit={handleCreateTenant} className="space-y-4 mt-5 text-xs">
               <div>
-                <label className="block font-bold text-neutral-300 mb-1">Nombre Comercial de la Empresa *</label>
+                <label className="block font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                  Nombre Comercial de la Empresa *
+                </label>
                 <input
                   type="text"
                   required
@@ -544,29 +564,33 @@ export function SuperAdminDashboard() {
                       );
                     }
                   }}
-                  className="w-full p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-hidden focus:border-emerald-500"
+                  className="w-full p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-neutral-300 mb-1">Slug URL (Identificador) *</label>
+                  <label className="block font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                    Slug URL (Identificador) *
+                  </label>
                   <input
                     type="text"
                     required
                     placeholder="cafe-pergamino"
                     value={formSlug}
                     onChange={(e) => setFormSlug(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-emerald-400 font-mono focus:outline-hidden focus:border-emerald-500"
+                    className="w-full p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#5B6F00] font-mono focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-neutral-300 mb-1">Categoría</label>
+                  <label className="block font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                    Categoría
+                  </label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+                    className="w-full p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] cursor-pointer transition-colors"
                   >
                     <option value="Fitness & Yoga">Fitness & Yoga</option>
                     <option value="Cafetería & Pastelería">Cafetería & Pastelería</option>
@@ -577,46 +601,54 @@ export function SuperAdminDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-neutral-800">
+              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#EAE4D5]">
                 <div>
-                  <label className="block font-bold text-neutral-300 mb-1">Nombre del Dueño / Gerente *</label>
+                  <label className="block font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                    Nombre del Dueño / Gerente *
+                  </label>
                   <input
                     type="text"
                     required
                     placeholder="Ej: Carlos Duque"
                     value={formOwnerName}
                     onChange={(e) => setFormOwnerName(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-hidden focus:border-emerald-500"
+                    className="w-full p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-neutral-300 mb-1">WhatsApp de Contacto *</label>
+                  <label className="block font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                    WhatsApp de Contacto *
+                  </label>
                   <input
                     type="tel"
                     required
                     placeholder="+57 310 123 4567"
                     value={formOwnerPhone}
                     onChange={(e) => setFormOwnerPhone(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-hidden focus:border-emerald-500"
+                    className="w-full p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] font-mono focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-neutral-300 mb-1">Correo Electrónico del Dueño</label>
+                <label className="block font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                  Correo Electrónico del Dueño
+                </label>
                 <input
                   type="email"
                   placeholder="gerencia@cafe.com"
                   value={formOwnerEmail}
                   onChange={(e) => setFormOwnerEmail(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-hidden focus:border-emerald-500"
+                  className="w-full p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-neutral-800">
+              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#EAE4D5]">
                 <div>
-                  <label className="block font-bold text-neutral-300 mb-1">Plan SaaS</label>
+                  <label className="block font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                    Plan SaaS
+                  </label>
                   <select
                     value={formPlan}
                     onChange={(e) => {
@@ -624,7 +656,7 @@ export function SuperAdminDashboard() {
                       setFormPlan(p);
                       setFormMonthlyFee(p === 'starter' ? 79000 : p === 'pro' ? 129000 : 249000);
                     }}
-                    className="w-full p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+                    className="w-full p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:bg-white focus:border-[#5B6F00] cursor-pointer transition-colors"
                   >
                     <option value="starter">Starter (1 sede)</option>
                     <option value="pro">Pro (Sellos Ilimitados)</option>
@@ -633,12 +665,14 @@ export function SuperAdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-neutral-300 mb-1">Precio Mensual (COP)</label>
+                  <label className="block font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                    Precio Mensual (COP)
+                  </label>
                   <input
                     type="number"
                     value={formMonthlyFee}
                     onChange={(e) => setFormMonthlyFee(Number(e.target.value))}
-                    className="w-full p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-white font-mono focus:outline-hidden focus:border-emerald-500"
+                    className="w-full p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] font-mono focus:outline-hidden focus:bg-white focus:border-[#5B6F00] transition-colors"
                   />
                 </div>
               </div>
@@ -647,14 +681,14 @@ export function SuperAdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2.5 rounded-xl font-semibold text-neutral-400 hover:text-white cursor-pointer"
+                  className="px-5 py-2.5 rounded-full font-semibold text-[#57534E] hover:text-[#1C1917] cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading === 'create'}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                  className="px-6 py-2.5 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white font-bold shadow-md active:scale-95 transition-all cursor-pointer"
                 >
                   {actionLoading === 'create' ? 'Creando...' : 'Dar de Alta Comercio'}
                 </button>
