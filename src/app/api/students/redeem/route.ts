@@ -6,13 +6,13 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { token, notes, cashierName } = body;
+    const { token, notes, cashierName, tenantSlug } = body;
 
     if (!token || !token.trim()) {
       return NextResponse.json({ success: false, error: 'Token is required' }, { status: 400 });
     }
 
-    const res = redeemRewardServer(token, notes, cashierName);
+    const res = redeemRewardServer(token, notes, cashierName, tenantSlug);
     if (!res.success) {
       return NextResponse.json({ success: false, error: res.error }, { status: 404 });
     }

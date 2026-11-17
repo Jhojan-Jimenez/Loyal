@@ -10,6 +10,7 @@ export interface Student {
   totalVisits: number;
   lastVisitAt: string | null;
   notes?: string;
+  tenantSlug?: string;
 }
 
 export type TransactionType = 'ADD_STAMP' | 'REDEEM_REWARD' | 'CYCLE_RESET';
@@ -24,6 +25,7 @@ export interface StampTransaction {
   stampsAdded?: number;
   resultingStamps: number;
   note?: string;
+  tenantSlug?: string;
 }
 
 export interface StudioConfig {
@@ -48,8 +50,8 @@ export interface YogaClass {
   id: string;
   title: string;
   instructor: string;
-  days: string[]; // e.g. ["Lunes", "Miércoles", "Viernes"]
-  time: string;   // e.g. "07:00 AM - 08:15 AM"
+  days: string[];
+  time: string;
   style: 'Vinyasa Flow' | 'Hatha Yoga' | 'Yin Yoga' | 'Kundalini' | 'Meditación & Cuencos';
   level: 'Todos los niveles' | 'Intermedio' | 'Restaurativo suave';
   intensity: 'Suave' | 'Media' | 'Dinámica';
@@ -58,6 +60,7 @@ export interface YogaClass {
 
 export type TenantPlan = 'starter' | 'pro' | 'enterprise';
 export type TenantStatus = 'active' | 'trial' | 'suspended';
+export type TenantRole = 'OWNER' | 'ADMIN' | 'MANAGER' | 'STAFF';
 
 export interface TenantBusiness {
   id: string;
@@ -75,13 +78,60 @@ export interface TenantBusiness {
   totalStampsCount?: number;
   adminPin?: string;
   cashierPin?: string;
+  config?: StudioConfig;
+}
+
+// ─────────────────────────────────────────────────────────────
+// MULTI-TENANT RBAC ENTITIES (SaaS Standards)
+// ─────────────────────────────────────────────────────────────
+
+export interface User {
+  id: string;
+  email: string;
+  passwordHash: string;
+  fullName: string;
+  isPlatformSuperAdmin: boolean;
+  lastActiveTenantSlug?: string;
+  createdAt: string;
+}
+
+export interface TenantMembership {
+  id: string;
+  userId: string;
+  tenantId: string;
+  role: TenantRole;
+  createdAt: string;
+}
+
+export interface TenantInvitation {
+  id: string;
+  tenantId: string;
+  tenantSlug: string;
+  tenantName: string;
+  email: string;
+  role: TenantRole;
+  token: string; // Crypto hash
+  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED';
+  expiresAt: string;
+  createdAt: string;
 }
 
 export type AuthRole = 'superadmin' | 'admin' | 'cashier';
 
 export interface AuthSession {
-  role: AuthRole;
+  userId: string;
+  email: string;
+  fullName: string;
+  isPlatformSuperAdmin: boolean;
+  activeTenant?: {
+    id: string;
+    slug: string;
+    name: string;
+    role: TenantRole;
+  };
+  // Compatibilidad legacy
+  role?: AuthRole;
   tenantSlug?: string;
-  name: string;
+  name?: string;
   expiresAt: number;
 }

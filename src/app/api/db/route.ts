@@ -1,11 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getDbData } from '@/lib/server-db';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const data = getDbData();
+    const { searchParams } = new URL(req.url);
+    const tenantSlug = searchParams.get('tenantSlug') || undefined;
+    const data = getDbData(tenantSlug);
     return NextResponse.json({ success: true, ...data });
   } catch (err: any) {
     return NextResponse.json(

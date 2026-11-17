@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ShieldCheck,
   Lock,
-  Store,
-  QrCode,
+  Mail,
   Eye,
   EyeOff,
   ArrowLeft,
@@ -17,46 +16,41 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-function LoginForm() {
+function UniversalLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialRole = searchParams.get('role') || 'superadmin';
-  const redirectUrl = searchParams.get('redirect');
+  const requestedRedirect = searchParams.get('redirect');
 
-  const [activeTab, setActiveTab] = useState<'superadmin' | 'admin' | 'cashier'>(
-    initialRole === 'admin' ? 'admin' : initialRole === 'cashier' ? 'cashier' : 'superadmin'
-  );
-
-  // Form states
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [pin, setPin] = useState('');
-  const [slug, setSlug] = useState('');
-  const [cashierName, setCashierName] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // If already logged in, redirect directly to their respective role dashboard
-  React.useEffect(() => {
+  // Si ya tiene sesión activa, redirigir automáticamente
+  useEffect(() => {
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
         if (data.authenticated && data.session) {
-          const role = data.session.role;
-          const target =
-            redirectUrl ||
-            (role === 'superadmin'
-              ? '/superadmin'
-              : role === 'admin'
-              ? '/admin'
-              : '/scanner');
+          const s = data.session;
+          let target = requestedRedirect;
+          if (!target) {
+            if (s.isPlatformSuperAdmin) {
+              target = '/superadmin';
+            } else if (s.activeTenant?.slug) {
+              target = `/${s.activeTenant.slug}/admin`;
+            } else {
+              target = '/';
+            }
+          }
           window.location.href = target;
         }
       })
       .catch(() => {});
-  }, [redirectUrl]);
+  }, [requestedRedirect]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,23 +58,10 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      let body: any = { role: activeTab };
-
-      if (activeTab === 'superadmin') {
-        body.password = password;
-      } else if (activeTab === 'admin') {
-        body.pin = pin;
-        body.slug = slug.trim() || undefined;
-      } else if (activeTab === 'cashier') {
-        body.pin = pin;
-        body.slug = slug.trim() || undefined;
-        body.cashierName = cashierName.trim() || undefined;
-      }
-
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
@@ -91,16 +72,12 @@ function LoginForm() {
 
       setSuccess(true);
 
-      // Redirect destination
-      const target =
-        redirectUrl ||
-        (activeTab === 'superadmin' ? '/superadmin' : activeTab === 'admin' ? '/admin' : '/scanner');
-
+      const target = requestedRedirect || data.redirectUrl || '/';
       setTimeout(() => {
         window.location.href = target;
       }, 250);
     } catch (err: any) {
-      setError(err.message || 'Error al autenticar');
+      setError(err.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
@@ -118,205 +95,103 @@ function LoginForm() {
           <span>Volver al inicio</span>
         </Link>
 
-        <div className="w-14 h-14 rounded-2xl bg-[#1C1917] text-[#B2C248] flex items-center justify-center mx-auto mb-4 border border-[#292524] shadow-md">
-          <ShieldCheck className="w-7 h-7 text-[#B2C248]" />
+        {/* Artisanal Olive Seal Stamp */}
+        <div className="w-14 h-14 rounded-2xl bg-[#5B6F00] text-white flex items-center justify-center mx-auto mb-4 shadow-[0_4px_16px_rgba(91,111,0,0.25)]">
+          <svg
+            className="w-7 h-7"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect width="18" height="18" x="3" y="3" rx="4" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
         </div>
 
         <h1 className="text-2xl sm:text-3xl font-serif font-normal text-[#1C1917] tracking-tight">
-          Acceso Seguro Loyal
+          Iniciar Sesión
         </h1>
         <p className="text-xs text-[#78716C] mt-2 font-medium">
-          Selecciona tu rol para ingresar al panel de control
+          Accede al panel de tu comercio o consola de administración
         </p>
       </div>
 
-      {/* Role Tabs */}
-      <div className="bg-[#FFFDF9] rounded-2xl p-1.5 border border-[#EAE4D5] flex items-center gap-1 mb-6 shadow-2xs">
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab('superadmin');
-            setError(null);
-          }}
-          className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-            activeTab === 'superadmin'
-              ? 'bg-[#1C1917] text-[#B2C248] shadow-xs'
-              : 'text-[#78716C] hover:text-[#1C1917] hover:bg-[#FAF7F2]'
-          }`}
-        >
-          <Lock className="w-3.5 h-3.5" />
-          <span>SuperAdmin</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab('admin');
-            setError(null);
-          }}
-          className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-            activeTab === 'admin'
-              ? 'bg-[#5B6F00] text-white shadow-xs'
-              : 'text-[#78716C] hover:text-[#1C1917] hover:bg-[#FAF7F2]'
-          }`}
-        >
-          <Store className="w-3.5 h-3.5" />
-          <span>Comercio</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab('cashier');
-            setError(null);
-          }}
-          className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-            activeTab === 'cashier'
-              ? 'bg-[#5B6F00] text-white shadow-xs'
-              : 'text-[#78716C] hover:text-[#1C1917] hover:bg-[#FAF7F2]'
-          }`}
-        >
-          <QrCode className="w-3.5 h-3.5" />
-          <span>Cajero</span>
-        </button>
-      </div>
-
       {/* Login Card */}
-      <div className="bg-[#FFFDF9] rounded-[28px] border border-[#EAE4D5] p-7 shadow-[0_12px_32px_rgba(40,30,10,0.05)]">
+      <div className="bg-[#FFFDF9] rounded-[28px] border border-[#EAE4D5] p-7 sm:p-8 shadow-[0_12px_32px_rgba(40,30,10,0.05)]">
         {error && (
-          <div className="p-3.5 rounded-2xl bg-[#FDF2F0] border border-[#F5C7C0] text-[#C2410C] text-xs flex items-center gap-2 mb-5 animate-in fade-in duration-200">
+          <div className="p-3.5 rounded-2xl bg-[#FDF2F0] border border-[#F5C7C0] text-[#C2410C] text-xs flex items-center gap-2.5 mb-5 animate-in fade-in duration-200">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span className="font-medium">{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="p-3.5 rounded-2xl bg-[#F4F9E8] border border-[#D9EBB3] text-[#5B6F00] text-xs flex items-center gap-2 mb-5 animate-in fade-in duration-200">
+          <div className="p-3.5 rounded-2xl bg-[#F4F9E8] border border-[#D9EBB3] text-[#5B6F00] text-xs flex items-center gap-2.5 mb-5 animate-in fade-in duration-200">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span className="font-bold">¡Autenticado con éxito! Redirigiendo...</span>
+            <span className="font-bold">¡Bienvenido! Entrando a tu espacio...</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* SUPERADMIN FORM */}
-          {activeTab === 'superadmin' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-[#1C1917] mb-1.5">
-                  Contraseña Maestra SuperAdmin
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Escribe la clave maestra..."
-                    required
-                    autoFocus
-                    className="w-full px-4 py-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-sm text-[#1C1917] placeholder:text-[#A89F91] focus:outline-hidden focus:border-[#1C1917] transition-all pr-11 font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#78716C] hover:text-[#1C1917]"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <p className="text-[11px] text-[#A89F91] mt-1.5">
-                  Acceso exclusivo para el administrador de la infraestructura Loyal.
-                </p>
-              </div>
+          <div>
+            <label className="block text-xs font-semibold text-[#1C1917] mb-1.5">
+              Correo Electrónico
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@negocio.com o admin"
+                required
+                autoFocus
+                autoComplete="email"
+                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-sm text-[#1C1917] placeholder:text-[#A89F91] focus:outline-hidden focus:border-[#5B6F00] transition-all font-sans"
+              />
+              <Mail className="w-4 h-4 text-[#78716C] absolute left-3.5 top-1/2 -translate-y-1/2" />
             </div>
-          )}
+          </div>
 
-          {/* ADMIN FORM */}
-          {activeTab === 'admin' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-[#1C1917] mb-1.5">
-                  Identificador del Comercio (Slug opcional)
-                </label>
-                <input
-                  type="text"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  placeholder="ej: cafe-la-cabana (vacío para tienda activa)"
-                  className="w-full px-4 py-2.5 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-xs text-[#1C1917] placeholder:text-[#A89F91] focus:outline-hidden focus:border-[#5B6F00] transition-all font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#1C1917] mb-1.5">
-                  PIN de Administrador
-                </label>
-                <input
-                  type="password"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  placeholder="PIN de 4 dígitos (default: 1234)"
-                  required
-                  autoFocus
-                  maxLength={10}
-                  className="w-full px-4 py-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-sm text-[#1C1917] placeholder:text-[#A89F91] focus:outline-hidden focus:border-[#5B6F00] transition-all font-mono text-center tracking-widest text-lg font-bold"
-                />
-                <p className="text-[11px] text-[#A89F91] mt-1.5 text-center">
-                  Permite modificar reglas de sellos, catálogo y métricas de clientes.
-                </p>
-              </div>
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-[#1C1917]">
+                Contraseña
+              </label>
             </div>
-          )}
-
-          {/* CASHIER FORM */}
-          {activeTab === 'cashier' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-[#1C1917] mb-1.5">
-                  Nombre del Cajero / Encargado
-                </label>
-                <input
-                  type="text"
-                  value={cashierName}
-                  onChange={(e) => setCashierName(e.target.value)}
-                  placeholder="ej: Carlos (Caja 1)"
-                  className="w-full px-4 py-2.5 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-xs text-[#1C1917] placeholder:text-[#A89F91] focus:outline-hidden focus:border-[#5B6F00] transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#1C1917] mb-1.5">
-                  PIN de Caja de Mostrador
-                </label>
-                <input
-                  type="password"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  placeholder="PIN de caja (default: 0000)"
-                  required
-                  autoFocus
-                  maxLength={10}
-                  className="w-full px-4 py-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-sm text-[#1C1917] placeholder:text-[#A89F91] focus:outline-hidden focus:border-[#5B6F00] transition-all font-mono text-center tracking-widest text-lg font-bold"
-                />
-                <p className="text-[11px] text-[#A89F91] mt-1.5 text-center">
-                  PIN rápido de punto de venta para estampar sellos en caja.
-                </p>
-              </div>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Ingresa tu contraseña..."
+                required
+                autoComplete="current-password"
+                className="w-full pl-10 pr-11 py-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-sm text-[#1C1917] placeholder:text-[#A89F91] focus:outline-hidden focus:border-[#5B6F00] transition-all font-sans"
+              />
+              <Lock className="w-4 h-4 text-[#78716C] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#78716C] hover:text-[#1C1917] p-1"
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
-          )}
+          </div>
 
           <button
             type="submit"
             disabled={loading || success}
-            className={`w-full py-3.5 rounded-full text-xs font-bold transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer mt-6 ${
-              activeTab === 'superadmin'
-                ? 'bg-[#1C1917] text-[#B2C248] hover:bg-black'
-                : 'bg-[#5B6F00] text-white hover:bg-[#4D5E00]'
-            }`}
+            className="w-full py-3.5 rounded-full text-xs font-bold transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer mt-6 bg-[#5B6F00] text-white hover:bg-[#4D5E00]"
           >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Verificando credencial...</span>
+                <span>Verificando cuenta...</span>
               </>
             ) : success ? (
               <>
@@ -325,13 +200,17 @@ function LoginForm() {
               </>
             ) : (
               <>
-                <span>Ingresar a la Plataforma</span>
-                <Sparkles className="w-3.5 h-3.5" />
+                <span>Ingresar al Panel</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#B2C248]" />
               </>
             )}
           </button>
         </form>
       </div>
+
+      <p className="text-center text-[11px] text-[#A89F91] mt-6">
+        ¿Eres un nuevo comercio? Solicita tu invitación al administrador de la plataforma.
+      </p>
     </div>
   );
 }
@@ -347,7 +226,7 @@ export default function LoginPage() {
           </div>
         }
       >
-        <LoginForm />
+        <UniversalLoginForm />
       </Suspense>
     </div>
   );

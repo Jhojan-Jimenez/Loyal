@@ -37,7 +37,9 @@ export function Navigation() {
     pathname === '/' ||
     pathname === '/scanner' ||
     pathname === '/login' ||
+    pathname?.endsWith('/scanner') ||
     pathname?.startsWith('/card/') ||
+    pathname?.startsWith('/invite/') ||
     pathname?.startsWith('/style/')
   ) {
     return null;
@@ -45,13 +47,15 @@ export function Navigation() {
 
   const isHome = pathname === '/';
 
+  const isSuperAdmin = session?.role === 'superadmin' || (session as any)?.isPlatformSuperAdmin;
+  const activeTenantSlug = (session as any)?.activeTenant?.slug;
+  const adminHref = activeTenantSlug ? `/${activeTenantSlug}/admin` : '/admin';
+
   const navLinks = [
     { label: 'Inicio', href: '/' },
-    ...(session ? [{ label: 'Escáner', href: '/scanner' }] : []),
-    ...(session?.role === 'admin' || session?.role === 'superadmin'
-      ? [{ label: 'Admin', href: '/admin' }]
-      : []),
-    ...(session?.role === 'superadmin' ? [{ label: 'SuperAdmin', href: '/superadmin' }] : []),
+    ...(session ? [{ label: 'Escáner', href: activeTenantSlug ? `/${activeTenantSlug}/scanner` : '/scanner' }] : []),
+    ...(session ? [{ label: 'Admin', href: adminHref }] : []),
+    ...(isSuperAdmin ? [{ label: 'SuperAdmin', href: '/superadmin' }] : []),
   ];
 
   return (

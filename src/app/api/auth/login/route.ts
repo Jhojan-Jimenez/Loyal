@@ -1,152 +1,105 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  signSessionToken,
-  AUTH_COOKIE_NAME,
-  SUPERADMIN_PASSWORD,
-} from '@/lib/auth';
+import { signSessionToken, AUTH_COOKIE_NAME, SUPERADMIN_PASSWORD } from '@/lib/auth';
 import { AuthSession } from '@/lib/types';
-import { getDbData } from '@/lib/server-db';
+import {
+  findUserByEmail,
+  verifyPassword,
+  getUserMemberships,
+  getDbData,
+} from '@/lib/server-db';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { role, password, pin, slug, cashierName } = body;
+    const { email, password } = body;
 
-    const db = getDbData();
-
-    // 1. SuperAdmin Login
-    if (role === 'superadmin') {
-      if (!password || password.trim() !== SUPERADMIN_PASSWORD) {
-        return NextResponse.json(
-          { success: false, error: 'Contraseña de SuperAdmin incorrecta.' },
-          { status: 401 }
-        );
-      }
-
-      const session: AuthSession = {
-        role: 'superadmin',
-        name: 'SuperAdmin Maestro',
-        expiresAt: Date.now() + 7 * 24 * 3600 * 1000, // 7 días
-      };
-
-      const token = await signSessionToken(session);
-      const res = NextResponse.json({ success: true, session });
-      res.cookies.set({
-        name: AUTH_COOKIE_NAME,
-        value: token,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 7 * 24 * 3600,
-      });
-      return res;
+    if (!email || !password) {
+      return NextResponse.json(
+        { success: false, error: 'Por favor ingresa tu correo y contraseña.' },
+        { status: 400 }
+      );
     }
 
-    // 2. Admin de Comercio Login
-    if (role === 'admin') {
-      // El SuperAdmin puede ingresar con su clave maestra
-      if (password && password.trim() === SUPERADMIN_PASSWORD) {
-        const session: AuthSession = {
-          role: 'admin',
-          tenantSlug: slug || undefined,
-          name: 'SuperAdmin (Vista Admin)',
-          expiresAt: Date.now() + 7 * 24 * 3600 * 1000,
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanPassword = String(password).trim();
+
+    // 1. Buscar usuario por email (o alias 'admin')
+    const user = findUserByEmail(cleanEmail);
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Correo o contraseña incorrectos.' },
+        { status: 401 }
+      );
+    }
+
+    // 2. Validar contraseña
+    const isPasswordValid =
+      verifyPassword(cleanPassword, user.passwordHash) ||
+      (user.isPlatformSuperAdmin && cleanPassword === SUPERADMIN_PASSWORD);
+
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { success: false, error: 'Correo o contraseña incorrectos.' },
+        { status: 401 }
+      );
+    }
+
+    // 3. Resolver destino inteligente y membresías
+    let redirectUrl = '/';
+    let activeTenant: AuthSession['activeTenant'] = undefined;
+
+    if (user.isPlatformSuperAdmin) {
+      redirectUrl = '/superadmin';
+    } else {
+      const memberships = getUserMemberships(user.id);
+
+      if (memberships.length === 1) {
+        const m = memberships[0];
+        activeTenant = {
+          id: m.tenant.id,
+          slug: m.tenant.slug,
+          name: m.tenant.name,
+          role: m.membership.role,
         };
-
-        const token = await signSessionToken(session);
-        const res = NextResponse.json({ success: true, session });
-        res.cookies.set({
-          name: AUTH_COOKIE_NAME,
-          value: token,
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 7 * 24 * 3600,
-        });
-        return res;
+        redirectUrl = `/${m.tenant.slug}/admin`;
+      } else if (memberships.length > 1) {
+        redirectUrl = '/workspaces';
+      } else {
+        redirectUrl = '/';
       }
-
-      // Validación por PIN de comercio
-      let targetTenant = slug ? (db.tenants || []).find((t) => t.slug === slug) : null;
-      if (!targetTenant && (db.tenants || []).length === 1) {
-        targetTenant = db.tenants[0];
-      }
-
-      const validPin = targetTenant?.adminPin || db.config.adminPin || '1234';
-
-      if (!pin || pin.trim() !== validPin) {
-        return NextResponse.json(
-          { success: false, error: 'PIN de Administrador incorrecto (default: 1234).' },
-          { status: 401 }
-        );
-      }
-
-      const session: AuthSession = {
-        role: 'admin',
-        tenantSlug: targetTenant?.slug,
-        name: targetTenant ? `Admin · ${targetTenant.name}` : 'Administrador',
-        expiresAt: Date.now() + 7 * 24 * 3600 * 1000,
-      };
-
-      const token = await signSessionToken(session);
-      const res = NextResponse.json({ success: true, session });
-      res.cookies.set({
-        name: AUTH_COOKIE_NAME,
-        value: token,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 7 * 24 * 3600,
-      });
-      return res;
     }
 
-    // 3. Cajero / Mostrador Login
-    if (role === 'cashier') {
-      let targetTenant = slug ? (db.tenants || []).find((t) => t.slug === slug) : null;
-      if (!targetTenant && (db.tenants || []).length === 1) {
-        targetTenant = db.tenants[0];
-      }
+    // 4. Crear sesión
+    const session: AuthSession = {
+      userId: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      isPlatformSuperAdmin: user.isPlatformSuperAdmin,
+      activeTenant,
+      // Compatibilidad con código existente
+      role: user.isPlatformSuperAdmin ? 'superadmin' : 'admin',
+      tenantSlug: activeTenant?.slug,
+      name: user.fullName,
+      expiresAt: Date.now() + 7 * 24 * 3600 * 1000, // 7 días
+    };
 
-      const validPin = targetTenant?.cashierPin || db.config.cashierPin || '0000';
+    const token = await signSessionToken(session);
+    const res = NextResponse.json({ success: true, redirectUrl, session });
 
-      if (!pin || pin.trim() !== validPin) {
-        return NextResponse.json(
-          { success: false, error: 'PIN de Cajero incorrecto (default: 0000).' },
-          { status: 401 }
-        );
-      }
+    res.cookies.set({
+      name: AUTH_COOKIE_NAME,
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 3600,
+    });
 
-      const session: AuthSession = {
-        role: 'cashier',
-        tenantSlug: targetTenant?.slug,
-        name: cashierName?.trim() || 'Cajero de Mostrador',
-        expiresAt: Date.now() + 24 * 3600 * 1000, // 24 horas
-      };
-
-      const token = await signSessionToken(session);
-      const res = NextResponse.json({ success: true, session });
-      res.cookies.set({
-        name: AUTH_COOKIE_NAME,
-        value: token,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 24 * 3600,
-      });
-      return res;
-    }
-
-    return NextResponse.json(
-      { success: false, error: 'Rol no reconocido.' },
-      { status: 400 }
-    );
+    return res;
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message || 'Error en inicio de sesión' },

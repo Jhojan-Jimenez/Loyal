@@ -4,6 +4,7 @@ import {
   createTenantServer,
   updateTenantStatusServer,
   deleteTenantServer,
+  getOrCreateInvitationForTenant,
 } from '@/lib/server-db';
 
 export async function GET() {
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
       if (!name || !ownerName || !ownerPhone) {
         return NextResponse.json({ success: false, error: 'Faltan campos obligatorios' }, { status: 400 });
       }
-      const tenant = createTenantServer({
+      const result = createTenantServer({
         name,
         slug,
         category,
@@ -35,7 +36,12 @@ export async function POST(req: NextRequest) {
         plan,
         monthlyFeeCop,
       });
-      return NextResponse.json({ success: true, tenant });
+      return NextResponse.json({
+        success: true,
+        tenant: result.tenant,
+        invitation: result.invitation,
+        activationUrl: result.activationUrl,
+      });
     }
 
     if (action === 'status') {
@@ -54,6 +60,22 @@ export async function POST(req: NextRequest) {
       }
       const ok = deleteTenantServer(slug);
       return NextResponse.json({ success: ok });
+    }
+
+    if (action === 'invite') {
+      const { slug } = body;
+      if (!slug) {
+        return NextResponse.json({ success: false, error: 'Slug requerido' }, { status: 400 });
+      }
+      const inviteData = getOrCreateInvitationForTenant(slug);
+      if (!inviteData) {
+        return NextResponse.json({ success: false, error: 'Comercio no encontrado' }, { status: 404 });
+      }
+      return NextResponse.json({
+        success: true,
+        invitation: inviteData.invitation,
+        activationUrl: inviteData.activationUrl,
+      });
     }
 
     return NextResponse.json({ success: false, error: 'Acción no soportada' }, { status: 400 });

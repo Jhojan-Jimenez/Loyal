@@ -17,13 +17,22 @@ interface LoyalContextType {
   isLoaded: boolean;
   getStudentByToken: (token: string) => Student | undefined;
   getStudentById: (id: string) => Student | undefined;
-  registerStudent: (name: string, phone: string, email?: string) => Student;
+  registerStudent: (name: string, phone: string, email?: string, tenantSlug?: string) => Student;
   deleteStudent: (token: string) => Promise<boolean>;
-  addStamp: (token: string, note?: string, cashierName?: string) => { success: boolean; student?: Student; rewardUnlocked: boolean; error?: string };
-  redeemReward: (token: string, cashierName?: string) => { success: boolean; student?: Student; error?: string };
+  addStamp: (
+    token: string,
+    note?: string,
+    cashierName?: string,
+    tenantSlug?: string
+  ) => { success: boolean; student?: Student; rewardUnlocked: boolean; error?: string };
+  redeemReward: (
+    token: string,
+    cashierName?: string,
+    tenantSlug?: string
+  ) => { success: boolean; student?: Student; error?: string };
   updateConfig: (newConfig: Partial<StudioConfig>) => void;
   resetDemoData: () => void;
-  refreshFromServer: () => Promise<void>;
+  refreshFromServer: (tenantSlug?: string) => Promise<void>;
 }
 
 const LoyalContext = createContext<LoyalContextType | undefined>(undefined);
@@ -44,9 +53,10 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
   const [, startTransition] = useTransition();
 
   // Function to pull latest state from central server DB
-  const refreshFromServer = useCallback(async () => {
+  const refreshFromServer = useCallback(async (tenantSlug?: string) => {
     try {
-      const res = await fetch('/api/db', { cache: 'no-store' });
+      const url = tenantSlug ? `/api/db?tenantSlug=${encodeURIComponent(tenantSlug)}` : '/api/db';
+      const res = await fetch(url, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -127,7 +137,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
     return students.find((s) => s.id === id);
   };
 
-  const registerStudent = (name: string, phone: string, email?: string): Student => {
+  const registerStudent = (name: string, phone: string, email?: string, tenantSlug?: string): Student => {
     const slug = name
       .toLowerCase()
       .normalize('NFD')
@@ -149,6 +159,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
       totalVisits: 0,
       lastVisitAt: null,
       notes: 'Alumno nuevo registrado',
+      tenantSlug,
     };
 
     startTransition(() => {
@@ -164,6 +175,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
         phone: newStudent.phone,
         email: newStudent.email,
         token: newStudent.token,
+        tenantSlug,
       }),
     }).catch((err) => console.warn('[LoyalContext] Server register sync error:', err));
 
@@ -173,7 +185,8 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
   const addStamp = (
     token: string,
     note: string = 'Asistencia a clase regular',
-    cashierName: string = 'Recepción Estudio'
+    cashierName: string = 'Recepción Estudio',
+    tenantSlug?: string
   ) => {
     const student = getStudentByToken(token);
     if (!student) {
@@ -201,6 +214,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
       stamps: newStamps,
       totalVisits: student.totalVisits + 1,
       lastVisitAt: now,
+      tenantSlug: tenantSlug || student.tenantSlug,
     };
 
     const newTx: StampTransaction = {
@@ -213,6 +227,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
       stampsAdded: 1,
       resultingStamps: newStamps,
       note,
+      tenantSlug: tenantSlug || student.tenantSlug,
     };
 
     setStudents((prev) => prev.map((s) => (s.id === student.id ? updatedStudent : s)));
@@ -229,7 +244,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
     fetch('/api/students/stamp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, note, cashierName }),
+      body: JSON.stringify({ token, note, cashierName, tenantSlug }),
     }).catch((err) => console.warn('[LoyalContext] Server stamp sync warning:', err));
 
     return {
@@ -239,7 +254,11 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
-  const redeemReward = (token: string, cashierName: string = 'Recepción Estudio') => {
+  const redeemReward = (
+    token: string,
+    cashierName: string = 'Recepción Estudio',
+    tenantSlug?: string
+  ) => {
     const student = getStudentByToken(token);
     if (!student) {
       return { success: false, error: 'Alumno no encontrado' };
@@ -258,6 +277,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
       stamps: 0,
       totalCompletedCycles: student.totalCompletedCycles + 1,
       lastVisitAt: now,
+      tenantSlug: tenantSlug || student.tenantSlug,
     };
 
     const newTx: StampTransaction = {
@@ -269,6 +289,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
       type: 'REDEEM_REWARD',
       resultingStamps: 0,
       note: `Recompensa canjeada: ${config.currentRewardTitle}`,
+      tenantSlug: tenantSlug || student.tenantSlug,
     };
 
     setStudents((prev) => prev.map((s) => (s.id === student.id ? updatedStudent : s)));
@@ -282,6 +303,7 @@ export function LoyalProvider({ children }: { children: React.ReactNode }) {
         token,
         notes: `Recompensa canjeada: ${config.currentRewardTitle}`,
         cashierName,
+        tenantSlug,
       }),
     }).catch((err) => console.warn('[LoyalContext] Server redeem sync warning:', err));
 

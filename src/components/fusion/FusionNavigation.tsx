@@ -10,7 +10,12 @@ interface FusionNavigationProps {
 
 export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [session, setSession] = useState<{ role: string; name: string } | null>(null);
+  const [session, setSession] = useState<{
+    isPlatformSuperAdmin?: boolean;
+    role?: string;
+    activeTenant?: { slug: string; name: string };
+    name?: string;
+  } | null>(null);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -28,6 +33,10 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
     setSession(null);
     window.location.reload();
   };
+
+  const isSuperAdmin = session?.isPlatformSuperAdmin || session?.role === 'superadmin';
+  const tenantSlug = session?.activeTenant?.slug;
+  const adminHref = tenantSlug ? `/${tenantSlug}/admin` : '/admin';
 
   return (
     <header className="fixed top-0 left-0 right-0 z-[100] h-20 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EAE4D5]/80 transition-all font-sans">
@@ -98,7 +107,7 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
           {session ? (
             // LOGGED IN USER: Show only their authorized portal button + Logout
             <>
-              {session.role === 'superadmin' && (
+              {isSuperAdmin && (
                 <Link
                   href="/superadmin"
                   className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#1C1917] text-[#B2C248] border border-[#292524] text-xs font-bold shadow-xs hover:bg-black transition-all"
@@ -108,23 +117,13 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
                 </Link>
               )}
 
-              {session.role === 'admin' && (
+              {!isSuperAdmin && (
                 <Link
-                  href="/admin"
+                  href={adminHref}
                   className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-all"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-[#5B6F00]" />
-                  <span>Panel Admin</span>
-                </Link>
-              )}
-
-              {session.role === 'cashier' && (
-                <Link
-                  href="/scanner"
-                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] transition-all"
-                >
-                  <QrCode className="w-4 h-4 text-[#5B6F00]" />
-                  <span>Escáner Mostrador</span>
+                  <span>{session.activeTenant?.name ? `Panel: ${session.activeTenant.name}` : 'Panel Admin'}</span>
                 </Link>
               )}
 
@@ -216,7 +215,7 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
           <div className="pt-4 border-t border-[#EAE4D5] flex flex-col gap-2.5">
             {session ? (
               <>
-                {session.role === 'superadmin' && (
+                {isSuperAdmin && (
                   <Link
                     href="/superadmin"
                     onClick={() => setMobileMenuOpen(false)}
@@ -230,29 +229,15 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
                   </Link>
                 )}
 
-                {session.role === 'admin' && (
+                {!isSuperAdmin && (
                   <Link
-                    href="/admin"
+                    href={adminHref}
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F5F1E8] text-[#1C1917] text-sm font-medium"
                   >
                     <div className="flex items-center gap-2.5">
                       <ShieldCheck className="w-4 h-4 text-[#5B6F00]" />
-                      <span>Panel Admin Comercio</span>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-[#78716C]" />
-                  </Link>
-                )}
-
-                {session.role === 'cashier' && (
-                  <Link
-                    href="/scanner"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F5F1E8] text-[#1C1917] text-sm font-medium"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <QrCode className="w-4 h-4 text-[#5B6F00]" />
-                      <span>Abrir Escáner de Mostrador</span>
+                      <span>{session.activeTenant?.name ? `Panel: ${session.activeTenant.name}` : 'Panel Admin Comercio'}</span>
                     </div>
                     <ArrowRight className="w-4 h-4 text-[#78716C]" />
                   </Link>

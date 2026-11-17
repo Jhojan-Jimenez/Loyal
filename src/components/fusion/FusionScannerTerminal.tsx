@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useLoyal } from '@/context/LoyalContext';
+import { Student, StudioConfig, StampTransaction } from '@/lib/types';
 import confetti from 'canvas-confetti';
 import {
   Camera,
@@ -19,19 +20,38 @@ import {
   ArrowLeft,
   Phone,
   Zap,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { validateQrTotp } from '@/lib/totp';
 
-export function FusionScannerTerminal() {
+export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = {}) {
   const {
-    students,
-    config,
-    getStudentByToken,
+    students: globalStudents,
+    config: globalConfig,
+    getStudentByToken: globalGetStudent,
     addStamp,
     redeemReward,
-    transactions,
+    transactions: globalTransactions,
     refreshFromServer,
   } = useLoyal();
+
+  // Tenant-scoped state
+  const [tenantInfo, setTenantInfo] = useState<{
+    id: string;
+    slug: string;
+    name: string;
+    category?: string;
+  } | null>(null);
+  const [tenantStudents, setTenantStudents] = useState<Student[]>([]);
+  const [tenantConfig, setTenantConfig] = useState<StudioConfig>(globalConfig);
+  const [tenantTransactions, setTenantTransactions] = useState<StampTransaction[]>([]);
+
+  // Rapid PIN Lock State (Square POS model for cashier isolation)
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(!tenantSlug);
+  const [pinInput, setPinInput] = useState<string>('');
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [validatingPin, setValidatingPin] = useState<boolean>(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>('');
@@ -43,6 +63,59 @@ export function FusionScannerTerminal() {
   const scannerRef = useRef<any>(null);
   const isProcessingScan = useRef(false);
   const scannerContainerId = 'fusion-qr-reader-container';
+
+  // Check PIN unlock state and load tenant data
+  useEffect(() => {
+    if (!tenantSlug) {
+      setIsUnlocked(true);
+      return;
+    }
+
+    const saved = sessionStorage.getItem(`loyal_cashier_${tenantSlug}`);
+    if (saved === 'unlocked') {
+      setIsUnlocked(true);
+    }
+
+    // Check if current user is an admin or superadmin
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d) => {
+        if (
+          d.authenticated &&
+          (d.session?.isPlatformSuperAdmin || d.session?.activeTenant?.slug === tenantSlug)
+        ) {
+          sessionStorage.setItem(`loyal_cashier_${tenantSlug}`, 'unlocked');
+          setIsUnlocked(true);
+        }
+      })
+      .catch(() => {});
+
+    // Fetch scoped tenant data
+    async function loadTenantData() {
+      try {
+        const res = await fetch(`/api/db?tenantSlug=${encodeURIComponent(tenantSlug!)}`);
+        const data = await res.json();
+        if (data.success) {
+          if (data.tenant) setTenantInfo(data.tenant);
+          if (data.config) setTenantConfig(data.config);
+          if (Array.isArray(data.students)) setTenantStudents(data.students);
+          if (Array.isArray(data.transactions)) setTenantTransactions(data.transactions);
+        }
+      } catch (e) {
+        console.warn('Error loading tenant scanner data:', e);
+      }
+    }
+
+    loadTenantData();
+  }, [tenantSlug]);
+
+  const students = tenantSlug ? tenantStudents : globalStudents;
+  const config = tenantSlug ? tenantConfig : globalConfig;
+  const transactions = tenantSlug ? tenantTransactions : globalTransactions;
+
+  const getStudentByToken = (token: string) => {
+    return students.find((s) => s.token.toLowerCase().trim() === token.toLowerCase().trim());
+  };
 
   const currentStudent = selectedToken
     ? getStudentByToken(selectedToken)
@@ -128,10 +201,15 @@ export function FusionScannerTerminal() {
       setSelectedToken(cleanToken);
       if (autoStamp) {
         try {
-          const res = addStamp(found.token, `Auto-scan (${sourceLabel})`);
+          const res = addStamp(found.token, `Auto-scan (${sourceLabel})`, 'Caja Mostrador', tenantSlug);
           if (res.success) {
             playChime(true);
             triggerCelebration();
+            if (res.student && tenantSlug) {
+              setTenantStudents((prev) =>
+                prev.map((s) => (s.id === res.student!.id ? res.student! : s))
+              );
+            }
             setMessage({
               type: 'success',
               text: `✨ ¡Sello registrado con éxito a ${found.name}! (${found.stamps + 1}/${maxStamps})`,
@@ -215,10 +293,15 @@ export function FusionScannerTerminal() {
   const handleManualAddStamp = async () => {
     if (!currentStudent) return;
     try {
-      const res = addStamp(currentStudent.token, 'Manual mostrador');
+      const res = addStamp(currentStudent.token, 'Manual mostrador', 'Caja Mostrador', tenantSlug);
       if (res.success) {
         playChime(true);
         triggerCelebration();
+        if (res.student && tenantSlug) {
+          setTenantStudents((prev) =>
+            prev.map((s) => (s.id === res.student!.id ? res.student! : s))
+          );
+        }
         setMessage({
           type: 'success',
           text: `✨ Sello sumado a ${currentStudent.name}.`,
@@ -236,10 +319,15 @@ export function FusionScannerTerminal() {
   const handleRedeemReward = async () => {
     if (!currentStudent || !isRewardReady) return;
     try {
-      const res = redeemReward(currentStudent.token);
+      const res = redeemReward(currentStudent.token, 'Caja Mostrador', tenantSlug);
       if (res.success) {
         playChime(true);
         triggerCelebration();
+        if (res.student && tenantSlug) {
+          setTenantStudents((prev) =>
+            prev.map((s) => (s.id === res.student!.id ? res.student! : s))
+          );
+        }
         setMessage({
           type: 'success',
           text: `🎉 ¡Premio redimido con éxito para ${currentStudent.name}! Se reinició el ciclo.`,
@@ -254,23 +342,174 @@ export function FusionScannerTerminal() {
     }
   };
 
+  const handlePinDigit = async (digit: string) => {
+    if (pinInput.length >= 4) return;
+    const nextPin = pinInput + digit;
+    setPinInput(nextPin);
+    setPinError(null);
+
+    if (nextPin.length === 4) {
+      setValidatingPin(true);
+      try {
+        const res = await fetch('/api/auth/pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: tenantSlug, pin: nextPin }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (tenantSlug) {
+            sessionStorage.setItem(`loyal_cashier_${tenantSlug}`, 'unlocked');
+          }
+          setIsUnlocked(true);
+          playChime(true);
+          setPinInput('');
+        } else {
+          setPinError(data.error || 'PIN incorrecto');
+          playChime(false);
+          setPinInput('');
+        }
+      } catch {
+        setPinError('Error de red al validar PIN');
+        setPinInput('');
+      } finally {
+        setValidatingPin(false);
+      }
+    }
+  };
+
+  const handleClearPin = () => {
+    setPinInput('');
+    setPinError(null);
+  };
+
+  const handleBackspacePin = () => {
+    setPinInput((prev) => prev.slice(0, -1));
+    setPinError(null);
+  };
+
+  const handleLockTerminal = () => {
+    if (tenantSlug) {
+      sessionStorage.removeItem(`loyal_cashier_${tenantSlug}`);
+    }
+    setIsUnlocked(false);
+    setPinInput('');
+    setPinError(null);
+  };
+
+  // ── PIN LOCK SCREEN (Square POS Model) ──
+  if (!isUnlocked && tenantSlug) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4 selection:bg-[#5B6F00] selection:text-white">
+        <div className="w-full max-w-sm bg-[#FFFDF9] rounded-[36px] border border-[#EAE4D5] p-8 shadow-xl text-center space-y-6">
+          <div className="w-14 h-14 rounded-3xl bg-[#F1F5DC] text-[#5B6F00] flex items-center justify-center mx-auto border border-[#D9E2B3] shadow-inner">
+            <Lock className="w-6 h-6 text-[#5B6F00]" />
+          </div>
+
+          <div>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#5B6F00] bg-[#F1F5DC] px-3 py-1 rounded-full border border-[#D9E2B3]">
+              TERMINAL DE CAJA
+            </span>
+            <h2 className="text-xl font-serif text-[#1C1917] mt-3">
+              {tenantInfo?.name || tenantSlug}
+            </h2>
+            <p className="text-xs text-[#78716C] mt-1">
+              Ingresa tu PIN de 4 dígitos para operar el escáner
+            </p>
+          </div>
+
+          {/* 4 PIN Dots */}
+          <div className="flex items-center justify-center gap-4 py-2">
+            {[0, 1, 2, 3].map((idx) => (
+              <div
+                key={idx}
+                className={`w-4 h-4 rounded-full border-2 transition-all duration-150 ${
+                  pinInput.length > idx
+                    ? 'bg-[#5B6F00] border-[#5B6F00] scale-110 shadow-sm'
+                    : 'border-[#D9E2B3] bg-white'
+                }`}
+              />
+            ))}
+          </div>
+
+          {pinError && (
+            <p className="text-xs text-[#C2410C] font-semibold bg-[#FDF2F0] py-2 px-3 rounded-xl border border-[#F5C7C0]">
+              {pinError}
+            </p>
+          )}
+
+          {/* Numeric Keypad */}
+          <div className="grid grid-cols-3 gap-3 max-w-[260px] mx-auto pt-2">
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+              <button
+                key={digit}
+                type="button"
+                onClick={() => handlePinDigit(digit)}
+                disabled={validatingPin}
+                className="w-16 h-16 rounded-full bg-[#FAF7F2] hover:bg-[#F1F5DC] hover:text-[#5B6F00] border border-[#EAE4D5] text-lg font-serif font-bold text-[#1C1917] flex items-center justify-center transition-all active:scale-90 shadow-xs cursor-pointer"
+              >
+                {digit}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={handleClearPin}
+              disabled={validatingPin}
+              className="w-16 h-16 rounded-full bg-[#FAF7F2] hover:bg-[#FDF2F0] text-xs font-bold text-[#78716C] hover:text-[#C2410C] border border-[#EAE4D5] flex items-center justify-center transition-all active:scale-90 cursor-pointer"
+            >
+              Borrar
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePinDigit('0')}
+              disabled={validatingPin}
+              className="w-16 h-16 rounded-full bg-[#FAF7F2] hover:bg-[#F1F5DC] hover:text-[#5B6F00] border border-[#EAE4D5] text-lg font-serif font-bold text-[#1C1917] flex items-center justify-center transition-all active:scale-90 shadow-xs cursor-pointer"
+            >
+              0
+            </button>
+            <button
+              type="button"
+              onClick={handleBackspacePin}
+              disabled={validatingPin}
+              className="w-16 h-16 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] text-sm font-bold text-[#78716C] border border-[#EAE4D5] flex items-center justify-center transition-all active:scale-90 cursor-pointer"
+            >
+              ⌫
+            </button>
+          </div>
+
+          <div className="pt-2 border-t border-[#EAE4D5] space-y-2">
+            <Link
+              href={`/login?redirect=/${tenantSlug}/scanner`}
+              className="text-[11px] text-[#5B6F00] font-semibold hover:underline block"
+            >
+              Soy administrador · Entrar con correo
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#1C1917] font-sans selection:bg-[#5B6F00] selection:text-white antialiased pb-20">
       {/* ── Top Bar with Back Link & Title ── */}
       <header className="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EAE4D5] px-6 sm:px-10 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href="/"
+            href={tenantSlug ? `/${tenantSlug}/admin` : '/'}
             className="w-9 h-9 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] flex items-center justify-center text-[#1C1917] transition-colors"
+            title={tenantSlug ? 'Volver a Panel Admin' : 'Inicio'}
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-normal text-[#1C1917] flex items-center gap-1.5 font-serif">
-              <span>Terminal de Mostrador</span>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#5B6F00] bg-[#F1F5DC] px-2 py-0.5 rounded-full border border-[#D9E2B3]">
-                Editorial
-              </span>
+              <span>{tenantInfo?.name || config.studioName || 'Terminal de Mostrador'}</span>
+              {tenantSlug && (
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6F00] bg-[#F1F5DC] px-2 py-0.5 rounded-full border border-[#D9E2B3]">
+                  /{tenantSlug}
+                </span>
+              )}
             </h1>
           </div>
         </div>
@@ -285,9 +524,21 @@ export function FusionScannerTerminal() {
               className="w-4 h-4 rounded text-[#5B6F00] focus:ring-[#5B6F00] cursor-pointer accent-[#5B6F00]"
             />
           </label>
+
+          {tenantSlug && (
+            <button
+              onClick={handleLockTerminal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#78716C] hover:text-[#1C1917] transition-colors cursor-pointer"
+              title="Bloquear terminal de caja con PIN"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#5B6F00]" />
+              <span className="hidden sm:inline">Bloquear Caja</span>
+            </button>
+          )}
+
           <button
-            onClick={() => refreshFromServer()}
-            className="p-2 rounded-full hover:bg-[#F3EFE6] text-[#78716C] transition-colors"
+            onClick={() => refreshFromServer(tenantSlug)}
+            className="p-2 rounded-full hover:bg-[#F3EFE6] text-[#78716C] transition-colors cursor-pointer"
             title="Refrescar datos"
           >
             <RefreshCw className="w-4 h-4" />

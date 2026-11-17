@@ -26,6 +26,7 @@ import {
   ShieldCheck,
   Zap,
   LogOut,
+  Check,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -36,6 +37,17 @@ export function SuperAdminDashboard() {
   const [statusFilter, setStatusFilter] = useState<'all' | TenantStatus>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Activation Invitation Modal State
+  const [newTenantInvite, setNewTenantInvite] = useState<{
+    tenantName: string;
+    tenantSlug: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail?: string;
+    activationUrl: string;
+  } | null>(null);
+  const [copiedInvite, setCopiedInvite] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -120,6 +132,41 @@ export function SuperAdminDashboard() {
     }
   };
 
+  // Fetch or regenerate invitation link for any business
+  const handleFetchInvite = async (
+    slug: string,
+    name: string,
+    ownerPhone: string,
+    ownerName: string,
+    ownerEmail?: string
+  ) => {
+    setActionLoading(`invite_${slug}`);
+    try {
+      const res = await fetch('/api/superadmin/tenants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'invite', slug }),
+      });
+      const data = await res.json();
+      if (data.success && data.activationUrl) {
+        setNewTenantInvite({
+          tenantName: name,
+          tenantSlug: slug,
+          ownerName,
+          ownerPhone,
+          ownerEmail,
+          activationUrl: data.activationUrl,
+        });
+      } else {
+        alert(data.error || 'No se pudo obtener el enlace de activación');
+      }
+    } catch {
+      alert('Error de red al consultar invitación');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   // Create new tenant
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,6 +196,16 @@ export function SuperAdminDashboard() {
       if (data.success && data.tenant) {
         setTenants((prev) => [data.tenant, ...prev]);
         setShowAddModal(false);
+        if (data.activationUrl) {
+          setNewTenantInvite({
+            tenantName: data.tenant.name,
+            tenantSlug: data.tenant.slug,
+            ownerName: data.tenant.ownerName,
+            ownerPhone: data.tenant.ownerPhone,
+            ownerEmail: data.tenant.ownerEmail,
+            activationUrl: data.activationUrl,
+          });
+        }
         // Reset form
         setFormName('');
         setFormSlug('');
@@ -488,16 +545,44 @@ export function SuperAdminDashboard() {
 
                         {/* Actions */}
                         <td className="py-4 px-5 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1.5">
                             {/* Impersonate button (Entrar como comercio) */}
                             <Link
-                              href="/admin"
-                              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-xs font-semibold transition-colors"
-                              title="Entrar a administrar este comercio"
+                              href={`/${tenant.slug}/admin`}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#FAF7F2] hover:bg-[#F1F5DC] hover:text-[#5B6F00] border border-[#EAE4D5] text-[#1C1917] text-xs font-semibold transition-colors"
+                              title={`Entrar a administrar ${tenant.name}`}
                             >
-                              <span>Entrar</span>
+                              <span>Admin</span>
                               <ExternalLink className="w-3 h-3 text-[#78716C]" />
                             </Link>
+
+                            {/* Counter Scanner Terminal */}
+                            <Link
+                              href={`/${tenant.slug}/scanner`}
+                              target="_blank"
+                              className="p-2 rounded-full bg-[#FAF7F2] hover:bg-[#F1F5DC] hover:text-[#5B6F00] border border-[#EAE4D5] text-[#78716C] transition-colors"
+                              title="Abrir terminal de mostrador para cajeros"
+                            >
+                              <QrCode className="w-3.5 h-3.5" />
+                            </Link>
+
+                            {/* Enlace de Activación / Invitación */}
+                            <button
+                              onClick={() =>
+                                handleFetchInvite(
+                                  tenant.slug,
+                                  tenant.name,
+                                  tenant.ownerPhone,
+                                  tenant.ownerName,
+                                  tenant.ownerEmail
+                                )
+                              }
+                              disabled={actionLoading === `invite_${tenant.slug}`}
+                              className="p-2 rounded-full bg-[#FAF7F2] hover:bg-[#F1F5DC] hover:text-[#5B6F00] border border-[#EAE4D5] text-[#78716C] transition-colors cursor-pointer"
+                              title="Obtener/Copiar enlace de invitación para el dueño"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                            </button>
 
                             {/* Suspend / Resume toggle button */}
                             <button
@@ -707,6 +792,113 @@ export function SuperAdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Activation Invite Details & WhatsApp Dispatch */}
+      {newTenantInvite && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FFFDF9] rounded-[36px] p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#EAE4D5] space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-[#EAE4D5]">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-[#F1F5DC] text-[#5B6F00] flex items-center justify-center border border-[#D9E2B3]">
+                  <Sparkles className="w-5 h-5 text-[#5B6F00]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-serif text-[#1C1917]">
+                    Enlace de Activación
+                  </h3>
+                  <p className="text-xs text-[#78716C]">
+                    Para el dueño de {newTenantInvite.tenantName} (/{newTenantInvite.tenantSlug})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setNewTenantInvite(null);
+                  setCopiedInvite(false);
+                }}
+                className="p-2 rounded-full hover:bg-[#FAF7F2] text-[#78716C] hover:text-[#1C1917] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-xs text-[#57534E] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-[#1C1917]">Dueño asignado:</span>
+                <span>{newTenantInvite.ownerName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-[#1C1917]">WhatsApp:</span>
+                <span className="font-mono">{newTenantInvite.ownerPhone}</span>
+              </div>
+              {newTenantInvite.ownerEmail && (
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-[#1C1917]">Correo:</span>
+                  <span className="font-mono">{newTenantInvite.ownerEmail}</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                URL de Activación Segura (Válida por 7 días)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={newTenantInvite.activationUrl}
+                  className="w-full text-xs font-mono p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] select-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(newTenantInvite.activationUrl);
+                    setCopiedInvite(true);
+                    setTimeout(() => setCopiedInvite(false), 2500);
+                  }}
+                  className="h-11 px-4 rounded-2xl bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shrink-0 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+                >
+                  {copiedInvite ? (
+                    <>
+                      <Check className="w-4 h-4 text-[#B2C248]" />
+                      <span>¡Copiado!</span>
+                    </>
+                  ) : (
+                    <span>Copiar</span>
+                  )}
+                </button>
+              </div>
+              <p className="text-[11px] text-[#78716C] mt-1.5">
+                El dueño abrirá este enlace, definirá su contraseña personal e ingresará de inmediato a su panel exclusivo.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+              <a
+                href={`https://wa.me/${newTenantInvite.ownerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                  `¡Hola ${newTenantInvite.ownerName}! 👋 Bienvenido a Loyal. Para activar tu cuenta de administrador de "${newTenantInvite.tenantName}" y configurar tu programa de fidelización, abre este enlace seguro:\n\n${newTenantInvite.activationUrl}`
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 h-12 px-5 rounded-full bg-[#25D366] hover:bg-[#20BA59] text-white text-xs font-bold shadow-md transition-all"
+              >
+                <Phone className="w-4 h-4 fill-white" />
+                <span>Enviar por WhatsApp</span>
+              </a>
+
+              <Link
+                href={`/${newTenantInvite.tenantSlug}/admin`}
+                target="_blank"
+                className="flex items-center justify-center gap-1.5 h-12 px-5 rounded-full bg-[#1C1917] hover:bg-[#292524] text-white text-xs font-bold transition-all"
+              >
+                <span>Entrar como Admin</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#B2C248]" />
+              </Link>
+            </div>
           </div>
         </div>
       )}

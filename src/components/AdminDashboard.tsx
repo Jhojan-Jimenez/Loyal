@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLoyal } from '@/context/LoyalContext';
+import { Student, StudioConfig, StampTransaction } from '@/lib/types';
 import { generateStudentsCSV, generateTransactionsCSV } from '@/lib/store';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -32,8 +33,17 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-export function AdminDashboard() {
-  const { students, transactions, config, updateConfig, resetDemoData, deleteStudent, registerStudent } = useLoyal();
+export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
+  const {
+    students: globalStudents,
+    transactions: globalTransactions,
+    config: globalConfig,
+    updateConfig,
+    resetDemoData,
+    deleteStudent,
+    registerStudent,
+    refreshFromServer,
+  } = useLoyal();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'counter_qr' | 'settings'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,17 +53,87 @@ export function AdminDashboard() {
   const [newStudentEmail, setNewStudentEmail] = useState('');
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 
+  // Tenant-scoped states
+  const [tenantInfo, setTenantInfo] = useState<{
+    id: string;
+    slug: string;
+    name: string;
+    category?: string;
+    ownerName?: string;
+    ownerPhone?: string;
+    cashierPin?: string;
+  } | null>(null);
+  const [isSuperAdminViewing, setIsSuperAdminViewing] = useState(false);
+  const [tenantConfig, setTenantConfig] = useState<StudioConfig>(globalConfig);
+  const [tenantStudents, setTenantStudents] = useState<Student[]>([]);
+  const [tenantTransactions, setTenantTransactions] = useState<StampTransaction[]>([]);
+  const [savingConfig, setSavingConfig] = useState(false);
+
   const [formData, setFormData] = useState({
-    studioName: config.studioName,
-    tagline: config.tagline,
-    totalStampsRequired: config.totalStampsRequired,
-    currentRewardTitle: config.currentRewardTitle,
-    currentRewardDescription: config.currentRewardDescription,
-    wifiSsid: config.wifiSsid,
-    wifiPassword: config.wifiPassword,
-    whatsappNumber: config.whatsappNumber,
+    studioName: globalConfig.studioName,
+    tagline: globalConfig.tagline,
+    totalStampsRequired: globalConfig.totalStampsRequired,
+    currentRewardTitle: globalConfig.currentRewardTitle,
+    currentRewardDescription: globalConfig.currentRewardDescription,
+    wifiSsid: globalConfig.wifiSsid,
+    wifiPassword: globalConfig.wifiPassword,
+    whatsappNumber: globalConfig.whatsappNumber,
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Pull tenant-specific data if tenantSlug is provided
+  useEffect(() => {
+    async function loadTenantData() {
+      if (!tenantSlug) return;
+      try {
+        const res = await fetch(`/api/db?tenantSlug=${encodeURIComponent(tenantSlug)}`);
+        const data = await res.json();
+        if (data.success) {
+          if (data.tenant) {
+            setTenantInfo(data.tenant);
+          }
+          if (data.config) {
+            setTenantConfig(data.config);
+            setFormData({
+              studioName: data.config.studioName || data.tenant?.name || 'Mi Comercio',
+              tagline: data.config.tagline || 'Programa de Fidelidad',
+              totalStampsRequired: data.config.totalStampsRequired || 10,
+              currentRewardTitle: data.config.currentRewardTitle || 'Recompensa Especial',
+              currentRewardDescription: data.config.currentRewardDescription || '',
+              wifiSsid: data.config.wifiSsid || '',
+              wifiPassword: data.config.wifiPassword || '',
+              whatsappNumber: data.config.whatsappNumber || '',
+            });
+          }
+          if (Array.isArray(data.students)) {
+            setTenantStudents(data.students);
+          }
+          if (Array.isArray(data.transactions)) {
+            setTenantTransactions(data.transactions);
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching scoped tenant data:', err);
+      }
+    }
+
+    loadTenantData();
+
+    // Check if current session is platform superadmin
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.authenticated && d.session?.isPlatformSuperAdmin) {
+          setIsSuperAdminViewing(true);
+        }
+      })
+      .catch(() => {});
+  }, [tenantSlug]);
+
+  // Resolve active data source (scoped vs global)
+  const students = tenantSlug ? tenantStudents : globalStudents;
+  const transactions = tenantSlug ? tenantTransactions : globalTransactions;
+  const config = tenantSlug ? tenantConfig : globalConfig;
 
   // Stats calculation
   const totalStudents = students.length;
@@ -77,26 +157,55 @@ export function AdminDashboard() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `clientes_loyal_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `clientes_${tenantSlug || 'loyal'}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const handleSaveConfig = (e: React.FormEvent) => {
+  const handleSaveConfig = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateConfig({
-      ...formData,
-      totalStampsRequired: Number(formData.totalStampsRequired),
-    });
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setSavingConfig(true);
+    try {
+      const updatedConfig = {
+        ...formData,
+        totalStampsRequired: Number(formData.totalStampsRequired),
+      };
+
+      const res = await fetch('/api/admin/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantSlug,
+          config: updatedConfig,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        updateConfig(updatedConfig);
+        if (tenantSlug) {
+          setTenantConfig((prev: StudioConfig) => ({ ...prev, ...updatedConfig }));
+        }
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3500);
+      } else {
+        alert(data.error || 'No se pudo guardar la configuración');
+      }
+    } catch {
+      alert('Error de conexión al guardar configuración');
+    } finally {
+      setSavingConfig(false);
+    }
   };
 
   const handleDeleteStudent = async (token: string, name: string) => {
     if (confirm(`¿Estás seguro de eliminar permanentemente a "${name}" y todo su historial de sellos? Esta acción no se puede deshacer.`)) {
       setDeleteLoading(token);
       await deleteStudent(token);
+      if (tenantSlug) {
+        setTenantStudents((prev) => prev.filter((s) => s.token.toLowerCase() !== token.toLowerCase()));
+      }
       setDeleteLoading(null);
     }
   };
@@ -105,7 +214,17 @@ export function AdminDashboard() {
     e.preventDefault();
     if (!newStudentName.trim() || !newStudentPhone.trim()) return;
 
-    registerStudent(newStudentName.trim(), newStudentPhone.trim(), newStudentEmail.trim() || undefined);
+    const newStudent = registerStudent(
+      newStudentName.trim(),
+      newStudentPhone.trim(),
+      newStudentEmail.trim() || undefined,
+      tenantSlug
+    );
+
+    if (tenantSlug) {
+      setTenantStudents((prev) => [newStudent, ...prev]);
+    }
+
     setNewStudentName('');
     setNewStudentPhone('');
     setNewStudentEmail('');
@@ -140,7 +259,10 @@ export function AdminDashboard() {
   };
 
   // Printable Counter Poster URL
-  const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/` : 'https://loyal.jhojan.cloud/';
+  const joinUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/${tenantSlug ? `?tenant=${tenantSlug}` : ''}`
+      : 'https://loyal.jhojan.cloud/';
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-6 font-sans text-[#1C1917]">
@@ -148,12 +270,24 @@ export function AdminDashboard() {
       <div className="relative overflow-hidden rounded-[32px] bg-[#1C1917] p-6 sm:p-8 text-white shadow-xl border border-[#292524]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#292524] text-[#B2C248] border border-[#3E3832]">
-              <Settings className="w-3.5 h-3.5" />
-              Panel de Control Administrativo
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#292524] text-[#B2C248] border border-[#3E3832]">
+                <Settings className="w-3.5 h-3.5" />
+                Panel de Control de Comercio
+              </span>
+              {tenantSlug && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#3E3832] text-[#B2C248] border border-[#524B43]">
+                  /{tenantSlug}
+                </span>
+              )}
+              {isSuperAdminViewing && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#B45309]/30 text-[#FDE68A] border border-[#B45309]">
+                  Modo SuperAdmin
+                </span>
+              )}
+            </div>
             <h1 className="text-2xl sm:text-3xl font-serif font-normal mt-2 tracking-tight text-white">
-              Gestión del Comercio & Clientes
+              {tenantInfo?.name || config.studioName || 'Gestión del Comercio & Clientes'}
             </h1>
             <p className="text-xs sm:text-sm text-[#A89F91] mt-1 font-normal">
               Administra tus miembros frecuentes, descarga el QR de mostrador y ajusta las reglas de tu programa
@@ -161,6 +295,26 @@ export function AdminDashboard() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {isSuperAdminViewing && (
+              <Link
+                href="/superadmin"
+                className="flex items-center gap-1.5 h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-xs font-semibold text-[#B2C248] hover:bg-[#3E3832] transition-all"
+              >
+                <span>← SuperAdmin</span>
+              </Link>
+            )}
+
+            <Link
+              href={`/${tenantSlug || 'demo'}/scanner`}
+              target="_blank"
+              className="flex items-center gap-1.5 h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-xs font-semibold text-white/90 hover:bg-[#3E3832] transition-all"
+              title="Abrir terminal de escaneo de mostrador para cajeros"
+            >
+              <QrCode className="w-4 h-4 text-[#B2C248]" />
+              <span className="hidden sm:inline">Escáner Mostrador</span>
+              <ExternalLink className="w-3 h-3 text-[#A89F91]" />
+            </Link>
+
             <button
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 h-11 px-5 rounded-full bg-[#5B6F00] text-white text-xs font-bold shadow-md hover:bg-[#4D5E00] active:scale-95 transition-all cursor-pointer"
@@ -171,16 +325,16 @@ export function AdminDashboard() {
 
             <button
               onClick={handleExportStudents}
-              className="flex items-center gap-2 h-11 px-5 rounded-full bg-[#292524] border border-[#3E3832] text-white/90 text-xs font-semibold hover:bg-[#3E3832] active:scale-95 transition-all cursor-pointer"
+              className="flex items-center gap-2 h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-white/90 text-xs font-semibold hover:bg-[#3E3832] active:scale-95 transition-all cursor-pointer"
             >
               <Download className="w-4 h-4 text-[#A89F91]" />
-              <span>Exportar CSV</span>
+              <span className="hidden sm:inline">CSV</span>
             </button>
 
             <button
               onClick={async () => {
                 await fetch('/api/auth/logout', { method: 'POST' });
-                window.location.href = '/login?role=admin';
+                window.location.href = '/login';
               }}
               className="flex items-center gap-2 h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-xs font-semibold text-[#F5C7C0] hover:bg-[#3E3832] hover:text-[#C2410C] active:scale-95 transition-all cursor-pointer"
               title="Cerrar Sesión de Comercio"
