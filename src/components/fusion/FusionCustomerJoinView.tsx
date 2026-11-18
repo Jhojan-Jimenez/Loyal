@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TenantBusiness, StudioConfig } from '@/lib/types';
+import { isLightHexColor } from '@/lib/color-utils';
 import {
   Sparkles,
   Smartphone,
@@ -143,66 +144,109 @@ export function FusionCustomerJoinView({ tenant, config }: FusionCustomerJoinVie
 
       {/* Main Container */}
       <main className="flex-1 max-w-md w-full mx-auto px-4 py-6 space-y-6">
-        {/* Hero Card Preview */}
-        <div className="bg-[#1C1917] rounded-[32px] p-6 text-white shadow-xl border border-[#292524] relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-44 h-44 bg-[#5B6F00]/20 rounded-full blur-3xl pointer-events-none" />
+        {/* Hero Card Preview (Granola Warm Paper & Olive or Custom Background) */}
+        {(() => {
+          const useImage = config.walletBgMode === 'image' && Boolean(config.walletBgImageUrl?.trim());
+          const bgHex = config.walletBgColor || '#FAF7F2';
+          const isLight = !useImage && isLightHexColor(bgHex);
 
-          <div className="relative z-10 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#B2C248]">
-                Tarjeta Digital de Sellos
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#292524] text-[#A8A29E] border border-[#3E3832]">
-                {totalStamps} Visitas
-              </span>
-            </div>
+          return (
+            <div
+              className={`rounded-[32px] p-6 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] border relative overflow-hidden bg-cover bg-center ${
+                isLight ? 'text-[#1C1917] border-[#EAE4D5]' : 'text-white border-white/15'
+              }`}
+              style={{
+                backgroundColor: bgHex,
+                ...(useImage ? { backgroundImage: `url(${config.walletBgImageUrl})` } : {}),
+              }}
+            >
+              {/* Legibility scrim when using custom background image */}
+              {useImage && (
+                <div className="absolute inset-0 bg-gradient-to-b from-[#1C1917]/75 via-[#1C1917]/65 to-[#1C1917]/85 pointer-events-none" />
+              )}
 
-            <div>
-              <h1 className="text-2xl font-serif font-normal text-white tracking-tight leading-snug">
-                {businessName}
-              </h1>
-              <p className="text-xs text-[#A8A29E] mt-1">
-                {config.tagline || 'Colecciona tus sellos en cada visita y canjea premios.'}
-              </p>
-            </div>
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`text-[11px] font-mono font-bold uppercase tracking-widest ${
+                      isLight ? 'text-[#5B6F00]' : 'text-[#E2F099]'
+                    }`}
+                  >
+                    {config.walletProgramName || 'Tarjeta Digital de Sellos'}
+                  </span>
+                  <span
+                    className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold border ${
+                      isLight
+                        ? 'bg-[#F1F5DC] text-[#5B6F00] border-[#D9E2B3]'
+                        : 'bg-white/15 text-white border-white/25 backdrop-blur-xs'
+                    }`}
+                  >
+                    {totalStamps} Visitas
+                  </span>
+                </div>
 
-            {/* Reward Highlight Box */}
-            <div className="p-3.5 rounded-2xl bg-[#292524]/90 border border-[#3E3832] flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl bg-[#5B6F00] text-white flex items-center justify-center shrink-0 mt-0.5">
-                <Gift className="w-4 h-4 text-[#E2F099]" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#B2C248] font-bold block">
-                  Tu Premio al completar {totalStamps} visitas
-                </span>
-                <p className="text-sm font-semibold text-white truncate mt-0.5">
-                  {rewardTitle}
-                </p>
-                {rewardDesc && (
-                  <p className="text-[11px] text-[#A8A29E] mt-0.5 line-clamp-2">
-                    {rewardDesc}
+                <div>
+                  <h1 className="text-2xl font-serif font-normal tracking-tight leading-snug">
+                    {businessName}
+                  </h1>
+                  <p className={`text-xs mt-1 ${isLight ? 'text-[#57534E]' : 'text-white/80'}`}>
+                    {config.tagline || 'Colecciona tus sellos en cada visita y canjea premios.'}
                   </p>
-                )}
-              </div>
-            </div>
+                </div>
 
-            {/* Stamp preview dots */}
-            <div className="pt-1 flex items-center justify-between gap-1.5">
-              {Array.from({ length: totalStamps }).map((_, i) => (
+                {/* Reward Highlight Box */}
                 <div
-                  key={i}
-                  className={`flex-1 h-7 rounded-lg flex items-center justify-center text-[10px] font-mono font-bold transition-all ${
-                    i === totalStamps - 1
-                      ? 'bg-[#5B6F00] text-white border border-[#B2C248]/50'
-                      : 'bg-[#292524] text-[#78716C] border border-[#3E3832]'
+                  className={`p-3.5 rounded-2xl border flex items-start gap-3 ${
+                    isLight
+                      ? 'bg-[#FFFDF9] border-[#EAE4D5]'
+                      : 'bg-black/30 border-white/15 backdrop-blur-xs'
                   }`}
                 >
-                  {i === totalStamps - 1 ? '🎁' : i + 1}
+                  <div className="w-8 h-8 rounded-xl bg-[#5B6F00] text-white flex items-center justify-center shrink-0 mt-0.5">
+                    <Gift className="w-4 h-4 text-[#E2F099]" />
+                  </div>
+                  <div className="min-w-0">
+                    <span
+                      className={`text-[10px] font-mono uppercase tracking-wider font-bold block ${
+                        isLight ? 'text-[#5B6F00]' : 'text-[#E2F099]'
+                      }`}
+                    >
+                      Tu Premio al completar {totalStamps} visitas
+                    </span>
+                    <p className="text-sm font-semibold truncate mt-0.5">{rewardTitle}</p>
+                    {rewardDesc && (
+                      <p
+                        className={`text-[11px] mt-0.5 line-clamp-2 ${
+                          isLight ? 'text-[#57534E]' : 'text-white/75'
+                        }`}
+                      >
+                        {rewardDesc}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              ))}
+
+                {/* Stamp preview dots */}
+                <div className="pt-1 flex items-center justify-between gap-1.5">
+                  {Array.from({ length: totalStamps }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 h-7 rounded-lg flex items-center justify-center text-[10px] font-mono font-bold transition-all border ${
+                        i === totalStamps - 1
+                          ? 'bg-[#5B6F00] text-white border-[#5B6F00]'
+                          : isLight
+                            ? 'bg-[#FFFDF9] text-[#78716C] border-[#EAE4D5]'
+                            : 'bg-white/15 text-white/80 border-white/20 backdrop-blur-xs'
+                      }`}
+                    >
+                      {i === totalStamps - 1 ? '🎁' : i + 1}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Mode Toggle Pills */}
         <div className="bg-[#FAF7F2] p-1.5 rounded-2xl border border-[#EAE4D5] flex items-center gap-1">

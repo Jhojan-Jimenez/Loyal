@@ -33,8 +33,11 @@ import {
   Copy,
   Palette,
   Smartphone,
+  Image as ImageIcon,
+  Upload,
 } from 'lucide-react';
 import Link from 'next/link';
+import { isLightHexColor } from '@/lib/color-utils';
 
 export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
   const {
@@ -81,12 +84,43 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
     wifiSsid: globalConfig.wifiSsid,
     wifiPassword: globalConfig.wifiPassword,
     whatsappNumber: globalConfig.whatsappNumber,
-    walletBgColor: globalConfig.walletBgColor || '#1C1917',
+    walletBgMode: (globalConfig.walletBgMode || 'color') as 'color' | 'image',
+    walletBgColor: globalConfig.walletBgColor || '#FAF7F2',
+    walletBgImageUrl: globalConfig.walletBgImageUrl || '',
     walletProgramName: globalConfig.walletProgramName || 'Pase Digital de Fidelización',
     walletLogoUrl: globalConfig.walletLogoUrl || '',
     walletHeroImageUrl: globalConfig.walletHeroImageUrl || '',
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+
+  const handleImageUpload = async (
+    file: File,
+    field: 'walletBgImageUrl' | 'walletLogoUrl' | 'walletHeroImageUrl'
+  ) => {
+    setUploadingField(field);
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      if (tenantSlug) body.append('tenantSlug', tenantSlug);
+
+      const res = await fetch('/api/uploads', { method: 'POST', body });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error || 'No se pudo subir la imagen');
+        return;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        [field]: data.url,
+        ...(field === 'walletBgImageUrl' ? { walletBgMode: 'image' as const } : {}),
+      }));
+    } catch {
+      alert('Error de conexión al subir imagen');
+    } finally {
+      setUploadingField(null);
+    }
+  };
 
   // Pull tenant-specific data if tenantSlug is provided
   useEffect(() => {
@@ -110,7 +144,9 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
               wifiSsid: data.config.wifiSsid || '',
               wifiPassword: data.config.wifiPassword || '',
               whatsappNumber: data.config.whatsappNumber || '',
-              walletBgColor: data.config.walletBgColor || '#1C1917',
+              walletBgMode: data.config.walletBgMode || (data.config.walletBgImageUrl ? 'image' : 'color'),
+              walletBgColor: data.config.walletBgColor || '#FAF7F2',
+              walletBgImageUrl: data.config.walletBgImageUrl || '',
               walletProgramName: data.config.walletProgramName || 'Pase Digital de Fidelización',
               walletLogoUrl: data.config.walletLogoUrl || '',
               walletHeroImageUrl: data.config.walletHeroImageUrl || '',
@@ -742,26 +778,62 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                     </div>
                     <div>
                       <h4 className="text-base font-serif font-normal text-[#1C1917]">
-                        Estilización de Tarjeta en Google Wallet
+                        Estilización de Tarjeta &amp; Google Wallet
                       </h4>
                       <p className="text-[11px] text-[#78716C]">
-                        Cada comercio posee su propia plantilla aislada en Google Wallet. Personaliza tus colores y logo.
+                        Plantilla base estilo Granola. Elige color sólido o sube una imagen de fondo personalizada.
                       </p>
                     </div>
                   </div>
 
+                  {/* Background Mode Selector */}
                   <div>
                     <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-2">
-                      Color de Fondo de la Tarjeta
+                      Estilo de Fondo
+                    </label>
+                    <div className="inline-flex p-1 bg-[#FAF7F2] rounded-2xl border border-[#EAE4D5] gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, walletBgMode: 'color' })}
+                        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          formData.walletBgMode === 'color'
+                            ? 'bg-white text-[#1C1917] shadow-xs border border-[#EAE4D5]'
+                            : 'text-[#78716C] hover:text-[#1C1917]'
+                        }`}
+                      >
+                        <Palette className="w-3.5 h-3.5 text-[#5B6F00]" />
+                        <span>Color Sólido</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, walletBgMode: 'image' })}
+                        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          formData.walletBgMode === 'image'
+                            ? 'bg-white text-[#1C1917] shadow-xs border border-[#EAE4D5]'
+                            : 'text-[#78716C] hover:text-[#1C1917]'
+                        }`}
+                      >
+                        <ImageIcon className="w-3.5 h-3.5 text-[#5B6F00]" />
+                        <span>Imagen de Fondo</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Color Picker & Granola Presets */}
+                  <div>
+                    <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-2">
+                      {formData.walletBgMode === 'image'
+                        ? 'Color Base de Respaldo (Google Wallet)'
+                        : 'Color de Fondo de la Tarjeta'}
                     </label>
                     <div className="flex flex-wrap items-center gap-2.5">
                       {[
-                        { name: 'Ink Dark', hex: '#1C1917' },
-                        { name: 'Loyal Olive', hex: '#5B6F00' },
+                        { name: 'Granola Cream', hex: '#FAF7F2' },
+                        { name: 'Granola Olive', hex: '#5B6F00' },
+                        { name: 'Sage Leaf', hex: '#E5EACD' },
+                        { name: 'Warm Ink', hex: '#1C1917' },
                         { name: 'Espresso', hex: '#3F2E26' },
-                        { name: 'Slate Navy', hex: '#1E293B' },
                         { name: 'Terracotta', hex: '#9A3412' },
-                        { name: 'Forest', hex: '#14532D' },
                       ].map((swatch) => (
                         <button
                           key={swatch.hex}
@@ -788,12 +860,50 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                           type="text"
                           value={formData.walletBgColor}
                           onChange={(e) => setFormData({ ...formData, walletBgColor: e.target.value })}
-                          placeholder="#1C1917"
+                          placeholder="#FAF7F2"
                           className="w-18 text-xs font-mono text-[#1C1917] bg-transparent focus:outline-hidden uppercase"
                         />
                       </div>
                     </div>
                   </div>
+
+                  {/* Background Image Upload / URL (when in Image Mode) */}
+                  {formData.walletBgMode === 'image' && (
+                    <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider">
+                          Imagen de Fondo de la Tarjeta
+                        </label>
+                        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-[11px] font-bold cursor-pointer transition-colors">
+                          <Upload className="w-3.5 h-3.5 text-[#B2C248]" />
+                          <span>
+                            {uploadingField === 'walletBgImageUrl' ? 'Subiendo...' : 'Subir Imagen'}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            className="hidden"
+                            disabled={uploadingField === 'walletBgImageUrl'}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleImageUpload(file, 'walletBgImageUrl');
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      <input
+                        type="url"
+                        value={formData.walletBgImageUrl}
+                        onChange={(e) => setFormData({ ...formData, walletBgImageUrl: e.target.value })}
+                        placeholder="https://... o sube una imagen PNG/JPG/WebP"
+                        className="w-full text-xs p-3 rounded-2xl bg-white border border-[#EAE4D5] text-[#1C1917] focus:outline-hidden focus:border-[#5B6F00] transition-colors"
+                      />
+                      <p className="text-[11px] text-[#78716C]">
+                        En la tarjeta web se muestra como fondo completo con contraste automático; en Google Wallet se integra como imagen principal del pase.
+                      </p>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
@@ -810,9 +920,23 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
-                        URL Logo Cuadrado <span className="text-[#78716C] font-normal lowercase">(opcional, https)</span>
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider">
+                          Logo Cuadrado
+                        </label>
+                        <label className="text-[11px] font-bold text-[#5B6F00] hover:underline cursor-pointer">
+                          {uploadingField === 'walletLogoUrl' ? 'Subiendo...' : 'Subir'}
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleImageUpload(file, 'walletLogoUrl');
+                            }}
+                          />
+                        </label>
+                      </div>
                       <input
                         type="url"
                         value={formData.walletLogoUrl}
@@ -823,9 +947,23 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
-                        URL Imagen Banner <span className="text-[#78716C] font-normal lowercase">(opcional, 1032x336)</span>
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider">
+                          Banner Opcional
+                        </label>
+                        <label className="text-[11px] font-bold text-[#5B6F00] hover:underline cursor-pointer">
+                          {uploadingField === 'walletHeroImageUrl' ? 'Subiendo...' : 'Subir'}
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleImageUpload(file, 'walletHeroImageUrl');
+                            }}
+                          />
+                        </label>
+                      </div>
                       <input
                         type="url"
                         value={formData.walletHeroImageUrl}
@@ -864,93 +1002,162 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                 </div>
               </div>
 
-              {/* Right Column: Live Google Wallet Card Preview */}
+              {/* Right Column: Live Granola + Google Wallet Card Preview */}
               <div className="lg:col-span-5 lg:sticky lg:top-8 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#78716C] flex items-center gap-1.5">
                     <Smartphone className="w-3.5 h-3.5 text-[#5B6F00]" />
-                    Vista Previa Google Wallet
+                    Vista Previa Plantilla Granola
                   </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FAF7F2] border border-[#EAE4D5] text-[#78716C]">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#F1F5DC] border border-[#D9E2B3] text-[#5B6F00] font-bold">
                     En vivo
                   </span>
                 </div>
 
-                <div
-                  className="rounded-[28px] p-5 text-white shadow-xl border border-white/10 transition-colors duration-300 space-y-5"
-                  style={{ backgroundColor: formData.walletBgColor || '#1C1917' }}
-                >
-                  {/* Top Header */}
-                  <div className="flex items-center gap-3">
-                    {formData.walletLogoUrl ? (
-                      <img
-                        src={formData.walletLogoUrl}
-                        alt="Logo"
-                        className="w-10 h-10 rounded-full object-cover bg-white/10 border border-white/20 shrink-0"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-white/15 border border-white/25 flex items-center justify-center font-serif text-base font-bold shrink-0">
-                        {(formData.studioName || 'L').charAt(0).toUpperCase()}
+                {(() => {
+                  const useImage =
+                    formData.walletBgMode === 'image' && Boolean(formData.walletBgImageUrl?.trim());
+                  const bgHex = formData.walletBgColor || '#FAF7F2';
+                  const isLight = !useImage && isLightHexColor(bgHex);
+
+                  return (
+                    <div
+                      className={`relative rounded-[28px] p-5 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.12)] border transition-all duration-300 overflow-hidden bg-cover bg-center ${
+                        isLight
+                          ? 'text-[#1C1917] border-[#EAE4D5]'
+                          : 'text-white border-white/15'
+                      }`}
+                      style={{
+                        backgroundColor: bgHex,
+                        ...(useImage ? { backgroundImage: `url(${formData.walletBgImageUrl})` } : {}),
+                      }}
+                    >
+                      {useImage && (
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#1C1917]/75 via-[#1C1917]/60 to-[#1C1917]/85 pointer-events-none" />
+                      )}
+
+                      <div className="relative z-10 space-y-5">
+                        {/* Top Header */}
+                        <div
+                          className={`flex items-center gap-3 pb-3.5 border-b ${
+                            isLight ? 'border-[#EAE4D5]' : 'border-white/15'
+                          }`}
+                        >
+                          {formData.walletLogoUrl ? (
+                            <img
+                              src={formData.walletLogoUrl}
+                              alt="Logo"
+                              className={`w-10 h-10 rounded-2xl object-cover shrink-0 border ${
+                                isLight ? 'bg-white border-[#EAE4D5]' : 'bg-white/10 border-white/20'
+                              }`}
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div
+                              className={`w-10 h-10 rounded-2xl flex items-center justify-center font-serif text-base font-bold shrink-0 border ${
+                                isLight
+                                  ? 'bg-[#F1F5DC] text-[#5B6F00] border-[#D9E2B3]'
+                                  : 'bg-white/15 text-white border-white/25'
+                              }`}
+                            >
+                              {(formData.studioName || 'L').charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-serif font-normal truncate">
+                              {formData.studioName || 'Mi Comercio'}
+                            </p>
+                            <p
+                              className={`text-[11px] font-mono truncate ${
+                                isLight ? 'text-[#5B6F00]' : 'text-[#E2F099]'
+                              }`}
+                            >
+                              {formData.walletProgramName || 'Pase Digital de Fidelización'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Holder & Points */}
+                        <div className="flex items-end justify-between gap-2">
+                          <div>
+                            <span
+                              className={`text-[10px] font-mono uppercase tracking-wider block ${
+                                isLight ? 'text-[#78716C]' : 'text-white/70'
+                              }`}
+                            >
+                              Sellos Acumulados
+                            </span>
+                            <p className="text-2xl font-serif font-normal mt-0.5">
+                              3 de {formData.totalStampsRequired || 10} sellos
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span
+                              className={`text-[10px] font-mono uppercase tracking-wider block ${
+                                isLight ? 'text-[#78716C]' : 'text-white/70'
+                              }`}
+                            >
+                              Titular
+                            </span>
+                            <p className="text-xs font-semibold">Camila Morales</p>
+                          </div>
+                        </div>
+
+                        {/* Simulated Barcode Box */}
+                        <div
+                          className={`rounded-2xl p-4 flex flex-col items-center justify-center text-[#1C1917] border ${
+                            isLight
+                              ? 'bg-[#FFFDF9] border-[#EAE4D5]'
+                              : 'bg-white/95 border-white/20'
+                          }`}
+                        >
+                          <QrCode className="w-24 h-24 text-[#1C1917]" strokeWidth={1.5} />
+                          <span className="text-[10px] font-mono text-[#78716C] mt-1">
+                            camila-morales-7x2q
+                          </span>
+                        </div>
+
+                        {/* Optional Hero Banner */}
+                        {formData.walletHeroImageUrl && (
+                          <div
+                            className={`rounded-xl overflow-hidden border max-h-24 ${
+                              isLight ? 'border-[#EAE4D5]' : 'border-white/15'
+                            }`}
+                          >
+                            <img
+                              src={formData.walletHeroImageUrl}
+                              alt="Hero Banner"
+                              className="w-full h-24 object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        {/* Reward footer */}
+                        <div
+                          className={`p-3 rounded-2xl border flex items-center gap-2.5 text-xs ${
+                            isLight
+                              ? 'bg-[#FFFDF9] border-[#EAE4D5] text-[#1C1917]'
+                              : 'bg-black/30 border-white/15 text-white backdrop-blur-xs'
+                          }`}
+                        >
+                          <Gift
+                            className={`w-4 h-4 shrink-0 ${
+                              isLight ? 'text-[#5B6F00]' : 'text-[#E2F099]'
+                            }`}
+                          />
+                          <span className="truncate font-serif">
+                            {formData.currentRewardTitle || 'Recompensa'}
+                          </span>
+                        </div>
                       </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-white/90 truncate">
-                        {formData.studioName || 'Mi Comercio'}
-                      </p>
-                      <p className="text-[11px] text-white/70 truncate">
-                        {formData.walletProgramName || 'Pase Digital de Fidelización'}
-                      </p>
                     </div>
-                  </div>
-
-                  {/* Holder & Points */}
-                  <div className="flex items-end justify-between gap-2 pt-1">
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-white/60 block">
-                        Sellos Acumulados
-                      </span>
-                      <p className="text-2xl font-serif font-normal text-white mt-0.5">
-                        3 de {formData.totalStampsRequired || 10} sellos
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] uppercase tracking-wider text-white/60 block">
-                        Titular
-                      </span>
-                      <p className="text-xs font-medium text-white">Camila Morales</p>
-                    </div>
-                  </div>
-
-                  {/* Simulated Barcode Box */}
-                  <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-[#1C1917]">
-                    <QrCode className="w-24 h-24 text-[#1C1917]" strokeWidth={1.5} />
-                    <span className="text-[10px] font-mono text-[#78716C] mt-1">
-                      camila-morales-7x2q
-                    </span>
-                  </div>
-
-                  {/* Optional Hero Banner */}
-                  {formData.walletHeroImageUrl && (
-                    <div className="rounded-xl overflow-hidden border border-white/15 max-h-24">
-                      <img
-                        src={formData.walletHeroImageUrl}
-                        alt="Hero Banner"
-                        className="w-full h-24 object-cover"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Reward footer */}
-                  <div className="pt-2 border-t border-white/15 flex items-center justify-between text-[11px] text-white/80">
-                    <span className="truncate">🎁 {formData.currentRewardTitle || 'Recompensa'}</span>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
             </div>
 

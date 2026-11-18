@@ -52,24 +52,28 @@ export function getWalletIds(issuerId: string, token: string, tenantSlug?: strin
   };
 }
 
-function isValidHttpsUrl(url?: string): boolean {
-  if (!url) return false;
+function resolvePublicImageUrl(url: string | undefined, appUrl: string): string | null {
+  if (!url || !url.trim()) return null;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('/')) {
+    const base = appUrl.replace(/\/$/, '');
+    return base.startsWith('https://') ? `${base}${trimmed}` : null;
+  }
   try {
-    const parsed = new URL(url.trim());
-    return parsed.protocol === 'https:';
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'https:' ? trimmed : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
 function buildLoyaltyClassPayload(classId: string, config: StudioConfig, appUrl: string) {
-  const logoUri = isValidHttpsUrl(config.walletLogoUrl)
-    ? config.walletLogoUrl!.trim()
-    : `${appUrl}/icon-512.png`;
+  const logoUri =
+    resolvePublicImageUrl(config.walletLogoUrl, appUrl) || `${appUrl}/icon-512.png`;
 
   const bgColor = /^#[0-9A-Fa-f]{6}$/.test(config.walletBgColor || '')
     ? config.walletBgColor!
-    : '#1C1917';
+    : '#FAF7F2';
 
   const payload: Record<string, any> = {
     id: classId,
@@ -88,9 +92,17 @@ function buildLoyaltyClassPayload(classId: string, config: StudioConfig, appUrl:
     reviewStatus: 'UNDER_REVIEW',
   };
 
-  if (isValidHttpsUrl(config.walletHeroImageUrl)) {
+  // In Google Wallet, heroImage displays a wide visual image on the pass.
+  // Use explicit walletHeroImageUrl if set, or fall back to walletBgImageUrl when image mode is active.
+  const heroUri =
+    resolvePublicImageUrl(config.walletHeroImageUrl, appUrl) ||
+    (config.walletBgMode === 'image'
+      ? resolvePublicImageUrl(config.walletBgImageUrl, appUrl)
+      : null);
+
+  if (heroUri) {
     payload.heroImage = {
-      sourceUri: { uri: config.walletHeroImageUrl!.trim() },
+      sourceUri: { uri: heroUri },
       contentDescription: {
         defaultValue: {
           language: 'es',

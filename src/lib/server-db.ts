@@ -55,7 +55,7 @@ export function verifyPassword(password: string, hash: string): boolean {
 // DATABASE PERSISTENCE (DISK / VOLUME)
 // ─────────────────────────────────────────────────────────────
 
-function getDbPath(): string {
+export function getDataDir(): string {
   const candidates = [
     process.env.DATA_DIR,
     path.join(process.cwd(), 'data'),
@@ -70,13 +70,17 @@ function getDbPath(): string {
       const testFile = path.join(dir, `.test-write-${Date.now()}`);
       fs.writeFileSync(testFile, '1', 'utf8');
       fs.unlinkSync(testFile);
-      return path.join(dir, 'loyal-db.json');
+      return dir;
     } catch {
       // try next candidate
     }
   }
 
-  return path.join(process.cwd(), 'loyal-db.json');
+  return process.cwd();
+}
+
+function getDbPath(): string {
+  return path.join(getDataDir(), 'loyal-db.json');
 }
 
 function ensureDefaultSuperAdmin(db: DatabaseData) {

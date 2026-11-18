@@ -22,6 +22,7 @@ import {
   Smartphone,
 } from 'lucide-react';
 import { Student, StudioConfig } from '@/lib/types';
+import { isLightHexColor } from '@/lib/color-utils';
 
 interface FusionStudentCardViewProps {
   token: string;
@@ -245,29 +246,73 @@ export function FusionStudentCardView({
         </div>
 
         {/* ── TAB 1: CARD & TOTP QR VIEW ── */}
-        {activeTab === 'card' && (
+        {activeTab === 'card' && (() => {
+          const useImage = config.walletBgMode === 'image' && Boolean(config.walletBgImageUrl?.trim());
+          const bgHex = config.walletBgColor || '#FFFDF9';
+          const isLight = !useImage && isLightHexColor(bgHex);
+
+          return (
           <div className="space-y-5 animate-in fade-in duration-200">
-            {/* The Tactile Card */}
-            <div className="bg-[#FFFDF9] rounded-[32px] border border-[#EAE4D5] p-6 sm:p-7 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)]">
+            {/* The Tactile Card (Granola Template or Custom Brand Background) */}
+            <div
+              className={`relative rounded-[32px] border p-6 sm:p-7 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] overflow-hidden bg-cover bg-center ${
+                isLight ? 'border-[#EAE4D5] text-[#1C1917]' : 'border-white/15 text-white'
+              }`}
+              style={{
+                backgroundColor: bgHex,
+                ...(useImage ? { backgroundImage: `url(${config.walletBgImageUrl})` } : {}),
+              }}
+            >
+              {useImage && (
+                <div className="absolute inset-0 bg-gradient-to-b from-[#1C1917]/75 via-[#1C1917]/60 to-[#1C1917]/85 pointer-events-none" />
+              )}
+
+              <div className="relative z-10">
               {/* Card Header */}
-              <div className="flex items-start justify-between border-b border-[#EAE4D5] pb-4 mb-5">
+              <div
+                className={`flex items-start justify-between border-b pb-4 mb-5 ${
+                  isLight ? 'border-[#EAE4D5]' : 'border-white/15'
+                }`}
+              >
                 <div>
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#5B6F00] font-bold">
-                    Pase de Alumno
+                  <span
+                    className={`text-[11px] font-mono uppercase tracking-wider font-bold ${
+                      isLight ? 'text-[#5B6F00]' : 'text-[#E2F099]'
+                    }`}
+                  >
+                    {config.walletProgramName || 'Pase de Fidelización'}
                   </span>
-                  <h2 className="text-xl font-serif font-normal text-[#1C1917] mt-0.5">
+                  <h2 className="text-xl font-serif font-normal mt-0.5">
                     {student.name}
                   </h2>
-                  <span className="text-xs text-[#78716C] font-mono">{student.phone}</span>
+                  <span
+                    className={`text-xs font-mono ${
+                      isLight ? 'text-[#78716C]' : 'text-white/75'
+                    }`}
+                  >
+                    {student.phone}
+                  </span>
                 </div>
-                <div className="px-2.5 py-1 rounded-full bg-[#F1F5DC] border border-[#D9E2B3] text-[11px] font-bold text-[#5B6F00] flex items-center gap-1">
+                <div
+                  className={`px-2.5 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1 ${
+                    isLight
+                      ? 'bg-[#F1F5DC] border-[#D9E2B3] text-[#5B6F00]'
+                      : 'bg-white/15 border-white/25 text-white backdrop-blur-xs'
+                  }`}
+                >
                   <ShieldCheck className="w-3.5 h-3.5" />
                   <span>Activo</span>
                 </div>
               </div>
 
               {/* Dynamic QR Code Card Surface */}
-              <div className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] flex flex-col items-center mb-6">
+              <div
+                className={`p-5 rounded-2xl border flex flex-col items-center mb-6 ${
+                  isLight
+                    ? 'bg-[#FAF7F2] border-[#EAE4D5]'
+                    : 'bg-white/95 border-white/20 text-[#1C1917]'
+                }`}
+              >
                 <div className="p-3.5 bg-white rounded-2xl border border-[#EAE4D5] shadow-xs relative">
                   <QRCodeSVG
                     value={`https://loyal.jhojan.cloud/card/${student.token}?totp=${totp}`}
@@ -308,12 +353,18 @@ export function FusionStudentCardView({
               {/* Progress Summary */}
               <div className="space-y-2 mb-5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#57534E] font-medium">Progreso del ciclo:</span>
-                  <span className="font-serif font-normal text-sm text-[#1C1917]">
+                  <span className={isLight ? 'text-[#57534E] font-medium' : 'text-white/80 font-medium'}>
+                    Progreso del ciclo:
+                  </span>
+                  <span className="font-serif font-normal text-sm">
                     {currentStamps} de {totalRequired} sellos
                   </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-[#EAE4D5] overflow-hidden">
+                <div
+                  className={`w-full h-2 rounded-full overflow-hidden ${
+                    isLight ? 'bg-[#EAE4D5]' : 'bg-white/20'
+                  }`}
+                >
                   <div
                     className="h-full rounded-full transition-all duration-500 ease-out"
                     style={{
@@ -335,7 +386,9 @@ export function FusionStudentCardView({
                       className={`aspect-square rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
                         isDone
                           ? 'bg-[#5B6F00] text-white shadow-2xs'
-                          : 'bg-[#FAF7F2] text-[#78716C] border border-dashed border-[#DDD5C3]'
+                          : isLight
+                            ? 'bg-[#FAF7F2] text-[#78716C] border border-dashed border-[#DDD5C3]'
+                            : 'bg-white/15 text-white/80 border border-dashed border-white/30 backdrop-blur-xs'
                       }`}
                     >
                       {isDone ? <Check className="w-4 h-4 stroke-[3]" /> : num}
@@ -345,18 +398,29 @@ export function FusionStudentCardView({
               </div>
 
               {/* Reward Preview */}
-              <div className="p-3.5 rounded-2xl bg-[#F5F1E8] border border-[#EAE4D5] flex items-center gap-3">
+              <div
+                className={`p-3.5 rounded-2xl border flex items-center gap-3 ${
+                  isLight
+                    ? 'bg-[#F5F1E8] border-[#EAE4D5]'
+                    : 'bg-black/30 border-white/15 backdrop-blur-xs'
+                }`}
+              >
                 <div className="w-9 h-9 rounded-xl bg-[#FFFDF9] border border-[#EAE4D5] flex items-center justify-center text-[#5B6F00] shrink-0 shadow-2xs">
                   <Gift className="w-5 h-5" />
                 </div>
                 <div className="text-left flex-1 min-w-0">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#78716C] block">
+                  <span
+                    className={`text-[10px] font-mono font-bold uppercase tracking-wider block ${
+                      isLight ? 'text-[#78716C]' : 'text-[#E2F099]'
+                    }`}
+                  >
                     {isComplete ? '¡Premio listo!' : 'Próxima Recompensa'}
                   </span>
-                  <p className="text-xs font-serif font-normal text-[#1C1917] truncate">
-                    {config.currentRewardTitle || 'Clase Magistral o Taller Especial Gratis'}
+                  <p className="text-xs font-serif font-normal truncate">
+                    {config.currentRewardTitle || 'Recompensa Especial'}
                   </p>
                 </div>
+              </div>
               </div>
             </div>
 
@@ -383,7 +447,8 @@ export function FusionStudentCardView({
               </p>
             )}
           </div>
-        )}
+          );
+        })()}
 
         {/* ── TAB 2: STUDIO BENEFITS & PERKS ── */}
         {activeTab === 'details' && (
