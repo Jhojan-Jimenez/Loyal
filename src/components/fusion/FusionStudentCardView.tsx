@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Student, StudioConfig } from '@/lib/types';
 import { isLightHexColor } from '@/lib/color-utils';
+import { WalletBottomWave } from '@/components/ui/WalletBottomWave';
 
 interface FusionStudentCardViewProps {
   token: string;
@@ -254,11 +255,12 @@ export function FusionStudentCardView({
           <div className="space-y-5 animate-in fade-in duration-200">
             {/* The Tactile Card (Granola Template or Custom Brand Color) */}
             <div
-              className={`relative rounded-[32px] border p-6 sm:p-7 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] overflow-hidden ${
+              className={`relative rounded-[32px] border p-6 pb-10 sm:p-7 sm:pb-10 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] overflow-hidden ${
                 isLight ? 'border-[#EAE4D5] text-[#1C1917]' : 'border-white/15 text-white'
               }`}
               style={{ backgroundColor: bgHex }}
             >
+              <WalletBottomWave isLight={isLight} />
 
               <div className="relative z-10">
               {/* Card Header */}

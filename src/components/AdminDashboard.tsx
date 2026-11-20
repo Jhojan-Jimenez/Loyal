@@ -38,6 +38,7 @@ import {
 import Link from 'next/link';
 import { isLightHexColor } from '@/lib/color-utils';
 import { ConfirmModal, ConfirmModalState } from '@/components/ui/ConfirmModal';
+import { WalletBottomWave } from '@/components/ui/WalletBottomWave';
 
 export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
   const {
@@ -513,15 +514,15 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                 No se encontraron clientes registrados con esa búsqueda.
               </div>
             ) : (
-              <table className="w-full text-left text-xs">
+              <table className="w-full min-w-[820px] text-left text-xs">
                 <thead className="bg-[#FAF7F2] text-[#78716C] uppercase font-bold text-[10px] tracking-wider border-b border-[#EAE4D5]">
                   <tr>
-                    <th className="py-3 px-5">Cliente</th>
-                    <th className="py-3 px-5">Contacto</th>
-                    <th className="py-3 px-5">Progreso de Sellos</th>
-                    <th className="py-3 px-5">Premios Canjeados</th>
-                    <th className="py-3 px-5">Última Visita</th>
-                    <th className="py-3 px-5 text-right">Acciones</th>
+                    <th className="py-3 px-5 whitespace-nowrap">Cliente</th>
+                    <th className="py-3 px-5 whitespace-nowrap">Contacto</th>
+                    <th className="py-3 px-5 whitespace-nowrap">Progreso de Sellos</th>
+                    <th className="py-3 px-5 whitespace-nowrap">Premios Canjeados</th>
+                    <th className="py-3 px-5 whitespace-nowrap">Última Visita</th>
+                    <th className="py-3 px-5 text-right whitespace-nowrap">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE4D5]">
@@ -529,15 +530,15 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                     const isReady = s.stamps >= config.totalStampsRequired;
                     return (
                       <tr key={s.id} className="hover:bg-[#FAF7F2]/60 transition-colors">
-                        <td className="py-4 px-5">
+                        <td className="py-4 px-5 whitespace-nowrap">
                           <div className="font-semibold text-[#1C1917]">{s.name}</div>
                           <span className="text-[11px] text-[#78716C] font-mono">ID: {s.token}</span>
                         </td>
-                        <td className="py-4 px-5 text-[#57534E]">
+                        <td className="py-4 px-5 text-[#57534E] whitespace-nowrap">
                           <div className="font-mono text-xs">{s.phone}</div>
                           {s.email && <div className="text-[11px] text-[#78716C]">{s.email}</div>}
                         </td>
-                        <td className="py-4 px-5">
+                        <td className="py-4 px-5 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center gap-1.5 font-bold px-3 py-1 rounded-2xl text-xs ${
                               isReady
@@ -549,17 +550,17 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                             {s.stamps} / {config.totalStampsRequired} sellos
                           </span>
                         </td>
-                        <td className="py-4 px-5">
+                        <td className="py-4 px-5 whitespace-nowrap">
                           <span className="font-serif font-normal text-sm text-[#1C1917]">
                             {s.totalCompletedCycles} ciclo(s)
                           </span>
                         </td>
-                        <td className="py-4 px-5 text-[#78716C]">
+                        <td className="py-4 px-5 text-[#78716C] whitespace-nowrap">
                           {s.lastVisitAt
                             ? new Date(s.lastVisitAt).toLocaleDateString('es-CO')
                             : 'Sin visitas aún'}
                         </td>
-                        <td className="py-4 px-5 text-right space-x-2">
+                        <td className="py-4 px-5 text-right space-x-2 whitespace-nowrap">
                           <Link
                             href={`/card/${s.token}`}
                             target="_blank"
@@ -778,49 +779,42 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                     </div>
                   </div>
 
-                  {/* Color Picker & Granola Presets */}
+                  {/* Color Picker */}
                   <div>
                     <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-2">
                       Color de Fondo de la Tarjeta
                     </label>
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      {[
-                        { name: 'Granola Cream', hex: '#FAF7F2' },
-                        { name: 'Granola Olive', hex: '#5B6F00' },
-                        { name: 'Sage Leaf', hex: '#E5EACD' },
-                        { name: 'Warm Ink', hex: '#1C1917' },
-                        { name: 'Espresso', hex: '#3F2E26' },
-                        { name: 'Terracotta', hex: '#9A3412' },
-                      ].map((swatch) => (
-                        <button
-                          key={swatch.hex}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, walletBgColor: swatch.hex })}
-                          title={swatch.name}
-                          className={`w-8 h-8 rounded-full border-2 transition-transform cursor-pointer ${
-                            formData.walletBgColor?.toLowerCase() === swatch.hex.toLowerCase()
-                              ? 'border-[#5B6F00] scale-110 ring-2 ring-[#5B6F00]/30'
-                              : 'border-[#EAE4D5] hover:scale-105'
-                          }`}
-                          style={{ backgroundColor: swatch.hex }}
-                        />
-                      ))}
-
-                      <div className="flex items-center gap-2 ml-1 bg-[#FAF7F2] px-3 py-1.5 rounded-full border border-[#EAE4D5]">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="flex items-center gap-3 bg-[#FAF7F2] hover:bg-[#F3EFE6] px-4 py-2.5 rounded-2xl border border-[#EAE4D5] cursor-pointer transition-colors">
                         <input
                           type="color"
                           value={formData.walletBgColor}
                           onChange={(e) => setFormData({ ...formData, walletBgColor: e.target.value })}
-                          className="w-5 h-5 rounded-full cursor-pointer bg-transparent border-0 p-0"
+                          className="w-8 h-8 rounded-xl cursor-pointer bg-transparent border-0 p-0"
                         />
-                        <input
-                          type="text"
-                          value={formData.walletBgColor}
-                          onChange={(e) => setFormData({ ...formData, walletBgColor: e.target.value })}
-                          placeholder="#FAF7F2"
-                          className="w-18 text-xs font-mono text-[#1C1917] bg-transparent focus:outline-hidden uppercase"
-                        />
-                      </div>
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-[#78716C] block leading-none">
+                            Selector de color
+                          </span>
+                          <input
+                            type="text"
+                            value={formData.walletBgColor}
+                            onChange={(e) => setFormData({ ...formData, walletBgColor: e.target.value })}
+                            placeholder="#FAF7F2"
+                            className="w-24 text-sm font-mono font-bold text-[#1C1917] bg-transparent focus:outline-hidden uppercase mt-0.5"
+                          />
+                        </div>
+                      </label>
+
+                      {formData.walletBgColor?.toUpperCase() !== '#FAF7F2' && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, walletBgColor: '#FAF7F2' })}
+                          className="text-xs font-semibold text-[#5B6F00] hover:underline cursor-pointer"
+                        >
+                          Restablecer Granola (#FAF7F2)
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -909,13 +903,14 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
 
                   return (
                     <div
-                      className={`relative rounded-[28px] p-5 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.12)] border transition-all duration-300 overflow-hidden ${
+                      className={`relative rounded-[28px] p-5 pb-9 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.12)] border transition-all duration-300 overflow-hidden ${
                         isLight
                           ? 'text-[#1C1917] border-[#EAE4D5]'
                           : 'text-white border-white/15'
                       }`}
                       style={{ backgroundColor: bgHex }}
                     >
+                      <WalletBottomWave isLight={isLight} />
                       <div className="relative z-10 space-y-5">
                         {/* Top Header */}
                         <div

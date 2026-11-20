@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TenantBusiness, StudioConfig } from '@/lib/types';
 import { isLightHexColor } from '@/lib/color-utils';
+import { WalletBottomWave } from '@/components/ui/WalletBottomWave';
 import {
   Sparkles,
   Smartphone,
@@ -151,11 +152,12 @@ export function FusionCustomerJoinView({ tenant, config }: FusionCustomerJoinVie
 
           return (
             <div
-              className={`rounded-[32px] p-6 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] border relative overflow-hidden ${
+              className={`rounded-[32px] p-6 pb-9 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] border relative overflow-hidden ${
                 isLight ? 'text-[#1C1917] border-[#EAE4D5]' : 'text-white border-white/15'
               }`}
               style={{ backgroundColor: bgHex }}
             >
+              <WalletBottomWave isLight={isLight} />
 
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center justify-between">
