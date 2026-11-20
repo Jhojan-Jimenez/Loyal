@@ -539,7 +539,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                         </td>
                         <td className="py-4 px-5">
                           <span
-                            className={`inline-flex items-center gap-1.5 font-bold px-3 py-1 rounded-full text-xs ${
+                            className={`inline-flex items-center gap-1.5 font-bold px-3 py-1 rounded-2xl text-xs ${
                               isReady
                                 ? 'bg-[#5B6F00] text-white shadow-xs'
                                 : 'bg-[#F1F5DC] text-[#5B6F00] border border-[#D9E2B3]'

@@ -469,15 +469,15 @@ export function SuperAdminDashboard() {
                 No hay comercios asociados que coincidan con la búsqueda.
               </div>
             ) : (
-              <table className="w-full text-left text-xs">
+              <table className="w-full min-w-[860px] text-left text-xs">
                 <thead className="bg-[#FAF7F2] text-[#78716C] uppercase font-bold text-[10px] tracking-wider border-b border-[#EAE4D5]">
                   <tr>
-                    <th className="py-3.5 px-5">Empresa / Comercio</th>
-                    <th className="py-3.5 px-4">Contacto Dueño</th>
-                    <th className="py-3.5 px-4">Plan SaaS</th>
-                    <th className="py-3.5 px-4">Uso (Alumnos / Sellos)</th>
-                    <th className="py-3.5 px-4">Estado</th>
-                    <th className="py-3.5 px-5 text-right">Acciones</th>
+                    <th className="py-3.5 px-5 whitespace-nowrap">Empresa / Comercio</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Contacto Dueño</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Plan SaaS</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Uso (Alumnos / Sellos)</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Estado</th>
+                    <th className="py-3.5 px-5 text-right whitespace-nowrap">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE4D5]">
@@ -485,38 +485,34 @@ export function SuperAdminDashboard() {
                     return (
                       <tr key={tenant.id} className="hover:bg-[#FAF7F2]/60 transition-colors">
                         {/* Company Info */}
-                        <td className="py-4 px-5">
+                        <td className="py-4 px-5 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-2xl bg-[#F1F5DC] border border-[#D9E2B3] flex items-center justify-center font-serif font-normal text-[#5B6F00] shrink-0 text-sm">
                               {tenant.name.substring(0, 2).toUpperCase()}
                             </div>
                             <div>
                               <div className="font-semibold text-[#1C1917] text-sm">{tenant.name}</div>
-                              <div className="flex flex-col sm:flex-row items-center gap-2 mt-0.5">
-                                <span className="text-[11px] font-mono text-[#5B6F00]">/{tenant.slug}</span>
-                                <span className="text-[#A89F91]">·</span>
-                                <span className="text-[11px] text-[#78716C]">{tenant.category}</span>
-                              </div>
+                              <div className="text-[11px] text-[#78716C] mt-0.5">{tenant.category}</div>
                             </div>
                           </div>
                         </td>
 
                         {/* Owner Contact */}
-                        <td className="py-4 px-4 text-[#57534E]">
+                        <td className="py-4 px-4 text-[#57534E] whitespace-nowrap">
                           <div className="font-semibold text-[#1C1917]">{tenant.ownerName}</div>
-                          <div className="flex items-center gap-2 mt-1 text-[11px] text-[#78716C]">
+                          <div className="flex flex-col gap-0.5 mt-1 text-[11px] text-[#78716C]">
                             <a
                               href={`https://wa.me/${tenant.ownerPhone.replace(/\D/g, '')}`}
                               target="_blank"
                               rel="noreferrer"
                               className="inline-flex items-center gap-1 text-[#5B6F00] hover:underline"
                             >
-                              <Phone className="w-3 h-3 text-[#5B6F00]" />
+                              <Phone className="w-3 h-3 text-[#5B6F00] shrink-0" />
                               <span>{tenant.ownerPhone}</span>
                             </a>
                             {tenant.ownerEmail && (
-                              <span className="truncate max-w-[140px]" title={tenant.ownerEmail}>
-                                · {tenant.ownerEmail}
+                              <span title={tenant.ownerEmail}>
+                                {tenant.ownerEmail}
                               </span>
                             )}
                           </div>
