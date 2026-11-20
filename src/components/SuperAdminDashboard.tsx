@@ -27,6 +27,7 @@ import {
   Zap,
   LogOut,
   Check,
+  Copy,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -48,6 +49,33 @@ export function SuperAdminDashboard() {
     activationUrl: string;
   } | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
+
+  // Blank Self-Onboarding Magic Link Modal State
+  const [showBlankLinkModal, setShowBlankLinkModal] = useState(false);
+  const [blankPlan, setBlankPlan] = useState<'starter' | 'pro' | 'enterprise'>('pro');
+  const [blankOnboardUrl, setBlankOnboardUrl] = useState<string | null>(null);
+  const [copiedBlankLink, setCopiedBlankLink] = useState(false);
+
+  const handleGenerateBlankLink = async (plan: 'starter' | 'pro' | 'enterprise') => {
+    setActionLoading('blank_link');
+    try {
+      const res = await fetch('/api/superadmin/onboard-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (data.success && data.onboardUrl) {
+        setBlankOnboardUrl(data.onboardUrl);
+      } else {
+        alert(data.error || 'No se pudo generar el enlace');
+      }
+    } catch {
+      alert('Error de red al generar Magic Link');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -301,6 +329,17 @@ export function SuperAdminDashboard() {
               >
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Salir</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setBlankOnboardUrl(null);
+                  setShowBlankLinkModal(true);
+                }}
+                className="flex items-center gap-2 h-11 px-5 rounded-full bg-[#292524] hover:bg-[#3E3832] text-[#E2F099] border border-[#3E3832] text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-[#B2C248]" />
+                <span>Magic Link en Blanco</span>
               </button>
 
               <button
@@ -792,6 +831,134 @@ export function SuperAdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Blank Self-Onboarding Magic Link */}
+      {showBlankLinkModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FFFDF9] rounded-[36px] p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#EAE4D5] space-y-5">
+            <div className="flex items-center justify-between pb-4 border-b border-[#EAE4D5]">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-[#F1F5DC] text-[#5B6F00] flex items-center justify-center border border-[#D9E2B3]">
+                  <Sparkles className="w-5 h-5 text-[#5B6F00]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-serif font-normal text-[#1C1917]">
+                    Magic Link de Auto-Registro
+                  </h3>
+                  <p className="text-xs text-[#78716C]">
+                    El dueño crea su negocio y contraseña sin que tú llenes nada.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowBlankLinkModal(false)}
+                className="p-2 rounded-full hover:bg-[#FAF7F2] text-[#78716C] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {!blankOnboardUrl ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-2">
+                    Selecciona el Plan para este Enlace
+                  </label>
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {[
+                      { id: 'starter' as const, label: 'Starter', price: '$0' },
+                      { id: 'pro' as const, label: 'Pro', price: '$79k COP' },
+                      { id: 'enterprise' as const, label: 'Enterprise', price: '$249k COP' },
+                    ].map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setBlankPlan(p.id)}
+                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                          blankPlan === p.id
+                            ? 'bg-[#F1F5DC] border-[#5B6F00] text-[#1C1917] shadow-xs'
+                            : 'bg-[#FAF7F2] border-[#EAE4D5] text-[#57534E] hover:bg-white'
+                        }`}
+                      >
+                        <div className="text-xs font-bold">{p.label}</div>
+                        <div className="text-[11px] font-mono text-[#5B6F00] mt-0.5">{p.price}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={actionLoading === 'blank_link'}
+                  onClick={() => handleGenerateBlankLink(blankPlan)}
+                  className="w-full h-12 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {actionLoading === 'blank_link' ? 'Generando enlace...' : 'Generar Magic Link de 1 Uso'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1.5">
+                    Enlace Listo (Válido por 7 días · 1 solo uso)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={blankOnboardUrl}
+                      className="w-full text-xs font-mono p-3 rounded-2xl bg-[#FAF7F2] border border-[#EAE4D5] text-[#1C1917] select-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(blankOnboardUrl);
+                        setCopiedBlankLink(true);
+                        setTimeout(() => setCopiedBlankLink(false), 2500);
+                      }}
+                      className="h-11 px-4 rounded-2xl bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shrink-0 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+                    >
+                      {copiedBlankLink ? (
+                        <>
+                          <Check className="w-4 h-4 text-[#B2C248]" />
+                          <span>¡Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4 text-[#B2C248]" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(
+                      `¡Bienvenido a Loyal! 👋 Para crear tu negocio, configurar tu contraseña de administrador y empezar a emitir tarjetas de sellos digitales, abre este enlace:\n\n${blankOnboardUrl}`
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 h-12 px-5 rounded-full bg-[#25D366] hover:bg-[#20BA59] text-white text-xs font-bold shadow-md transition-all"
+                  >
+                    <Phone className="w-4 h-4 fill-white" />
+                    <span>Enviar por WhatsApp</span>
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => setBlankOnboardUrl(null)}
+                    className="h-12 px-5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Generar Otro
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

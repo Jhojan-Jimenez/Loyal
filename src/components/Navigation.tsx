@@ -45,6 +45,7 @@ export function Navigation() {
     pathname?.endsWith('/scanner') ||
     pathname?.startsWith('/card/') ||
     pathname?.startsWith('/invite/') ||
+    pathname?.startsWith('/onboard') ||
     pathname?.startsWith('/style/') ||
     isTenantLandingOrJoin
   ) {

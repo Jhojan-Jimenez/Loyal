@@ -11,6 +11,8 @@ import {
   TenantMembership,
   TenantInvitation,
   TenantRole,
+  OnboardingToken,
+  TenantPlan,
 } from './types';
 import {
   DEFAULT_STUDIO_CONFIG,
@@ -27,6 +29,7 @@ export interface DatabaseData {
   tenants: TenantBusiness[];
   memberships: TenantMembership[];
   invitations: TenantInvitation[];
+  onboardingTokens?: OnboardingToken[];
   students: Student[];
   transactions: StampTransaction[];
   config: StudioConfig;
@@ -756,4 +759,202 @@ export function deleteStudentServer(token: string): boolean {
     return true;
   }
   return false;
+}
+
+// ─────────────────────────────────────────────────────────────
+// BLANK SELF-ONBOARDING MAGIC LINKS (NO SLUG REQUIRED FROM USER)
+// ─────────────────────────────────────────────────────────────
+
+const RESERVED_SLUGS = new Set([
+  'admin',
+  'superadmin',
+  'login',
+  'onboard',
+  'invite',
+  'scanner',
+  'card',
+  'api',
+  'style',
+]);
+
+function generateUniqueTenantSlug(businessName: string, existingTenants: TenantBusiness[]): string {
+  const base =
+    businessName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '') || 'comercio';
+
+  let candidate = RESERVED_SLUGS.has(base) ? `${base}-club` : base;
+  const taken = new Set(existingTenants.map((t) => t.slug.toLowerCase()));
+  if (!taken.has(candidate)) return candidate;
+
+  let counter = 2;
+  while (taken.has(`${candidate}-${counter}`)) {
+    counter++;
+  }
+  return `${candidate}-${counter}`;
+}
+
+export function createBlankOnboardingLinkServer(data?: {
+  plan?: TenantPlan;
+  monthlyFeeCop?: number;
+}): { onboardingToken: OnboardingToken; onboardUrl: string } {
+  const db = loadDb();
+  if (!db.onboardingTokens) db.onboardingTokens = [];
+
+  const plan: TenantPlan = data?.plan || 'pro';
+  const defaultFees: Record<TenantPlan, number> = {
+    starter: 0,
+    pro: 79000,
+    enterprise: 249000,
+  };
+  const monthlyFeeCop =
+    data?.monthlyFeeCop !== undefined ? data.monthlyFeeCop : defaultFees[plan];
+
+  const token = crypto.randomBytes(20).toString('hex');
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 7 * 24 * 3600 * 1000).toISOString();
+
+  const onboardingToken: OnboardingToken = {
+    id: `onb_${Date.now()}`,
+    token,
+    plan,
+    monthlyFeeCop,
+    status: 'PENDING',
+    expiresAt,
+    createdAt: now.toISOString(),
+  };
+
+  db.onboardingTokens = [onboardingToken, ...db.onboardingTokens];
+  saveDb(db);
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://loyal.jhojan.cloud';
+  const onboardUrl = `${appUrl.replace(/\/$/, '')}/onboard?token=${token}`;
+
+  return { onboardingToken, onboardUrl };
+}
+
+export function verifyOnboardingTokenServer(token: string): {
+  valid: boolean;
+  onboardingToken?: OnboardingToken;
+  error?: string;
+} {
+  if (!token) return { valid: false, error: 'Enlace de registro inválido' };
+  const db = loadDb();
+  const record = (db.onboardingTokens || []).find((t) => t.token === token.trim());
+
+  if (!record) {
+    return { valid: false, error: 'Este enlace de registro no existe o fue eliminado' };
+  }
+  if (record.status === 'USED') {
+    return { valid: false, error: 'Este enlace ya fue utilizado para crear un comercio' };
+  }
+  if (new Date(record.expiresAt).getTime() < Date.now() || record.status === 'EXPIRED') {
+    return { valid: false, error: 'Este enlace ha expirado. Solicita uno nuevo.' };
+  }
+
+  return { valid: true, onboardingToken: record };
+}
+
+export function completeSelfOnboardingServer(data: {
+  token: string;
+  businessName: string;
+  category?: string;
+  ownerName: string;
+  ownerPhone: string;
+  ownerEmail: string;
+  password: string;
+}): {
+  success: boolean;
+  tenant?: TenantBusiness;
+  user?: User;
+  error?: string;
+} {
+  const check = verifyOnboardingTokenServer(data.token);
+  if (!check.valid || !check.onboardingToken) {
+    return { success: false, error: check.error || 'Enlace inválido' };
+  }
+
+  const db = loadDb();
+  if (!db.tenants) db.tenants = [];
+  if (!db.users) db.users = [];
+  if (!db.memberships) db.memberships = [];
+  if (!db.onboardingTokens) db.onboardingTokens = [];
+
+  const cleanEmail = data.ownerEmail.toLowerCase().trim();
+  const slug = generateUniqueTenantSlug(data.businessName, db.tenants);
+  const now = new Date().toISOString();
+
+  const tenant: TenantBusiness = {
+    id: `ten_${Date.now()}`,
+    slug,
+    name: data.businessName.trim(),
+    category: data.category?.trim() || 'Comercio Local',
+    ownerName: data.ownerName.trim(),
+    ownerEmail: cleanEmail,
+    ownerPhone: data.ownerPhone.trim(),
+    plan: check.onboardingToken.plan,
+    status: 'active',
+    monthlyFeeCop: check.onboardingToken.monthlyFeeCop,
+    createdAt: now,
+    totalStudentsCount: 0,
+    totalStampsCount: 0,
+    adminPin: '1234',
+    cashierPin: '0000',
+    config: {
+      ...DEFAULT_STUDIO_CONFIG,
+      studioName: data.businessName.trim(),
+      tagline: 'Programa de Fidelidad & Sellos',
+      whatsappNumber: data.ownerPhone.trim(),
+      walletBgMode: 'color',
+      walletBgColor: '#FAF7F2',
+      walletProgramName: 'Pase Digital de Fidelización',
+    },
+  };
+
+  db.tenants = [tenant, ...db.tenants];
+
+  let user = db.users.find((u) => u.email.toLowerCase() === cleanEmail);
+  const passwordHash = hashPassword(data.password);
+
+  if (!user) {
+    user = {
+      id: `usr_${Date.now()}`,
+      email: cleanEmail,
+      fullName: data.ownerName.trim(),
+      passwordHash,
+      isPlatformSuperAdmin: false,
+      lastActiveTenantSlug: slug,
+      createdAt: now,
+    };
+    db.users.push(user);
+  } else {
+    user.passwordHash = passwordHash;
+    user.fullName = data.ownerName.trim();
+    user.lastActiveTenantSlug = slug;
+  }
+
+  const membership: TenantMembership = {
+    id: `mem_${Date.now()}`,
+    userId: user.id,
+    tenantId: tenant.id,
+    role: 'OWNER',
+    createdAt: now,
+  };
+  db.memberships.push(membership);
+
+  const tokenIdx = db.onboardingTokens.findIndex((t) => t.token === data.token.trim());
+  if (tokenIdx !== -1) {
+    db.onboardingTokens[tokenIdx] = {
+      ...db.onboardingTokens[tokenIdx],
+      status: 'USED',
+      usedAt: now,
+      createdTenantSlug: slug,
+    };
+  }
+
+  saveDb(db);
+  return { success: true, tenant, user };
 }

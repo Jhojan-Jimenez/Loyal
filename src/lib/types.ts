@@ -122,6 +122,18 @@ export interface TenantInvitation {
   createdAt: string;
 }
 
+export interface OnboardingToken {
+  id: string;
+  token: string;
+  plan: TenantPlan;
+  monthlyFeeCop: number;
+  status: 'PENDING' | 'USED' | 'EXPIRED';
+  expiresAt: string;
+  createdAt: string;
+  usedAt?: string;
+  createdTenantSlug?: string;
+}
+
 export type AuthRole = 'superadmin' | 'admin' | 'cashier';
 
 export interface AuthSession {
