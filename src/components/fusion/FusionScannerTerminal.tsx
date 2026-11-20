@@ -248,7 +248,15 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
 
       await html5QrCode.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        {
+          fps: 10,
+          aspectRatio: 1.0,
+          qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const size = Math.max(160, Math.floor(minEdge * 0.72));
+            return { width: size, height: size };
+          },
+        },
         (decodedText: string) => {
           if (isProcessingScan.current) return;
           isProcessingScan.current = true;
@@ -586,8 +594,11 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
             </div>
 
             {/* Container for HTML5 QR Reader */}
-            <div className="relative aspect-4/3 sm:aspect-16/10 rounded-2xl bg-[#1C1917] overflow-hidden flex items-center justify-center border border-[#EAE4D5]">
-              <div id={scannerContainerId} className="w-full h-full" />
+            <div className="relative aspect-square sm:aspect-4/3 rounded-2xl bg-[#1C1917] overflow-hidden flex items-center justify-center border border-[#EAE4D5]">
+              <div
+                id={scannerContainerId}
+                className="w-full h-full [&_video]:!w-full [&_video]:!h-full [&_video]:object-cover"
+              />
 
               {!isCameraActive && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white/90 bg-gradient-to-b from-[#292524] to-[#1C1917]">
