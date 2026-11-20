@@ -908,7 +908,6 @@ export function completeSelfOnboardingServer(data: {
       studioName: data.businessName.trim(),
       tagline: 'Programa de Fidelidad & Sellos',
       whatsappNumber: data.ownerPhone.trim(),
-      walletBgMode: 'color',
       walletBgColor: '#FAF7F2',
       walletProgramName: 'Pase Digital de Fidelización',
     },

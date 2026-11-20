@@ -144,26 +144,18 @@ export function FusionCustomerJoinView({ tenant, config }: FusionCustomerJoinVie
 
       {/* Main Container */}
       <main className="flex-1 max-w-md w-full mx-auto px-4 py-6 space-y-6">
-        {/* Hero Card Preview (Granola Warm Paper & Olive or Custom Background) */}
+        {/* Hero Card Preview (Granola Warm Paper & Olive or Custom Solid Color) */}
         {(() => {
-          const useImage = config.walletBgMode === 'image' && Boolean(config.walletBgImageUrl?.trim());
           const bgHex = config.walletBgColor || '#FAF7F2';
-          const isLight = !useImage && isLightHexColor(bgHex);
+          const isLight = isLightHexColor(bgHex);
 
           return (
             <div
-              className={`rounded-[32px] p-6 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] border relative overflow-hidden bg-cover bg-center ${
+              className={`rounded-[32px] p-6 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] border relative overflow-hidden ${
                 isLight ? 'text-[#1C1917] border-[#EAE4D5]' : 'text-white border-white/15'
               }`}
-              style={{
-                backgroundColor: bgHex,
-                ...(useImage ? { backgroundImage: `url(${config.walletBgImageUrl})` } : {}),
-              }}
+              style={{ backgroundColor: bgHex }}
             >
-              {/* Legibility scrim when using custom background image */}
-              {useImage && (
-                <div className="absolute inset-0 bg-gradient-to-b from-[#1C1917]/75 via-[#1C1917]/65 to-[#1C1917]/85 pointer-events-none" />
-              )}
 
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center justify-between">

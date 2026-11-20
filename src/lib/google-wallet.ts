@@ -92,26 +92,6 @@ function buildLoyaltyClassPayload(classId: string, config: StudioConfig, appUrl:
     reviewStatus: 'UNDER_REVIEW',
   };
 
-  // In Google Wallet, heroImage displays a wide visual image on the pass.
-  // Use explicit walletHeroImageUrl if set, or fall back to walletBgImageUrl when image mode is active.
-  const heroUri =
-    resolvePublicImageUrl(config.walletHeroImageUrl, appUrl) ||
-    (config.walletBgMode === 'image'
-      ? resolvePublicImageUrl(config.walletBgImageUrl, appUrl)
-      : null);
-
-  if (heroUri) {
-    payload.heroImage = {
-      sourceUri: { uri: heroUri },
-      contentDescription: {
-        defaultValue: {
-          language: 'es',
-          value: config.studioName || 'Tarjeta de Fidelización',
-        },
-      },
-    };
-  }
-
   return payload;
 }
 
@@ -169,49 +149,6 @@ export function generateGoogleWalletSaveUrl(
   const loyaltyClass = buildLoyaltyClassPayload(classId, config, appUrl);
 
   // 2. Define LoyaltyObject (Individual Student Card scoped to tenant + student)
-  const textModulesData: Array<{ header: string; body: string; id: string }> = [
-    {
-      header: 'Premio al completar',
-      body: config.currentRewardTitle || 'Recompensa Especial',
-      id: 'reward_module',
-    },
-  ];
-
-  if (config.wifiSsid?.trim()) {
-    textModulesData.push({
-      header: 'Wi-Fi Clientes',
-      body: config.wifiPassword?.trim()
-        ? `Red: ${config.wifiSsid} · Clave: ${config.wifiPassword}`
-        : `Red: ${config.wifiSsid}`,
-      id: 'wifi_module',
-    });
-  }
-
-  if (config.address?.trim()) {
-    textModulesData.push({
-      header: 'Ubicación Local',
-      body: config.address,
-      id: 'location_module',
-    });
-  }
-
-  const uris: Array<{ uri: string; description: string; id: string }> = [
-    {
-      uri: `${appUrl}/card/${student.token}`,
-      description: 'Ver Mi Tarjeta Web Interactiva',
-      id: 'web_card_link',
-    },
-  ];
-
-  const cleanWa = (config.whatsappNumber || '').replace(/\D/g, '');
-  if (cleanWa.length >= 7) {
-    uris.push({
-      uri: `https://wa.me/${cleanWa}`,
-      description: 'Contactar Establecimiento por WhatsApp',
-      id: 'whatsapp_link',
-    });
-  }
-
   const loyaltyObject = {
     id: objectId,
     classId,
@@ -229,8 +166,15 @@ export function generateGoogleWalletSaveUrl(
       value: student.token,
       alternateText: student.token,
     },
-    textModulesData,
-    linksModuleData: { uris },
+    linksModuleData: {
+      uris: [
+        {
+          uri: `${appUrl}/card/${student.token}`,
+          description: 'Ver Mi Tarjeta Web Interactiva',
+          id: 'web_card_link',
+        },
+      ],
+    },
   };
 
   // 3. Claims payload for Fat JWT Save Link

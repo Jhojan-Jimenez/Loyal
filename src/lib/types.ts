@@ -44,12 +44,9 @@ export interface StudioConfig {
   instagramHandle: string;
   adminPin?: string; // PIN para ingresar a /admin (default: '1234')
   cashierPin?: string; // PIN para ingresar al escáner de caja (default: '0000')
-  walletBgMode?: 'color' | 'image'; // Modo de fondo: color sólido o imagen personalizada
   walletBgColor?: string; // Color hexadecimal de fondo en Google Wallet (ej. '#FAF7F2')
-  walletBgImageUrl?: string; // URL pública de imagen de fondo personalizada
   walletProgramName?: string; // Subtítulo del programa en Google Wallet
   walletLogoUrl?: string; // URL pública de logo cuadrado para Google Wallet
-  walletHeroImageUrl?: string; // URL pública de imagen banner opcional para Google Wallet
 }
 
 export interface YogaClass {

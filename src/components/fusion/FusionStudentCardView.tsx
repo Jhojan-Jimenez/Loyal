@@ -247,25 +247,18 @@ export function FusionStudentCardView({
 
         {/* ── TAB 1: CARD & TOTP QR VIEW ── */}
         {activeTab === 'card' && (() => {
-          const useImage = config.walletBgMode === 'image' && Boolean(config.walletBgImageUrl?.trim());
           const bgHex = config.walletBgColor || '#FFFDF9';
-          const isLight = !useImage && isLightHexColor(bgHex);
+          const isLight = isLightHexColor(bgHex);
 
           return (
           <div className="space-y-5 animate-in fade-in duration-200">
-            {/* The Tactile Card (Granola Template or Custom Brand Background) */}
+            {/* The Tactile Card (Granola Template or Custom Brand Color) */}
             <div
-              className={`relative rounded-[32px] border p-6 sm:p-7 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] overflow-hidden bg-cover bg-center ${
+              className={`relative rounded-[32px] border p-6 sm:p-7 shadow-[0_16px_36px_-6px_rgba(40,30,10,0.08)] overflow-hidden ${
                 isLight ? 'border-[#EAE4D5] text-[#1C1917]' : 'border-white/15 text-white'
               }`}
-              style={{
-                backgroundColor: bgHex,
-                ...(useImage ? { backgroundImage: `url(${config.walletBgImageUrl})` } : {}),
-              }}
+              style={{ backgroundColor: bgHex }}
             >
-              {useImage && (
-                <div className="absolute inset-0 bg-gradient-to-b from-[#1C1917]/75 via-[#1C1917]/60 to-[#1C1917]/85 pointer-events-none" />
-              )}
 
               <div className="relative z-10">
               {/* Card Header */}
