@@ -4,6 +4,7 @@ import './globals.css';
 import { LoyalProvider } from '@/context/LoyalContext';
 import { Navigation } from '@/components/Navigation';
 import { DevRoleSwitcher } from '@/components/DevRoleSwitcher';
+import { Toaster } from 'sonner';
 import { Suspense } from 'react';
 
 const libreBaskerville = Libre_Baskerville({
@@ -56,6 +57,7 @@ export default function RootLayout({
             <Navigation />
           </Suspense>
           <main className="flex-1">{children}</main>
+          <Toaster richColors position="top-center" />
           <DevRoleSwitcher />
         </LoyalProvider>
       </body>

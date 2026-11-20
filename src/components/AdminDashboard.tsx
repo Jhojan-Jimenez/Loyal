@@ -36,6 +36,7 @@ import {
   Upload,
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { isLightHexColor } from '@/lib/color-utils';
 import { ConfirmModal, ConfirmModalState } from '@/components/ui/ConfirmModal';
 import { WalletBottomWave } from '@/components/ui/WalletBottomWave';
@@ -89,21 +90,9 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
     walletProgramName: globalConfig.walletProgramName || 'Pase Digital de Fidelización',
     walletLogoUrl: globalConfig.walletLogoUrl || '',
   });
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
-
-  const showNotice = (title: string, message: string, variant: 'danger' | 'warning' | 'info' | 'success' = 'warning') => {
-    setConfirmModal({
-      isOpen: true,
-      title,
-      message,
-      variant,
-      confirmOnly: true,
-      confirmLabel: 'Entendido',
-    });
-  };
 
   const handleLogoUpload = async (file: File) => {
     setUploadingLogo(true);
@@ -115,12 +104,13 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
       const res = await fetch('/api/uploads', { method: 'POST', body });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        showNotice('Error al subir logo', data.error || 'No se pudo subir el logo.', 'danger');
+        toast.error(data.error || 'No se pudo subir el logo.');
         return;
       }
       setFormData((prev) => ({ ...prev, walletLogoUrl: data.url }));
+      toast.success('Logo subido correctamente. Guarda los cambios para aplicarlo.');
     } catch {
-      showNotice('Error de conexión', 'No se pudo subir el logo por un problema de red.', 'danger');
+      toast.error('No se pudo subir el logo por un problema de conexión.');
     } finally {
       setUploadingLogo(false);
     }
@@ -235,13 +225,12 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
         if (tenantSlug) {
           setTenantConfig((prev: StudioConfig) => ({ ...prev, ...updatedConfig }));
         }
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3500);
+        toast.success('Configuración guardada con éxito.');
       } else {
-        showNotice('Error al guardar', data.error || 'No se pudo guardar la configuración.', 'danger');
+        toast.error(data.error || 'No se pudo guardar la configuración.');
       }
     } catch {
-      showNotice('Error de conexión', 'Error de conexión al guardar configuración.', 'danger');
+      toast.error('Error de conexión al guardar configuración.');
     } finally {
       setSavingConfig(false);
     }
@@ -264,6 +253,9 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
               prev.filter((s) => s.token.toLowerCase() !== token.toLowerCase())
             );
           }
+          toast.success(`Cliente "${name}" eliminado.`);
+        } catch {
+          toast.error('No se pudo eliminar al cliente.');
         } finally {
           setDeleteLoading(null);
           setModalLoading(false);
@@ -287,6 +279,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
       setTenantStudents((prev) => [newStudent, ...prev]);
     }
 
+    toast.success(`Tarjeta creada para ${newStudent.name}.`);
     setNewStudentName('');
     setNewStudentPhone('');
     setNewStudentEmail('');
@@ -692,13 +685,6 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
       {activeTab === 'settings' && (
         <div className="bg-[#FFFDF9] rounded-[32px] p-6 sm:p-8 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
           <form onSubmit={handleSaveConfig} className="space-y-8">
-            {saveSuccess && (
-              <div className="p-4 rounded-2xl bg-[#F1F5DC] text-[#5B6F00] border border-[#D9E2B3] text-xs font-bold flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-[#5B6F00]" />
-                <span>Configuración actualizada con éxito. Tu tarjeta en Google Wallet y página de registro ya reflejan los cambios.</span>
-              </div>
-            )}
-
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Left Column: Program & Wallet Styling Controls */}
               <div className="lg:col-span-7 space-y-6">
@@ -1018,13 +1004,13 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-[#EAE4D5] gap-8">
+            <div className="flex flex-wrap items-center justify-between pt-4 border-t border-[#EAE4D5] gap-4">
               <button
                 type="submit"
                 disabled={savingConfig}
-                className="flex items-center gap-2 h-12 px-7 rounded-2xl bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                className="flex items-center gap-2 h-12 px-7 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap"
               >
-                <Save className="w-4 h-4 text-[#B2C248]" />
+                <Save className="w-4 h-4 text-[#B2C248] shrink-0" />
                 <span>{savingConfig ? 'Guardando...' : 'Guardar Cambios'}</span>
               </button>
 
@@ -1039,12 +1025,13 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                     confirmLabel: 'Sí, restablecer',
                     onConfirm: () => {
                       resetDemoData();
+                      toast.success('Datos restablecidos.');
                     },
                   });
                 }}
-                className="flex items-center rounded-2xl gap-1.5 text-xs text-[#C26748] hover:text-[#A34F33] font-semibold cursor-pointer"
+                className="flex items-center rounded-full px-4 py-2 gap-1.5 text-xs text-[#C26748] hover:text-[#A34F33] hover:bg-[#FBF4EE] font-semibold cursor-pointer whitespace-nowrap transition-colors"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                 <span>Restablecer Datos Iniciales</span>
               </button>
             </div>

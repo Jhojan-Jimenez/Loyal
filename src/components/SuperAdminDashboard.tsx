@@ -30,6 +30,7 @@ import {
   Copy,
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { ConfirmModal, ConfirmModalState } from '@/components/ui/ConfirmModal';
 
 export function SuperAdminDashboard() {
@@ -59,17 +60,6 @@ export function SuperAdminDashboard() {
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
 
-  const showNotice = (title: string, message: string, variant: 'danger' | 'warning' | 'info' | 'success' = 'warning') => {
-    setConfirmModal({
-      isOpen: true,
-      title,
-      message,
-      variant,
-      confirmOnly: true,
-      confirmLabel: 'Entendido',
-    });
-  };
-
   const handleGenerateBlankLink = async (plan: 'starter' | 'pro' | 'enterprise') => {
     setActionLoading('blank_link');
     try {
@@ -81,11 +71,12 @@ export function SuperAdminDashboard() {
       const data = await res.json();
       if (data.success && data.onboardUrl) {
         setBlankOnboardUrl(data.onboardUrl);
+        toast.success('Magic Link generado correctamente.');
       } else {
-        showNotice('No se pudo generar el enlace', data.error || 'Ocurrió un error inesperado.', 'danger');
+        toast.error(data.error || 'No se pudo generar el enlace.');
       }
     } catch {
-      showNotice('Error de conexión', 'Error de red al generar el Magic Link.', 'danger');
+      toast.error('Error de red al generar el Magic Link.');
     } finally {
       setActionLoading(null);
     }
@@ -147,7 +138,14 @@ export function SuperAdminDashboard() {
             setTenants((prev) =>
               prev.map((t) => (t.slug === slug ? { ...t, status: nextStatus } : t))
             );
+            toast.success(
+              isSuspending ? `Comercio "${slug}" suspendido.` : `Comercio "${slug}" reactivado.`
+            );
+          } else {
+            toast.error(data.error || 'No se pudo actualizar el estado.');
           }
+        } catch {
+          toast.error('Error de conexión al actualizar estado.');
         } finally {
           setActionLoading(null);
           setModalLoading(false);
@@ -176,7 +174,12 @@ export function SuperAdminDashboard() {
           const data = await res.json();
           if (data.success) {
             setTenants((prev) => prev.filter((t) => t.slug !== slug));
+            toast.success(`Empresa "${name}" eliminada permanentemente.`);
+          } else {
+            toast.error(data.error || 'No se pudo eliminar la empresa.');
           }
+        } catch {
+          toast.error('Error de conexión al eliminar empresa.');
         } finally {
           setActionLoading(null);
           setModalLoading(false);
@@ -211,10 +214,10 @@ export function SuperAdminDashboard() {
           activationUrl: data.activationUrl,
         });
       } else {
-        showNotice('Error de invitación', data.error || 'No se pudo obtener el enlace de activación', 'danger');
+        toast.error(data.error || 'No se pudo obtener el enlace de activación.');
       }
     } catch {
-      showNotice('Error de conexión', 'Error de red al consultar la invitación.', 'danger');
+      toast.error('Error de red al consultar invitación.');
     } finally {
       setActionLoading(null);
     }
@@ -224,7 +227,7 @@ export function SuperAdminDashboard() {
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formOwnerName.trim() || !formOwnerPhone.trim()) {
-      showNotice('Campos requeridos', 'Por favor completa los campos requeridos antes de continuar.', 'warning');
+      toast.error('Por favor completa los campos requeridos.');
       return;
     }
 
@@ -259,6 +262,7 @@ export function SuperAdminDashboard() {
             activationUrl: data.activationUrl,
           });
         }
+        toast.success(`Empresa "${data.tenant.name}" creada correctamente.`);
         // Reset form
         setFormName('');
         setFormSlug('');
@@ -266,7 +270,7 @@ export function SuperAdminDashboard() {
         setFormOwnerEmail('');
         setFormOwnerPhone('');
       } else {
-        showNotice('No se pudo crear', data.error || 'No se pudo crear el comercio.', 'danger');
+        toast.error(data.error || 'No se pudo crear el comercio.');
       }
     } finally {
       setActionLoading(null);

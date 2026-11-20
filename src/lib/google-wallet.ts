@@ -280,10 +280,10 @@ export async function updateGoogleWalletClass(
       return { success: false, error: 'OAuth failure' };
     }
 
-    const patchRes = await fetch(
+    const putRes = await fetch(
       `https://walletobjects.googleapis.com/walletobjects/v1/loyaltyClass/${classId}`,
       {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -292,10 +292,10 @@ export async function updateGoogleWalletClass(
       }
     );
 
-    if (!patchRes.ok) {
-      const errData = await patchRes.text();
-      console.warn(`[Google Wallet] Class patch status ${patchRes.status} for ${classId}:`, errData);
-      return { success: false, error: `Class patch status ${patchRes.status}` };
+    if (!putRes.ok) {
+      const errData = await putRes.text();
+      console.warn(`[Google Wallet] Class PUT status ${putRes.status} for ${classId}:`, errData);
+      return { success: false, error: `Class PUT status ${putRes.status}` };
     }
 
     console.log(`[Google Wallet] Synced LoyaltyClass ${classId}`);
