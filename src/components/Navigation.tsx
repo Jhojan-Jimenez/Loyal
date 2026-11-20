@@ -69,20 +69,11 @@ export function Navigation() {
       <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 h-20 flex items-center justify-between">
         {/* Left: Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-2xl bg-[#5B6F00] text-white flex items-center justify-center transition-transform duration-200 group-hover:scale-105 shadow-[0_2px_8px_rgba(91,111,0,0.25)]">
-            <svg
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect width="18" height="18" x="3" y="3" rx="4" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-          </div>
+          <img
+            src="/logo-loyal.png"
+            alt="Loyal"
+            className="w-10 h-10 rounded-2xl object-cover transition-transform duration-200 group-hover:scale-105 shadow-[0_2px_8px_rgba(91,111,0,0.2)]"
+          />
           <div className="flex items-baseline gap-1.5">
             <span className="text-[24px] font-serif font-normal tracking-tight text-[#1C1917]">
               loyal

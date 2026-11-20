@@ -38,28 +38,39 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
   const tenantSlug = session?.activeTenant?.slug;
   const adminHref = tenantSlug ? `/${tenantSlug}/admin` : '/admin';
 
+  const navItems = [
+    { id: 'experiencia', label: 'Pase Digital' },
+    { id: 'beneficios', label: 'Cómo funciona' },
+    { id: 'historias', label: 'Comercios' },
+    { id: 'precios', label: 'Precios' },
+    { id: 'preguntas', label: 'Preguntas' },
+  ];
+
+  const handleSectionNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    sectionId: string
+  ) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-[100] h-20 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EAE4D5]/80 transition-all font-sans">
-      <div className="max-w-[1440px] mx-auto h-full px-6 sm:px-12 lg:px-20 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-[100] h-16 sm:h-20 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EAE4D5]/80 transition-all font-sans">
+      <div className="max-w-[1440px] mx-auto h-full px-5 sm:px-12 lg:px-20 flex items-center justify-between">
         {/* Left: Brand Symbol & Wordmark */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          {/* Artisanal Olive Seal Stamp */}
-          <div className="w-10 h-10 rounded-2xl bg-[#5B6F00] text-white flex items-center justify-center transition-transform duration-200 group-hover:scale-105 shadow-[0_2px_8px_rgba(91,111,0,0.25)]">
-            <svg
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect width="18" height="18" x="3" y="3" rx="4" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-          </div>
+          {/* Artisanal Loyal Brand Emblem */}
+          <img
+            src="/logo-loyal.png"
+            alt="Loyal"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl object-cover transition-transform duration-200 group-hover:scale-105 shadow-[0_2px_8px_rgba(91,111,0,0.2)]"
+          />
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[24px] font-serif font-normal tracking-tight text-[#1C1917]">
+            <span className="text-[22px] sm:text-[24px] font-serif font-normal tracking-tight text-[#1C1917]">
               loyal
             </span>
             <span className="text-[11px] font-mono uppercase tracking-wider text-[#5B6F00] font-bold px-1.5 py-0.5 rounded-md bg-[#F1F5DC] border border-[#D9E2B3] hidden sm:inline">
@@ -70,36 +81,16 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
 
         {/* Center: Discreet navigation links (Airbnb stage spacing with warm stone tones) */}
         <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-[#57534E]">
-          <a
-            href="#experiencia"
-            className="hover:text-[#1C1917] transition-colors py-2"
-          >
-            Pase Digital
-          </a>
-          <a
-            href="#beneficios"
-            className="hover:text-[#1C1917] transition-colors py-2"
-          >
-            Cómo funciona
-          </a>
-          <a
-            href="#historias"
-            className="hover:text-[#1C1917] transition-colors py-2"
-          >
-            Comercios
-          </a>
-          <a
-            href="#precios"
-            className="hover:text-[#1C1917] transition-colors py-2"
-          >
-            Precios
-          </a>
-          <a
-            href="#preguntas"
-            className="hover:text-[#1C1917] transition-colors py-2"
-          >
-            Preguntas
-          </a>
+          {navItems.map((item) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              onClick={(e) => handleSectionNavClick(e, item.id)}
+              className="hover:text-[#1C1917] transition-colors py-2 cursor-pointer"
+            >
+              {item.label}
+            </a>
+          ))}
         </nav>
 
         {/* Right: Actions (Role-Aware) */}
@@ -175,41 +166,16 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#FDFBF7] border-b border-[#EAE4D5] px-6 py-6 space-y-4 shadow-xl animate-in slide-in-from-top-2 duration-200">
           <nav className="flex flex-col space-y-3 text-[15px] font-medium text-[#1C1917]">
-            <a
-              href="#experiencia"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-1 hover:text-[#5B6F00]"
-            >
-              Pase Digital
-            </a>
-            <a
-              href="#beneficios"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-1 hover:text-[#5B6F00]"
-            >
-              Cómo funciona
-            </a>
-            <a
-              href="#historias"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-1 hover:text-[#5B6F00]"
-            >
-              Comercios
-            </a>
-            <a
-              href="#precios"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-1 hover:text-[#5B6F00]"
-            >
-              Precios
-            </a>
-            <a
-              href="#preguntas"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-1 hover:text-[#5B6F00]"
-            >
-              Preguntas
-            </a>
+            {navItems.map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => handleSectionNavClick(e, item.id)}
+                className="py-1 hover:text-[#5B6F00] cursor-pointer"
+              >
+                {item.label}
+              </a>
+            ))}
           </nav>
 
           <div className="pt-4 border-t border-[#EAE4D5] flex flex-col gap-2.5">
