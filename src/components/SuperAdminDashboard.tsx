@@ -30,6 +30,7 @@ import {
   Copy,
 } from 'lucide-react';
 import Link from 'next/link';
+import { ConfirmModal, ConfirmModalState } from '@/components/ui/ConfirmModal';
 
 export function SuperAdminDashboard() {
   const [tenants, setTenants] = useState<TenantBusiness[]>([]);
@@ -55,6 +56,19 @@ export function SuperAdminDashboard() {
   const [blankPlan, setBlankPlan] = useState<'starter' | 'pro' | 'enterprise'>('pro');
   const [blankOnboardUrl, setBlankOnboardUrl] = useState<string | null>(null);
   const [copiedBlankLink, setCopiedBlankLink] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
+
+  const showNotice = (title: string, message: string, variant: 'danger' | 'warning' | 'info' | 'success' = 'warning') => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      variant,
+      confirmOnly: true,
+      confirmLabel: 'Entendido',
+    });
+  };
 
   const handleGenerateBlankLink = async (plan: 'starter' | 'pro' | 'enterprise') => {
     setActionLoading('blank_link');
@@ -68,10 +82,10 @@ export function SuperAdminDashboard() {
       if (data.success && data.onboardUrl) {
         setBlankOnboardUrl(data.onboardUrl);
       } else {
-        alert(data.error || 'No se pudo generar el enlace');
+        showNotice('No se pudo generar el enlace', data.error || 'Ocurrió un error inesperado.', 'danger');
       }
     } catch {
-      alert('Error de red al generar Magic Link');
+      showNotice('Error de conexión', 'Error de red al generar el Magic Link.', 'danger');
     } finally {
       setActionLoading(null);
     }
@@ -107,57 +121,68 @@ export function SuperAdminDashboard() {
   }, []);
 
   // Update status (active, trial, suspended)
-  const handleToggleStatus = async (slug: string, currentStatus: TenantStatus) => {
+  const handleToggleStatus = (slug: string, currentStatus: TenantStatus) => {
     const nextStatus: TenantStatus = currentStatus === 'active' ? 'suspended' : 'active';
-    const confirmMsg =
-      nextStatus === 'suspended'
-        ? `¿Deseas suspender a "${slug}"? Sus empleados no podrán registrar sellos hasta reactivarlo.`
-        : `¿Reactivar el servicio para "${slug}"?`;
+    const isSuspending = nextStatus === 'suspended';
 
-    if (!confirm(confirmMsg)) return;
-
-    setActionLoading(slug);
-    try {
-      const res = await fetch('/api/superadmin/tenants', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'status', slug, status: nextStatus }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setTenants((prev) =>
-          prev.map((t) => (t.slug === slug ? { ...t, status: nextStatus } : t))
-        );
-      }
-    } finally {
-      setActionLoading(null);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: isSuspending ? `¿Suspender a "${slug}"?` : `¿Reactivar a "${slug}"?`,
+      message: isSuspending
+        ? 'Sus empleados no podrán registrar sellos ni acceder al mostrador hasta que reactives la cuenta.'
+        : 'El comercio volverá a estar activo de inmediato para emitir sellos y pases.',
+      variant: isSuspending ? 'warning' : 'success',
+      confirmLabel: isSuspending ? 'Sí, suspender' : 'Sí, reactivar',
+      onConfirm: async () => {
+        setModalLoading(true);
+        setActionLoading(slug);
+        try {
+          const res = await fetch('/api/superadmin/tenants', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'status', slug, status: nextStatus }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setTenants((prev) =>
+              prev.map((t) => (t.slug === slug ? { ...t, status: nextStatus } : t))
+            );
+          }
+        } finally {
+          setActionLoading(null);
+          setModalLoading(false);
+        }
+      },
+    });
   };
 
   // Delete business permanently
-  const handleDeleteTenant = async (slug: string, name: string) => {
-    if (
-      !confirm(
-        `⚠️ ATENCIÓN: ¿Estás seguro de eliminar permanentemente a "${name}" (${slug}) de tu plataforma SaaS? Esta acción borrará la empresa y no se puede deshacer.`
-      )
-    ) {
-      return;
-    }
-
-    setActionLoading(slug);
-    try {
-      const res = await fetch('/api/superadmin/tenants', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', slug }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setTenants((prev) => prev.filter((t) => t.slug !== slug));
-      }
-    } finally {
-      setActionLoading(null);
-    }
+  const handleDeleteTenant = (slug: string, name: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: `Eliminar "${name}"`,
+      message: `¿Estás seguro de eliminar permanentemente a "${name}" (${slug}) de tu plataforma SaaS? Esta acción borrará la empresa y no se puede deshacer.`,
+      variant: 'danger',
+      confirmLabel: 'Eliminar permanentemente',
+      onConfirm: async () => {
+        setModalLoading(true);
+        setActionLoading(slug);
+        try {
+          const res = await fetch('/api/superadmin/tenants', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete', slug }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setTenants((prev) => prev.filter((t) => t.slug !== slug));
+          }
+        } finally {
+          setActionLoading(null);
+          setModalLoading(false);
+        }
+      },
+    });
   };
 
   // Fetch or regenerate invitation link for any business
@@ -186,10 +211,10 @@ export function SuperAdminDashboard() {
           activationUrl: data.activationUrl,
         });
       } else {
-        alert(data.error || 'No se pudo obtener el enlace de activación');
+        showNotice('Error de invitación', data.error || 'No se pudo obtener el enlace de activación', 'danger');
       }
     } catch {
-      alert('Error de red al consultar invitación');
+      showNotice('Error de conexión', 'Error de red al consultar la invitación.', 'danger');
     } finally {
       setActionLoading(null);
     }
@@ -199,7 +224,7 @@ export function SuperAdminDashboard() {
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formOwnerName.trim() || !formOwnerPhone.trim()) {
-      alert('Por favor completa los campos requeridos');
+      showNotice('Campos requeridos', 'Por favor completa los campos requeridos antes de continuar.', 'warning');
       return;
     }
 
@@ -241,7 +266,7 @@ export function SuperAdminDashboard() {
         setFormOwnerEmail('');
         setFormOwnerPhone('');
       } else {
-        alert(data.error || 'No se pudo crear el comercio');
+        showNotice('No se pudo crear', data.error || 'No se pudo crear el comercio.', 'danger');
       }
     } finally {
       setActionLoading(null);
@@ -467,7 +492,7 @@ export function SuperAdminDashboard() {
                             </div>
                             <div>
                               <div className="font-semibold text-[#1C1917] text-sm">{tenant.name}</div>
-                              <div className="flex items-center gap-2 mt-0.5">
+                              <div className="flex flex-col sm:flex-row items-center gap-2 mt-0.5">
                                 <span className="text-[11px] font-mono text-[#5B6F00]">/{tenant.slug}</span>
                                 <span className="text-[#A89F91]">·</span>
                                 <span className="text-[11px] text-[#78716C]">{tenant.category}</span>
@@ -1046,6 +1071,12 @@ export function SuperAdminDashboard() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        state={confirmModal}
+        loading={modalLoading}
+        onClose={() => setConfirmModal(null)}
+      />
     </div>
   );
 }

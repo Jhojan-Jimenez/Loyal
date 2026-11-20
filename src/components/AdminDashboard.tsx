@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { isLightHexColor } from '@/lib/color-utils';
+import { ConfirmModal, ConfirmModalState } from '@/components/ui/ConfirmModal';
 
 export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
   const {
@@ -89,6 +90,19 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
+
+  const showNotice = (title: string, message: string, variant: 'danger' | 'warning' | 'info' | 'success' = 'warning') => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      variant,
+      confirmOnly: true,
+      confirmLabel: 'Entendido',
+    });
+  };
 
   const handleLogoUpload = async (file: File) => {
     setUploadingLogo(true);
@@ -100,12 +114,12 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
       const res = await fetch('/api/uploads', { method: 'POST', body });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        alert(data.error || 'No se pudo subir el logo');
+        showNotice('Error al subir logo', data.error || 'No se pudo subir el logo.', 'danger');
         return;
       }
       setFormData((prev) => ({ ...prev, walletLogoUrl: data.url }));
     } catch {
-      alert('Error de conexión al subir logo');
+      showNotice('Error de conexión', 'No se pudo subir el logo por un problema de red.', 'danger');
     } finally {
       setUploadingLogo(false);
     }
@@ -223,24 +237,38 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3500);
       } else {
-        alert(data.error || 'No se pudo guardar la configuración');
+        showNotice('Error al guardar', data.error || 'No se pudo guardar la configuración.', 'danger');
       }
     } catch {
-      alert('Error de conexión al guardar configuración');
+      showNotice('Error de conexión', 'Error de conexión al guardar configuración.', 'danger');
     } finally {
       setSavingConfig(false);
     }
   };
 
-  const handleDeleteStudent = async (token: string, name: string) => {
-    if (confirm(`¿Estás seguro de eliminar permanentemente a "${name}" y todo su historial de sellos? Esta acción no se puede deshacer.`)) {
-      setDeleteLoading(token);
-      await deleteStudent(token);
-      if (tenantSlug) {
-        setTenantStudents((prev) => prev.filter((s) => s.token.toLowerCase() !== token.toLowerCase()));
-      }
-      setDeleteLoading(null);
-    }
+  const handleDeleteStudent = (token: string, name: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: `Eliminar a "${name}"`,
+      message: `¿Estás seguro de eliminar permanentemente a "${name}" y todo su historial de sellos? Esta acción no se puede deshacer.`,
+      variant: 'danger',
+      confirmLabel: 'Sí, eliminar',
+      onConfirm: async () => {
+        setModalLoading(true);
+        setDeleteLoading(token);
+        try {
+          await deleteStudent(token);
+          if (tenantSlug) {
+            setTenantStudents((prev) =>
+              prev.filter((s) => s.token.toLowerCase() !== token.toLowerCase())
+            );
+          }
+        } finally {
+          setDeleteLoading(null);
+          setModalLoading(false);
+        }
+      },
+    });
   };
 
   const handleCreateStudent = (e: React.FormEvent) => {
@@ -1008,10 +1036,16 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
               <button
                 type="button"
                 onClick={() => {
-                  if (confirm('¿Deseas restablecer los datos de demostración a su estado inicial?')) {
-                    resetDemoData();
-                    alert('Datos restablecidos.');
-                  }
+                  setConfirmModal({
+                    isOpen: true,
+                    title: 'Restablecer datos iniciales',
+                    message: '¿Deseas restablecer los datos de demostración a su estado inicial?',
+                    variant: 'warning',
+                    confirmLabel: 'Sí, restablecer',
+                    onConfirm: () => {
+                      resetDemoData();
+                    },
+                  });
                 }}
                 className="flex items-center rounded-2xl gap-1.5 text-xs text-[#C26748] hover:text-[#A34F33] font-semibold cursor-pointer"
               >
@@ -1106,6 +1140,12 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        state={confirmModal}
+        loading={modalLoading}
+        onClose={() => setConfirmModal(null)}
+      />
     </div>
   );
 }
