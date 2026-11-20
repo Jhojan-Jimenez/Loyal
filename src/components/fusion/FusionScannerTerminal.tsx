@@ -575,9 +575,6 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
           <div className="bg-[#FFFDF9] rounded-[28px] border border-[#EAE4D5] p-6 shadow-[0_8px_24px_rgba(40,30,10,0.04)]">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <span className="text-[11px] font-mono uppercase tracking-wider text-[#78716C] block">
-                  Sensor Óptico
-                </span>
                 <h3 className="text-lg font-serif font-normal text-[#1C1917]">
                   Escaneo QR de Mostrador
                 </h3>

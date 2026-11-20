@@ -71,10 +71,7 @@ export function FusionNavigation({ onOpenDemo }: FusionNavigationProps) {
           />
           <div className="flex items-baseline gap-1.5">
             <span className="text-[22px] sm:text-[24px] font-serif font-normal tracking-tight text-[#1C1917]">
-              loyal
-            </span>
-            <span className="text-[11px] font-mono uppercase tracking-wider text-[#5B6F00] font-bold px-1.5 py-0.5 rounded-md bg-[#F1F5DC] border border-[#D9E2B3] hidden sm:inline">
-              saas
+              Loyal
             </span>
           </div>
         </Link>

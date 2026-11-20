@@ -3,6 +3,7 @@ import { Libre_Baskerville, DM_Sans } from 'next/font/google';
 import './globals.css';
 import { LoyalProvider } from '@/context/LoyalContext';
 import { Navigation } from '@/components/Navigation';
+import { DevRoleSwitcher } from '@/components/DevRoleSwitcher';
 import { Suspense } from 'react';
 
 const libreBaskerville = Libre_Baskerville({
@@ -55,6 +56,7 @@ export default function RootLayout({
             <Navigation />
           </Suspense>
           <main className="flex-1">{children}</main>
+          <DevRoleSwitcher />
         </LoyalProvider>
       </body>
     </html>

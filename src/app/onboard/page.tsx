@@ -142,7 +142,7 @@ function OnboardContent() {
               alt="Loyal"
               className="w-9 h-9 rounded-xl object-cover shadow-xs"
             />
-            <span className="text-2xl font-serif font-normal text-[#1C1917]">loyal</span>
+            <span className="text-2xl font-serif font-normal text-[#1C1917]">Loyal</span>
           </div>
           <div className="flex justify-center">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F5DC] text-[#5B6F00] border border-[#D9E2B3] text-[10px] font-mono font-bold uppercase tracking-wider">

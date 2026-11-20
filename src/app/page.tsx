@@ -1068,7 +1068,7 @@ export default function HomePage() {
                 alt="Loyal"
                 className="w-6 h-6 rounded-lg object-cover shadow-2xs"
               />
-              <span className="font-serif font-normal text-sm text-[#1C1917]">loyal</span>
+              <span className="font-serif font-normal text-sm text-[#1C1917]">Loyal</span>
               <span className="hidden sm:inline">·</span>
               <span className="hidden sm:inline">Pases de fidelización digital con estética editorial</span>
             </div>

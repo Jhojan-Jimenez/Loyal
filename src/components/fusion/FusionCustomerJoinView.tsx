@@ -451,7 +451,7 @@ export function FusionCustomerJoinView({ tenant, config }: FusionCustomerJoinVie
       <footer className="w-full py-6 text-center text-[11px] text-[#A89F91] border-t border-[#EAE4D5]/60 mt-6">
         <p>
           Programa de fidelización digital operado con{' '}
-          <span className="font-serif font-bold text-[#1C1917]">loyal</span>
+          <span className="font-serif font-bold text-[#1C1917]">Loyal</span>
         </p>
       </footer>
     </div>

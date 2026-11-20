@@ -289,16 +289,9 @@ export function SuperAdminDashboard() {
                 <ShieldCheck className="w-6 h-6 text-[#B2C248]" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono font-bold tracking-widest text-[#B2C248] uppercase">
-                    LOYAL SAAS // MASTER CONSOLE
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#292524] text-white/90 border border-[#3E3832]">
-                    SUPERADMIN
-                  </span>
-                </div>
+                
                 <h1 className="text-xl sm:text-2xl font-serif font-normal tracking-tight text-white mt-1">
-                  Panel Maestro de Empresas & Suscripciones
+                  Panel de Super Admin
                 </h1>
               </div>
             </div>
@@ -312,24 +305,9 @@ export function SuperAdminDashboard() {
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               </button>
 
-              <Link
-                href="/"
-                className="h-11 px-5 rounded-full bg-[#292524] border border-[#3E3832] text-xs font-semibold text-white/90 hover:bg-[#3E3832] transition-all flex items-center"
-              >
-                Ver App Pública
-              </Link>
+             
 
-              <button
-                onClick={async () => {
-                  await fetch('/api/auth/logout', { method: 'POST' });
-                  window.location.href = '/login?role=superadmin';
-                }}
-                className="h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-xs font-semibold text-[#F5C7C0] hover:bg-[#3E3832] hover:text-[#C2410C] transition-all flex items-center gap-1.5 cursor-pointer"
-                title="Cerrar sesión de SuperAdmin"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Salir</span>
-              </button>
+            
 
               <button
                 onClick={() => {
@@ -339,7 +317,7 @@ export function SuperAdminDashboard() {
                 className="flex items-center gap-2 h-11 px-5 rounded-full bg-[#292524] hover:bg-[#3E3832] text-[#E2F099] border border-[#3E3832] text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-[#B2C248]" />
-                <span>Magic Link en Blanco</span>
+                <span>Magic Link</span>
               </button>
 
               <button
@@ -347,7 +325,7 @@ export function SuperAdminDashboard() {
                 className="flex items-center gap-2 h-11 px-6 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4 stroke-[3] text-[#B2C248]" />
-                <span>+ Alta Nueva Empresa</span>
+                <span>+ Nueva </span>
               </button>
             </div>
           </div>
@@ -410,7 +388,7 @@ export function SuperAdminDashboard() {
         </div>
 
         {/* Search & Filter Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAF7F2] p-2.5 rounded-full border border-[#EAE4D5]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAF7F2] p-2.5 rounded-2xl border border-[#EAE4D5]">
           <div className="relative flex-1 max-w-md">
             <Search className="w-3.5 h-3.5 text-[#78716C] absolute left-4 top-3" />
             <input
@@ -438,7 +416,7 @@ export function SuperAdminDashboard() {
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     statusFilter === status
                       ? 'bg-[#5B6F00] text-white shadow-xs font-bold'
                       : 'text-[#57534E] hover:text-[#1C1917]'
@@ -458,7 +436,6 @@ export function SuperAdminDashboard() {
               <Building2 className="w-4 h-4 text-[#5B6F00]" />
               <span>Empresas Registradas ({filteredTenants.length})</span>
             </h2>
-            <span className="text-xs text-[#78716C]">Plataforma Multi-Tenant Activa</span>
           </div>
 
           <div className="overflow-x-auto">

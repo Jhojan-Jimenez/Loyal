@@ -328,15 +328,6 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#292524] text-[#B2C248] border border-[#3E3832]">
-                <Settings className="w-3.5 h-3.5" />
-                Panel de Control de Comercio
-              </span>
-              {tenantSlug && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#3E3832] text-[#B2C248] border border-[#524B43]">
-                  /{tenantSlug}
-                </span>
-              )}
               {isSuperAdminViewing && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#B45309]/30 text-[#FDE68A] border border-[#B45309]">
                   Modo SuperAdmin
@@ -388,17 +379,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
               <span className="hidden sm:inline">CSV</span>
             </button>
 
-            <button
-              onClick={async () => {
-                await fetch('/api/auth/logout', { method: 'POST' });
-                window.location.href = '/login';
-              }}
-              className="flex items-center gap-2 h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-xs font-semibold text-[#F5C7C0] hover:bg-[#3E3832] hover:text-[#C2410C] active:scale-95 transition-all cursor-pointer"
-              title="Cerrar Sesión de Comercio"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Salir</span>
-            </button>
+           
           </div>
         </div>
       </div>
@@ -451,10 +432,10 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
       </div>
 
       {/* Tabs: Warm Paper Segmented Pills */}
-      <div className="flex bg-[#FAF7F2] p-1.5 rounded-full border border-[#EAE4D5]">
+      <div className="flex bg-[#FAF7F2] p-1.5 rounded-2xl border border-[#EAE4D5]">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`flex-1 py-2.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex-1 p-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
             activeTab === 'overview'
               ? 'bg-[#5B6F00] text-white shadow-xs font-bold'
               : 'text-[#57534E] hover:text-[#1C1917]'
@@ -465,7 +446,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
 
         <button
           onClick={() => setActiveTab('counter_qr')}
-          className={`flex-1 py-2.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex-1 p-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
             activeTab === 'counter_qr'
               ? 'bg-[#5B6F00] text-white shadow-xs font-bold'
               : 'text-[#57534E] hover:text-[#1C1917]'
@@ -476,7 +457,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
 
         <button
           onClick={() => setActiveTab('settings')}
-          className={`flex-1 py-2.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex-1 p-2.5  rounded-xl text-xs font-semibold transition-all cursor-pointer ${
             activeTab === 'settings'
               ? 'bg-[#5B6F00] text-white shadow-xs font-bold'
               : 'text-[#57534E] hover:text-[#1C1917]'
@@ -597,9 +578,6 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
         <div className="bg-[#FFFDF9] rounded-[32px] p-6 sm:p-8 border border-[#EAE4D5] shadow-[0_8px_24px_rgba(40,30,10,0.04)] space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#EAE4D5]">
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6F00] bg-[#F1F5DC] px-3 py-1 rounded-full border border-[#D9E2B3]">
-                Material de Mostrador / Recepción
-              </span>
               <h2 className="text-xl font-serif font-normal text-[#1C1917] mt-2">
                 Cartel y Código QR de Auto-Registro
               </h2>
@@ -1009,9 +987,6 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                     <Smartphone className="w-3.5 h-3.5 text-[#5B6F00]" />
                     Vista Previa Plantilla Granola
                   </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#F1F5DC] border border-[#D9E2B3] text-[#5B6F00] font-bold">
-                    En vivo
-                  </span>
                 </div>
 
                 {(() => {
@@ -1150,7 +1125,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                               isLight ? 'text-[#5B6F00]' : 'text-[#E2F099]'
                             }`}
                           />
-                          <span className="truncate font-serif">
+                          <span className=" font-serif">
                             {formData.currentRewardTitle || 'Recompensa'}
                           </span>
                         </div>
@@ -1161,11 +1136,11 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-[#EAE4D5]">
+            <div className="flex items-center justify-between pt-4 border-t border-[#EAE4D5] gap-8">
               <button
                 type="submit"
                 disabled={savingConfig}
-                className="flex items-center gap-2 h-12 px-7 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                className="flex items-center gap-2 h-12 px-7 rounded-2xl bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50"
               >
                 <Save className="w-4 h-4 text-[#B2C248]" />
                 <span>{savingConfig ? 'Guardando...' : 'Guardar Cambios'}</span>
@@ -1179,7 +1154,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                     alert('Datos restablecidos.');
                   }
                 }}
-                className="flex items-center gap-1.5 text-xs text-[#C26748] hover:text-[#A34F33] font-semibold cursor-pointer"
+                className="flex items-center rounded-2xl gap-1.5 text-xs text-[#C26748] hover:text-[#A34F33] font-semibold cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Restablecer Datos Iniciales</span>
