@@ -133,15 +133,14 @@ export function FusionNavigation() {
 
           {/* Primary Action Button */}
           <a
-            href="https://wa.me/573203282014?text=Hola!%20Quiero%20una%20demo%20de%20Loyal%20para%20mi%20negocio"
-            target="_blank"
-            rel="noreferrer"
+            href="#precios"
+            onClick={(e) => handleSectionNavClick(e, 'precios')}
             className="h-11 sm:h-12 px-6 sm:px-7 rounded-full text-white text-[14px] sm:text-[15px] font-medium transition-all active:scale-[0.96] flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:shadow-[0_6px_20px_rgba(91,111,0,0.35)] hover:bg-[#4D5E00]"
             style={{
               background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)',
             }}
           >
-            <span>Solicitar Demo</span>
+            <span>Empezar ahora</span>
           </a>
 
           {/* Mobile Menu Toggle */}

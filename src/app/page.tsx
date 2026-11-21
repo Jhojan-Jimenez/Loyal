@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { Libre_Baskerville, DM_Sans } from 'next/font/google';
 import {
   QrCode,
@@ -48,6 +49,13 @@ export default function HomePage() {
   const [activeExhibit, setActiveExhibit] = useState<'client' | 'counter'>('client');
   const [activePlanIndex, setActivePlanIndex] = useState<number>(1);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const scrollToSection = (sectionId: string) => {
+    const target = document.getElementById(sectionId);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   const pricingPlans = [
     {
@@ -189,25 +197,25 @@ export default function HomePage() {
 
             {/* Actions: Primary Granola Olive Capsule & Pill Secondary */}
             <div className="pt-1 flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <a
-                href="https://wa.me/573203282014?text=Hola!%20Quiero%20una%20demo%20de%20Loyal%20para%20mi%20negocio"
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={() => scrollToSection('precios')}
                 className="h-11 sm:h-12 px-5 sm:px-7 rounded-full text-white text-[13px] sm:text-[15px] font-medium transition-all active:scale-[0.96] flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:shadow-[0_6px_20px_rgba(91,111,0,0.35)] hover:bg-[#4D5E00]"
                 style={{
                   background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)',
                 }}
               >
-                <span>Solicitar Demo</span>
-                <ArrowRight className="w-4 h-4 text-[#B2C248]" />
-              </a>
-
-              <a
-                href="#precios"
-                className="h-11 sm:h-12 px-4 sm:px-6 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-[13px] sm:text-[15px] font-medium transition-all active:scale-[0.96] flex items-center gap-1.5 sm:gap-2"
-              >
                 <span>Ver planes</span>
-              </a>
+                <ArrowRight className="w-4 h-4 text-[#B2C248]" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => scrollToSection('beneficios')}
+                className="h-11 sm:h-12 px-4 sm:px-6 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-[13px] sm:text-[15px] font-medium transition-all active:scale-[0.96] flex items-center gap-1.5 sm:gap-2 cursor-pointer"
+              >
+                <span>Cómo funciona</span>
+              </button>
             </div>
 
             {/* Discreet Trust Qualifiers */}
@@ -837,24 +845,13 @@ export default function HomePage() {
                     </ul>
                   </div>
 
-                  <a
-                    href={plan.ctaHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`w-full mt-4 h-10 rounded-full text-white text-[12px] font-bold uppercase tracking-wider transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 cursor-pointer ${
-                      plan.featured
-                        ? 'shadow-[0_4px_14px_rgba(91,111,0,0.28)]'
-                        : 'bg-[#1C1917] hover:bg-black'
-                    }`}
-                    style={
-                      plan.featured
-                        ? { background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)' }
-                        : undefined
-                    }
+                  <button
+                    type="button"
+                    onClick={() => toast.info('Pagos y suscripciones disponibles próximamente.')}
+                    className="w-full mt-4 h-10 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#78716C] text-[12px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <span>{plan.ctaLabel}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#B2C248]" />
-                  </a>
+                    <span>Próximamente</span>
+                  </button>
                 </div>
               );
             })}
@@ -953,24 +950,13 @@ export default function HomePage() {
                 </ul>
               </div>
 
-              <a
-                href={plan.ctaHref}
-                target="_blank"
-                rel="noreferrer"
-                className={`w-full mt-6 h-11 rounded-full text-white text-[14px] font-bold transition-all active:scale-[0.96] flex items-center justify-center gap-2 cursor-pointer ${
-                  plan.featured
-                    ? 'shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:bg-[#4D5E00]'
-                    : 'bg-[#1C1917] hover:bg-black'
-                }`}
-                style={
-                  plan.featured
-                    ? { background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)' }
-                    : undefined
-                }
+              <button
+                type="button"
+                onClick={() => toast.info('Pagos y suscripciones disponibles próximamente.')}
+                className="w-full mt-6 h-11 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#78716C] text-[14px] font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>{plan.ctaLabel}</span>
-                <ArrowRight className="w-4 h-4 text-[#B2C248]" />
-              </a>
+                <span>Próximamente</span>
+              </button>
             </div>
           ))}
         </div>
@@ -1011,18 +997,17 @@ export default function HomePage() {
               Dales una razón para volver esta semana con una experiencia cálida, rápida y sin cartones.
             </p>
             <div className="pt-1 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="https://wa.me/573203282014?text=Hola!%20Quiero%20una%20demo%20de%20Loyal%20para%20mi%20negocio"
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={() => scrollToSection('precios')}
                 className="h-11 sm:h-12 px-6 sm:px-8 rounded-full text-white text-[14px] sm:text-[16px] font-bold transition-all active:scale-[0.96] shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:bg-[#4D5E00] cursor-pointer flex items-center justify-center gap-2"
                 style={{
                   background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)',
                 }}
               >
-                <span>Solicitar demo por WhatsApp</span>
+                <span>Ver planes</span>
                 <ArrowRight className="w-4 h-4 text-[#B2C248]" />
-              </a>
+              </button>
             </div>
           </div>
         </div>
