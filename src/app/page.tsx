@@ -29,7 +29,6 @@ import { FusionLoyaltyCard } from '@/components/fusion/FusionLoyaltyCard';
 import { GranolaHeroTicket } from '@/components/fusion/FusionHeroTicket';
 import { FusionMiniature } from '@/components/fusion/FusionMiniature';
 import { FusionAccordion, AccordionItem } from '@/components/fusion/FusionAccordion';
-import { FusionRegisterModal } from '@/components/fusion/FusionRegisterModal';
 
 const libreBaskerville = Libre_Baskerville({
   weight: ['400', '700'],
@@ -46,7 +45,6 @@ const dmSans = DM_Sans({
 });
 
 export default function HomePage() {
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [activeExhibit, setActiveExhibit] = useState<'client' | 'counter'>('client');
   const [activePlanIndex, setActivePlanIndex] = useState<number>(1);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -62,7 +60,8 @@ export default function HomePage() {
       dailyBadge: 'Gratis para siempre',
       featured: false,
       ctaLabel: 'Empezar Gratis',
-      ctaAction: 'modal' as const,
+      ctaAction: 'link' as const,
+      ctaHref: 'https://wa.me/573203282014?text=Hola!%20Quiero%20empezar%20con%20el%20Plan%20Starter%20de%20Loyal',
       features: [
         { text: '1 punto de venta / mostrador', included: true },
         { text: 'Hasta 100 clientes activos', included: true },
@@ -167,7 +166,7 @@ export default function HomePage() {
       className={`style-fusion relative min-h-screen bg-[#FDFBF7] text-[#1C1917] selection:bg-[#5B6F00] selection:text-white antialiased ${libreBaskerville.variable} ${dmSans.variable} font-sans`}
     >
       {/* ── Fixed Airbnb-Structure Navigation with Granola Styling ── */}
-      <FusionNavigation onOpenDemo={() => setIsRegisterModalOpen(true)} />
+      <FusionNavigation />
 
       {/* ─────────────────────────────────────────────────────────────
           1. TWO-OBJECT OPENING (HERO CHAPTER ON WARM STAGE) - 100VH VIEWPORT
@@ -190,26 +189,25 @@ export default function HomePage() {
 
             {/* Actions: Primary Granola Olive Capsule & Pill Secondary */}
             <div className="pt-1 flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <button
-                type="button"
-                onClick={() => setIsRegisterModalOpen(true)}
+              <a
+                href="https://wa.me/573203282014?text=Hola!%20Quiero%20una%20demo%20de%20Loyal%20para%20mi%20negocio"
+                target="_blank"
+                rel="noreferrer"
                 className="h-11 sm:h-12 px-5 sm:px-7 rounded-full text-white text-[13px] sm:text-[15px] font-medium transition-all active:scale-[0.96] flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:shadow-[0_6px_20px_rgba(91,111,0,0.35)] hover:bg-[#4D5E00]"
                 style={{
                   background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)',
                 }}
               >
-                <span>Crear tarjeta demo</span>
+                <span>Solicitar Demo</span>
                 <ArrowRight className="w-4 h-4 text-[#B2C248]" />
-              </button>
+              </a>
 
-              <Link
-                href="/scanner"
+              <a
+                href="#precios"
                 className="h-11 sm:h-12 px-4 sm:px-6 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-[13px] sm:text-[15px] font-medium transition-all active:scale-[0.96] flex items-center gap-1.5 sm:gap-2"
               >
-                <QrCode className="w-4 h-4 text-[#5B6F00]" />
-                <span>Escáner</span>
-                <span className="hidden sm:inline">en mostrador</span>
-              </Link>
+                <span>Ver planes</span>
+              </a>
             </div>
 
             {/* Discreet Trust Qualifiers */}
@@ -240,10 +238,7 @@ export default function HomePage() {
             />
 
             <div id="experiencia" className="relative z-10 w-full max-w-[380px] sm:max-w-[440px] lg:max-w-[480px] flex justify-center lg:justify-end">
-              <GranolaHeroTicket
-                size="lg"
-                onOpenRegister={() => setIsRegisterModalOpen(true)}
-              />
+              <GranolaHeroTicket size="lg" />
             </div>
           </div>
 
@@ -842,35 +837,24 @@ export default function HomePage() {
                     </ul>
                   </div>
 
-                  {plan.ctaAction === 'modal' ? (
-                    <button
-                      type="button"
-                      onClick={() => setIsRegisterModalOpen(true)}
-                      className="w-full mt-4 h-10 rounded-full bg-[#1C1917] hover:bg-black text-white text-[12px] font-bold uppercase tracking-wider transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <span>{plan.ctaLabel}</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-[#B2C248]" />
-                    </button>
-                  ) : (
-                    <a
-                      href={plan.ctaHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={`w-full mt-4 h-10 rounded-full text-white text-[12px] font-bold uppercase tracking-wider transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 cursor-pointer ${
-                        plan.featured
-                          ? 'shadow-[0_4px_14px_rgba(91,111,0,0.28)]'
-                          : 'bg-[#1C1917] hover:bg-black'
-                      }`}
-                      style={
-                        plan.featured
-                          ? { background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)' }
-                          : undefined
-                      }
-                    >
-                      <span>{plan.ctaLabel}</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-[#B2C248]" />
-                    </a>
-                  )}
+                  <a
+                    href={plan.ctaHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`w-full mt-4 h-10 rounded-full text-white text-[12px] font-bold uppercase tracking-wider transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 cursor-pointer ${
+                      plan.featured
+                        ? 'shadow-[0_4px_14px_rgba(91,111,0,0.28)]'
+                        : 'bg-[#1C1917] hover:bg-black'
+                    }`}
+                    style={
+                      plan.featured
+                        ? { background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)' }
+                        : undefined
+                    }
+                  >
+                    <span>{plan.ctaLabel}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#B2C248]" />
+                  </a>
                 </div>
               );
             })}
@@ -969,35 +953,24 @@ export default function HomePage() {
                 </ul>
               </div>
 
-              {plan.ctaAction === 'modal' ? (
-                <button
-                  type="button"
-                  onClick={() => setIsRegisterModalOpen(true)}
-                  className="w-full mt-6 h-11 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-[14px] font-bold transition-all active:scale-[0.96] flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span>{plan.ctaLabel}</span>
-                  <ArrowRight className="w-4 h-4 text-[#5B6F00]" />
-                </button>
-              ) : (
-                <a
-                  href={plan.ctaHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`w-full mt-6 h-11 rounded-full text-white text-[14px] font-bold transition-all active:scale-[0.96] flex items-center justify-center gap-2 cursor-pointer ${
-                    plan.featured
-                      ? 'shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:bg-[#4D5E00]'
-                      : 'bg-[#1C1917] hover:bg-black'
-                  }`}
-                  style={
-                    plan.featured
-                      ? { background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)' }
-                      : undefined
-                  }
-                >
-                  <span>{plan.ctaLabel}</span>
-                  <ArrowRight className="w-4 h-4 text-[#B2C248]" />
-                </a>
-              )}
+              <a
+                href={plan.ctaHref}
+                target="_blank"
+                rel="noreferrer"
+                className={`w-full mt-6 h-11 rounded-full text-white text-[14px] font-bold transition-all active:scale-[0.96] flex items-center justify-center gap-2 cursor-pointer ${
+                  plan.featured
+                    ? 'shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:bg-[#4D5E00]'
+                    : 'bg-[#1C1917] hover:bg-black'
+                }`}
+                style={
+                  plan.featured
+                    ? { background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)' }
+                    : undefined
+                }
+              >
+                <span>{plan.ctaLabel}</span>
+                <ArrowRight className="w-4 h-4 text-[#B2C248]" />
+              </a>
             </div>
           ))}
         </div>
@@ -1038,23 +1011,18 @@ export default function HomePage() {
               Dales una razón para volver esta semana con una experiencia cálida, rápida y sin cartones.
             </p>
             <div className="pt-1 flex flex-wrap items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsRegisterModalOpen(true)}
-                className="h-11 sm:h-12 px-6 sm:px-8 rounded-full text-white text-[14px] sm:text-[16px] font-bold transition-all active:scale-[0.96] shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:bg-[#4D5E00] cursor-pointer"
+              <a
+                href="https://wa.me/573203282014?text=Hola!%20Quiero%20una%20demo%20de%20Loyal%20para%20mi%20negocio"
+                target="_blank"
+                rel="noreferrer"
+                className="h-11 sm:h-12 px-6 sm:px-8 rounded-full text-white text-[14px] sm:text-[16px] font-bold transition-all active:scale-[0.96] shadow-[0_4px_14px_rgba(91,111,0,0.25)] hover:bg-[#4D5E00] cursor-pointer flex items-center justify-center gap-2"
                 style={{
                   background: 'linear-gradient(135deg, #5B6F00 0%, #4D5E00 100%)',
                 }}
               >
-                Crear mi tarjeta demo gratis
-              </button>
-              <Link
-                href="/scanner"
-                className="h-11 sm:h-12 px-5 sm:px-6 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[#1C1917] text-[14px] sm:text-[15px] font-bold transition-all active:scale-[0.96] flex items-center gap-2"
-              >
-                <QrCode className="w-4 h-4 text-[#5B6F00]" />
-                <span>Abrir escáner</span>
-              </Link>
+                <span>Solicitar demo por WhatsApp</span>
+                <ArrowRight className="w-4 h-4 text-[#B2C248]" />
+              </a>
             </div>
           </div>
         </div>
@@ -1073,27 +1041,13 @@ export default function HomePage() {
               <span className="hidden sm:inline">Pases de fidelización digital con estética editorial</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/admin" className="hover:text-[#1C1917]">
-                Admin
-              </Link>
-              <span>·</span>
-              <Link href="/superadmin" className="hover:text-[#1C1917]">
-                SuperAdmin
-              </Link>
-              <span>·</span>
-              <Link href="/scanner" className="hover:text-[#1C1917]">
-                Escáner
+              <Link href="/login" className="hover:text-[#1C1917]">
+                Acceso Comercio
               </Link>
             </div>
           </div>
         </footer>
       </section>
-
-      {/* ── Register Demo Modal ── */}
-      <FusionRegisterModal
-        isOpen={isRegisterModalOpen}
-        onClose={() => setIsRegisterModalOpen(false)}
-      />
     </div>
   );
 }
