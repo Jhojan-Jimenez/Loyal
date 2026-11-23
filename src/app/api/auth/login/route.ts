@@ -5,7 +5,7 @@ import {
   findUserByEmail,
   verifyPassword,
   getUserMemberships,
-  getDbData,
+  getUserAllMemberships,
 } from '@/lib/server-db';
 
 export const dynamic = 'force-dynamic';
@@ -68,7 +68,19 @@ export async function POST(req: NextRequest) {
       } else if (memberships.length > 1) {
         redirectUrl = '/workspaces';
       } else {
-        redirectUrl = '/';
+        const allMemberships = getUserAllMemberships(user.id);
+        const isSuspended = allMemberships.some(
+          (m) => m.tenant?.status === 'suspended'
+        );
+        return NextResponse.json(
+          {
+            success: false,
+            error: isSuspended
+              ? 'Tu comercio se encuentra suspendido temporalmente. Contacta al administrador de Loyal.'
+              : 'Tu comercio ha sido eliminado o no tienes acceso activo a ningún espacio.',
+          },
+          { status: 403 }
+        );
       }
     }
 

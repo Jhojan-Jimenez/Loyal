@@ -15,9 +15,15 @@ export async function POST(request: NextRequest) {
     const student = registerStudentServer(name, phone || '', email, token, tenantSlug);
     return NextResponse.json({ success: true, student });
   } catch (err: any) {
+    const msg = err?.message || 'Error registering student';
+    const status = msg.includes('suspendido')
+      ? 403
+      : msg.includes('no encontrado')
+        ? 404
+        : 500;
     return NextResponse.json(
-      { success: false, error: err.message || 'Error registering student' },
-      { status: 500 }
+      { success: false, error: msg },
+      { status }
     );
   }
 }

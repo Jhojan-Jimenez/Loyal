@@ -31,6 +31,20 @@ export async function GET(req: NextRequest) {
     const db = getDbData();
     const tenant = (db.tenants || []).find((t) => t.id === invitation.tenantId);
 
+    if (!tenant) {
+      return NextResponse.json(
+        { success: false, error: 'El comercio asociado a esta invitación ya no existe' },
+        { status: 404 }
+      );
+    }
+
+    if (tenant.status === 'suspended') {
+      return NextResponse.json(
+        { success: false, error: 'Este comercio se encuentra suspendido temporalmente' },
+        { status: 403 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       invitation: {

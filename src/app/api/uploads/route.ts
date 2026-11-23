@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { getDataDir } from '@/lib/server-db';
+import { getDataDir, validateSessionAgainstDb } from '@/lib/server-db';
 import { AUTH_COOKIE_NAME, verifySessionToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,9 @@ const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 export async function POST(req: NextRequest) {
   try {
     const token = req.cookies.get(AUTH_COOKIE_NAME)?.value;
-    const session = token ? await verifySessionToken(token) : null;
+    const rawSession = token ? await verifySessionToken(token) : null;
+    const session =
+      rawSession && validateSessionAgainstDb(rawSession).valid ? rawSession : null;
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'No autorizado' },
@@ -30,9 +32,20 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File | null;
     const tenantSlug = (formData.get('tenantSlug') as string | null) || 'general';
 
-    if (!file) {
+    if (
+      tenantSlug !== 'general' &&
+      !session.isPlatformSuperAdmin &&
+      session.activeTenant?.slug?.toLowerCase().trim() !== tenantSlug.toLowerCase().trim()
+    ) {
       return NextResponse.json(
-        { success: false, error: 'No se recibió ningún archivo' },
+        { success: false, error: 'No autorizado para subir archivos en este comercio' },
+        { status: 403 }
+      );
+    }
+
+    if (!file || file.size === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No se recibió ningún archivo válido' },
         { status: 400 }
       );
     }

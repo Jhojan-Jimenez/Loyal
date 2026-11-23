@@ -4,6 +4,7 @@ import {
   getTenantsServer,
   createBlankOnboardingLinkServer,
   completeSelfOnboardingServer,
+  validateSessionAgainstDb,
 } from '@/lib/server-db';
 import { AuthSession } from '@/lib/types';
 
@@ -12,9 +13,12 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   const token = req.cookies.get(AUTH_COOKIE_NAME)?.value;
   const currentSession = token ? await verifySessionToken(token) : null;
-  const isSuperAdmin = Boolean(currentSession?.isPlatformSuperAdmin);
+  const isSuperAdmin = Boolean(
+    currentSession?.isPlatformSuperAdmin &&
+      validateSessionAgainstDb(currentSession).valid
+  );
 
-  if (!isSuperAdmin && process.env.NODE_ENV !== 'development') {
+  if (!isSuperAdmin) {
     return NextResponse.json(
       { success: false, error: 'Acceso exclusivo para SuperAdmin' },
       { status: 403 }

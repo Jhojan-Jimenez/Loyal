@@ -1,6 +1,7 @@
 import { AuthSession, AuthRole } from './types';
 
 export const AUTH_COOKIE_NAME = 'loyal_session';
+export const CASHIER_COOKIE_NAME = 'loyal_cashier';
 
 // Secret for HMAC signing (fallback to a deterministic internal salt)
 const AUTH_SECRET =

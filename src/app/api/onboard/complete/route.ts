@@ -25,6 +25,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(ownerEmail).trim())) {
+      return NextResponse.json(
+        { success: false, error: 'El formato del correo electrónico no es válido' },
+        { status: 400 }
+      );
+    }
+
     if (!password || password.trim().length < 6) {
       return NextResponse.json(
         { success: false, error: 'La contraseña debe tener al menos 6 caracteres' },

@@ -23,25 +23,32 @@ export async function POST(req: NextRequest) {
 
     if (action === 'create') {
       const { name, slug, category, ownerName, ownerEmail, ownerPhone, plan, monthlyFeeCop } = body;
-      if (!name || !ownerName || !ownerPhone) {
+      if (!name || !ownerName || !ownerPhone || !ownerEmail) {
         return NextResponse.json({ success: false, error: 'Faltan campos obligatorios' }, { status: 400 });
       }
-      const result = createTenantServer({
-        name,
-        slug,
-        category,
-        ownerName,
-        ownerEmail,
-        ownerPhone,
-        plan,
-        monthlyFeeCop,
-      });
-      return NextResponse.json({
-        success: true,
-        tenant: result.tenant,
-        invitation: result.invitation,
-        activationUrl: result.activationUrl,
-      });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(ownerEmail).trim())) {
+        return NextResponse.json({ success: false, error: 'El formato del correo electrónico no es válido' }, { status: 400 });
+      }
+      try {
+        const result = createTenantServer({
+          name,
+          slug,
+          category,
+          ownerName,
+          ownerEmail,
+          ownerPhone,
+          plan,
+          monthlyFeeCop,
+        });
+        return NextResponse.json({
+          success: true,
+          tenant: result.tenant,
+          invitation: result.invitation,
+          activationUrl: result.activationUrl,
+        });
+      } catch (e: any) {
+        return NextResponse.json({ success: false, error: e?.message || 'Error al crear comercio' }, { status: 400 });
+      }
     }
 
     if (action === 'status') {

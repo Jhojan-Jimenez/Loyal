@@ -13,6 +13,7 @@ import {
   TenantRole,
   OnboardingToken,
   TenantPlan,
+  AuthSession,
 } from './types';
 import {
   DEFAULT_STUDIO_CONFIG,
@@ -120,6 +121,7 @@ function loadDb(): DatabaseData {
           tenants: Array.isArray(parsed.tenants) ? parsed.tenants : [],
           memberships: Array.isArray(parsed.memberships) ? parsed.memberships : [],
           invitations: Array.isArray(parsed.invitations) ? parsed.invitations : [],
+          onboardingTokens: Array.isArray(parsed.onboardingTokens) ? parsed.onboardingTokens : [],
           students: Array.isArray(parsed.students) ? parsed.students : [],
           transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
           config: parsed.config || DEFAULT_STUDIO_CONFIG,
@@ -140,6 +142,7 @@ function loadDb(): DatabaseData {
     tenants: [],
     memberships: [],
     invitations: [],
+    onboardingTokens: [],
     students: [],
     transactions: [],
     config: { ...DEFAULT_STUDIO_CONFIG },
@@ -219,6 +222,59 @@ export function getUserMemberships(
   return results;
 }
 
+export function getUserAllMemberships(
+  userId: string
+): { membership: TenantMembership; tenant?: TenantBusiness }[] {
+  const db = loadDb();
+  const userMemberships = (db.memberships || []).filter((m) => m.userId === userId);
+  return userMemberships.map((m) => ({
+    membership: m,
+    tenant: (db.tenants || []).find((t) => t.id === m.tenantId),
+  }));
+}
+
+export function validateSessionAgainstDb(session: AuthSession): {
+  valid: boolean;
+  reason?: 'user_missing' | 'deleted' | 'suspended';
+} {
+  const db = loadDb();
+  const user = (db.users || []).find((u) => u.id === session.userId);
+  if (!user) {
+    return { valid: false, reason: 'user_missing' };
+  }
+
+  if (session.isPlatformSuperAdmin) {
+    return { valid: user.isPlatformSuperAdmin, reason: user.isPlatformSuperAdmin ? undefined : 'user_missing' };
+  }
+
+  if (session.activeTenant?.slug) {
+    const cleanSlug = session.activeTenant.slug.toLowerCase().trim();
+    const tenant = (db.tenants || []).find((t) => t.slug.toLowerCase().trim() === cleanSlug);
+    if (!tenant) {
+      return { valid: false, reason: 'deleted' };
+    }
+    if (tenant.status === 'suspended') {
+      return { valid: false, reason: 'suspended' };
+    }
+    const hasMembership = (db.memberships || []).some(
+      (m) => m.userId === user.id && m.tenantId === tenant.id
+    );
+    if (!hasMembership) {
+      return { valid: false, reason: 'deleted' };
+    }
+  } else {
+    // Non-superadmin with no activeTenant must have at least one active membership
+    const activeMemberships = getUserMemberships(user.id);
+    if (activeMemberships.length === 0) {
+      const all = getUserAllMemberships(user.id);
+      const hasSuspended = all.some((a) => a.tenant?.status === 'suspended');
+      return { valid: false, reason: hasSuspended ? 'suspended' : 'deleted' };
+    }
+  }
+
+  return { valid: true };
+}
+
 // ─────────────────────────────────────────────────────────────
 // TENANTS & INVITATIONS
 // ─────────────────────────────────────────────────────────────
@@ -269,7 +325,14 @@ export function createTenantServer(data: {
 }): { tenant: TenantBusiness; invitation: TenantInvitation; activationUrl: string } {
   const db = loadDb();
 
-  let slug = data.slug;
+  let slug = data.slug
+    ? data.slug
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/(^-|-$)+/g, '')
+    : '';
   if (!slug) {
     slug = data.name
       .toLowerCase()
@@ -279,42 +342,50 @@ export function createTenantServer(data: {
       .replace(/(^-|-$)+/g, '');
   }
 
+  if (!slug || RESERVED_SLUGS.has(slug)) {
+    throw new Error(`El identificador "${slug || data.slug}" está reservado o es inválido.`);
+  }
+
   // Verificar si ya existe tenant por slug
-  let tenant = (db.tenants || []).find((t) => t.slug === slug);
+  const existingTenant = (db.tenants || []).find(
+    (t) => t.slug.toLowerCase().trim() === slug
+  );
+  if (existingTenant) {
+    throw new Error(`Ya existe un comercio con el identificador "${slug}".`);
+  }
+
   const plan = data.plan || 'pro';
   const defaultFee = plan === 'starter' ? 79000 : plan === 'pro' ? 129000 : 249000;
 
-  if (!tenant) {
-    const defaultTenantConfig: StudioConfig = {
-      ...DEFAULT_STUDIO_CONFIG,
-      studioName: data.name.trim(),
-      whatsappNumber: data.ownerPhone.trim(),
-      currentRewardTitle: `Recompensa Exclusiva ${data.name.trim()} (10 Sellos)`,
-      currentRewardDescription: `¡Completaste tus 10 sellos en ${data.name.trim()}! Muestra este pase en caja para redimir tu premio.`,
-      cashierPin: data.cashierPin || '0000',
-    };
+  const defaultTenantConfig: StudioConfig = {
+    ...DEFAULT_STUDIO_CONFIG,
+    studioName: data.name.trim(),
+    whatsappNumber: data.ownerPhone.trim(),
+    currentRewardTitle: `Recompensa Exclusiva ${data.name.trim()} (10 Sellos)`,
+    currentRewardDescription: `¡Completaste tus 10 sellos en ${data.name.trim()}! Muestra este pase en caja para redimir tu premio.`,
+    cashierPin: data.cashierPin || '0000',
+  };
 
-    tenant = {
-      id: `ten_${Date.now()}`,
-      slug,
-      name: data.name.trim(),
-      category: data.category?.trim() || 'Comercio Local',
-      ownerName: data.ownerName.trim(),
-      ownerEmail: data.ownerEmail.toLowerCase().trim(),
-      ownerPhone: data.ownerPhone.trim(),
-      plan,
-      status: 'active',
-      monthlyFeeCop: data.monthlyFeeCop || defaultFee,
-      createdAt: new Date().toISOString(),
-      totalStudentsCount: 0,
-      totalStampsCount: 0,
-      adminPin: data.adminPin || '1234',
-      cashierPin: data.cashierPin || '0000',
-      config: defaultTenantConfig,
-    };
+  const tenant: TenantBusiness = {
+    id: `ten_${Date.now()}`,
+    slug,
+    name: data.name.trim(),
+    category: data.category?.trim() || 'Comercio Local',
+    ownerName: data.ownerName.trim(),
+    ownerEmail: data.ownerEmail.toLowerCase().trim(),
+    ownerPhone: data.ownerPhone.trim(),
+    plan,
+    status: 'active',
+    monthlyFeeCop: data.monthlyFeeCop || defaultFee,
+    createdAt: new Date().toISOString(),
+    totalStudentsCount: 0,
+    totalStampsCount: 0,
+    adminPin: data.adminPin || '1234',
+    cashierPin: data.cashierPin || '0000',
+    config: defaultTenantConfig,
+  };
 
-    db.tenants = [tenant, ...(db.tenants || [])];
-  }
+  db.tenants = [tenant, ...(db.tenants || [])];
 
   // Generar Token Criptográfico de Invitación (válido por 7 días)
   const inviteToken = crypto.randomBytes(24).toString('hex');
@@ -370,9 +441,18 @@ export function acceptInvitationServer(
   if (!tenant) {
     return { success: false, error: 'El comercio asociado a esta invitación ya no existe' };
   }
+  if (tenant.status === 'suspended') {
+    return { success: false, error: 'Este comercio se encuentra suspendido temporalmente' };
+  }
 
   // Buscar o crear usuario
   let user = db.users.find((u) => u.email.toLowerCase() === invitation.email.toLowerCase());
+  if (user && user.isPlatformSuperAdmin) {
+    return {
+      success: false,
+      error: 'Este correo pertenece al SuperAdmin de la plataforma y no puede usarse para activar un comercio.',
+    };
+  }
   if (!user) {
     user = {
       id: `usr_${Date.now()}`,
@@ -445,14 +525,45 @@ export function updateTenantConfigServer(
 
 export function deleteTenantServer(slug: string): boolean {
   const db = loadDb();
-  const initialLen = (db.tenants || []).length;
-  db.tenants = (db.tenants || []).filter((t) => t.slug !== slug);
+  const cleanSlug = slug.toLowerCase().trim();
+  const targets = (db.tenants || []).filter(
+    (t) => t.slug.toLowerCase().trim() === cleanSlug
+  );
+  if (targets.length === 0) return false;
 
-  if (db.tenants.length !== initialLen) {
-    saveDb(db);
-    return true;
+  const targetIds = new Set(targets.map((t) => t.id));
+
+  db.tenants = (db.tenants || []).filter(
+    (t) => t.slug.toLowerCase().trim() !== cleanSlug
+  );
+  db.memberships = (db.memberships || []).filter(
+    (m) => !targetIds.has(m.tenantId)
+  );
+  db.invitations = (db.invitations || []).filter(
+    (inv) =>
+      !targetIds.has(inv.tenantId) &&
+      inv.tenantSlug.toLowerCase().trim() !== cleanSlug
+  );
+  db.students = (db.students || []).filter(
+    (s) => s.tenantSlug?.toLowerCase().trim() !== cleanSlug
+  );
+  db.transactions = (db.transactions || []).filter(
+    (tx) => tx.tenantSlug?.toLowerCase().trim() !== cleanSlug
+  );
+  if (Array.isArray(db.onboardingTokens)) {
+    db.onboardingTokens = db.onboardingTokens.filter(
+      (ot) => ot.createdTenantSlug?.toLowerCase().trim() !== cleanSlug
+    );
   }
-  return false;
+
+  // Clean up non-superadmin users who no longer belong to any tenant
+  const activeUserIds = new Set((db.memberships || []).map((m) => m.userId));
+  db.users = (db.users || []).filter(
+    (u) => u.isPlatformSuperAdmin || activeUserIds.has(u.id)
+  );
+
+  saveDb(db);
+  return true;
 }
 
 export function getOrCreateInvitationForTenant(
@@ -504,9 +615,9 @@ export function getOrCreateInvitationForTenant(
 }
 
 export function verifyCashierPinServer(slug: string, pin: string): boolean {
-  const db = loadDb();
-  const tenant = (db.tenants || []).find((t) => t.slug === slug);
-  if (!tenant) return false;
+  if (!slug || !pin || !pin.trim()) return false;
+  const tenant = getTenantBySlug(slug);
+  if (!tenant || tenant.status === 'suspended') return false;
   const expectedPin = tenant.cashierPin || '0000';
   return pin.trim() === expectedPin.trim();
 }
@@ -559,13 +670,26 @@ export function registerStudentServer(
   tenantSlug?: string
 ): Student {
   const db = loadDb();
+  const cleanTenantSlug = tenantSlug ? tenantSlug.toLowerCase().trim() : undefined;
+
+  if (cleanTenantSlug) {
+    const tenant = getTenantBySlug(cleanTenantSlug);
+    if (!tenant) {
+      throw new Error('Comercio no encontrado.');
+    }
+    if (tenant.status === 'suspended') {
+      throw new Error('Este comercio se encuentra suspendido temporalmente.');
+    }
+  }
 
   // If a student already exists with this phone at this tenant, return the existing student
   if (phone && phone.trim()) {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     if (cleanPhone.length >= 7) {
       const existingByPhone = (db.students || []).find((s) => {
-        const matchTenant = tenantSlug ? s.tenantSlug?.toLowerCase().trim() === tenantSlug.toLowerCase().trim() : true;
+        const matchTenant = cleanTenantSlug
+          ? s.tenantSlug?.toLowerCase().trim() === cleanTenantSlug
+          : !s.tenantSlug;
         const sPhone = (s.phone || '').replace(/[^0-9]/g, '');
         return matchTenant && sPhone && (sPhone === cleanPhone || sPhone.endsWith(cleanPhone) || cleanPhone.endsWith(sPhone));
       });
@@ -631,11 +755,28 @@ export function addStampServer(
   }
 
   const student = db.students[studentIndex];
-  
-  // Buscar configuración del tenant correspondiente o fallback
-  const tenant = (db.tenants || []).find(
-    (t) => t.slug === (tenantSlug || student.tenantSlug)
-  );
+  const cleanTenantSlug = tenantSlug?.toLowerCase().trim();
+  const studentTenantSlug = student.tenantSlug?.toLowerCase().trim();
+
+  if (cleanTenantSlug && studentTenantSlug && studentTenantSlug !== cleanTenantSlug) {
+    return {
+      success: false,
+      error: 'Este pase pertenece a otro comercio y no puede sellarse aquí.',
+    };
+  }
+
+  const resolvedSlug = cleanTenantSlug || studentTenantSlug;
+  const tenant = resolvedSlug
+    ? (db.tenants || []).find((t) => t.slug.toLowerCase().trim() === resolvedSlug)
+    : undefined;
+
+  if (resolvedSlug && !tenant) {
+    return { success: false, error: 'El comercio asociado ya no existe.' };
+  }
+  if (tenant && tenant.status === 'suspended') {
+    return { success: false, error: 'Este comercio se encuentra suspendido temporalmente.' };
+  }
+
   const totalRequired =
     tenant?.config?.totalStampsRequired || db.config.totalStampsRequired || 10;
   const newStamps = student.stamps + 1;
@@ -695,11 +836,37 @@ export function redeemRewardServer(
   }
 
   const student = db.students[studentIndex];
-  const tenant = (db.tenants || []).find(
-    (t) => t.slug === (tenantSlug || student.tenantSlug)
-  );
+  const cleanTenantSlug = tenantSlug?.toLowerCase().trim();
+  const studentTenantSlug = student.tenantSlug?.toLowerCase().trim();
+
+  if (cleanTenantSlug && studentTenantSlug && studentTenantSlug !== cleanTenantSlug) {
+    return {
+      success: false,
+      error: 'Este pase pertenece a otro comercio y no puede redimirse aquí.',
+    };
+  }
+
+  const resolvedSlug = cleanTenantSlug || studentTenantSlug;
+  const tenant = resolvedSlug
+    ? (db.tenants || []).find((t) => t.slug.toLowerCase().trim() === resolvedSlug)
+    : undefined;
+
+  if (resolvedSlug && !tenant) {
+    return { success: false, error: 'El comercio asociado ya no existe.' };
+  }
+  if (tenant && tenant.status === 'suspended') {
+    return { success: false, error: 'Este comercio se encuentra suspendido temporalmente.' };
+  }
+
   const totalRequired =
     tenant?.config?.totalStampsRequired || db.config.totalStampsRequired || 10;
+
+  if (student.stamps < totalRequired) {
+    return {
+      success: false,
+      error: `El cliente aún no completa los ${totalRequired} sellos requeridos (tiene ${student.stamps}).`,
+    };
+  }
 
   const updatedStudent: Student = {
     ...student,
@@ -884,6 +1051,14 @@ export function completeSelfOnboardingServer(data: {
   if (!db.onboardingTokens) db.onboardingTokens = [];
 
   const cleanEmail = data.ownerEmail.toLowerCase().trim();
+  const existingUser = db.users.find((u) => u.email.toLowerCase() === cleanEmail);
+  if (existingUser && existingUser.isPlatformSuperAdmin) {
+    return {
+      success: false,
+      error: 'Este correo pertenece al SuperAdmin de la plataforma y no puede usarse para registrar un comercio.',
+    };
+  }
+
   const slug = generateUniqueTenantSlug(data.businessName, db.tenants);
   const now = new Date().toISOString();
 

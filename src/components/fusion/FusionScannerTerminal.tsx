@@ -368,6 +368,16 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
         if (data.success) {
           if (tenantSlug) {
             sessionStorage.setItem(`loyal_cashier_${tenantSlug}`, 'unlocked');
+            // Reload scoped tenant students/transactions now that cashier cookie is set
+            fetch(`/api/db?tenantSlug=${encodeURIComponent(tenantSlug)}`)
+              .then((r) => r.json())
+              .then((d) => {
+                if (d.success) {
+                  if (Array.isArray(d.students)) setTenantStudents(d.students);
+                  if (Array.isArray(d.transactions)) setTenantTransactions(d.transactions);
+                }
+              })
+              .catch(() => {});
           }
           setIsUnlocked(true);
           playChime(true);
