@@ -14,6 +14,7 @@ import {
   OnboardingToken,
   TenantPlan,
   AuthSession,
+  CashierProfile,
 } from './types';
 import {
   DEFAULT_STUDIO_CONFIG,
@@ -614,12 +615,125 @@ export function getOrCreateInvitationForTenant(
   };
 }
 
-export function verifyCashierPinServer(slug: string, pin: string): boolean {
-  if (!slug || !pin || !pin.trim()) return false;
+export function resolveCashierByPinServer(
+  slug: string,
+  pin: string
+): { valid: boolean; cashier?: { id: string; name: string } } {
+  if (!slug || !pin || !pin.trim()) return { valid: false };
   const tenant = getTenantBySlug(slug);
-  if (!tenant || tenant.status === 'suspended') return false;
+  if (!tenant || tenant.status === 'suspended') return { valid: false };
+
+  const cleanPin = pin.trim();
+  const cashiers = tenant.cashiers || [];
+
+  if (cashiers.length > 0) {
+    const matched = cashiers.find((c) => c.active && c.pin.trim() === cleanPin);
+    if (matched) {
+      return { valid: true, cashier: { id: matched.id, name: matched.name } };
+    }
+    return { valid: false };
+  }
+
   const expectedPin = tenant.cashierPin || '0000';
-  return pin.trim() === expectedPin.trim();
+  if (cleanPin === expectedPin.trim()) {
+    return { valid: true, cashier: { id: 'default', name: 'Caja Principal' } };
+  }
+  return { valid: false };
+}
+
+export function verifyCashierPinServer(slug: string, pin: string): boolean {
+  return resolveCashierByPinServer(slug, pin).valid;
+}
+
+export function getTenantCashiersServer(slug: string): CashierProfile[] {
+  const tenant = getTenantBySlug(slug);
+  return tenant?.cashiers || [];
+}
+
+export function createCashierServer(
+  slug: string,
+  name: string,
+  pin: string
+): CashierProfile {
+  const cleanName = name.trim();
+  const cleanPin = pin.trim();
+  if (!cleanName) {
+    throw new Error('El nombre del cajero es obligatorio.');
+  }
+  if (!/^\d{4}$/.test(cleanPin)) {
+    throw new Error('El PIN debe ser exactamente de 4 dígitos numéricos.');
+  }
+
+  const db = loadDb();
+  const idx = (db.tenants || []).findIndex(
+    (t) => t.slug.toLowerCase().trim() === slug.toLowerCase().trim()
+  );
+  if (idx === -1) {
+    throw new Error('Comercio no encontrado.');
+  }
+
+  const tenant = db.tenants[idx];
+  const existingCashiers = tenant.cashiers || [];
+  if (existingCashiers.some((c) => c.pin.trim() === cleanPin)) {
+    throw new Error('Ya existe un cajero con ese PIN en este comercio.');
+  }
+
+  const cashier: CashierProfile = {
+    id: `csh_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    name: cleanName,
+    pin: cleanPin,
+    active: true,
+    createdAt: new Date().toISOString(),
+  };
+
+  db.tenants[idx] = {
+    ...tenant,
+    cashiers: [cashier, ...existingCashiers],
+  };
+  saveDb(db);
+  return cashier;
+}
+
+export function toggleCashierStatusServer(
+  slug: string,
+  cashierId: string,
+  active: boolean
+): CashierProfile | null {
+  const db = loadDb();
+  const idx = (db.tenants || []).findIndex(
+    (t) => t.slug.toLowerCase().trim() === slug.toLowerCase().trim()
+  );
+  if (idx === -1) return null;
+
+  const tenant = db.tenants[idx];
+  const cashiers = tenant.cashiers || [];
+  const cIdx = cashiers.findIndex((c) => c.id === cashierId);
+  if (cIdx === -1) return null;
+
+  const updated: CashierProfile = { ...cashiers[cIdx], active };
+  const nextCashiers = [...cashiers];
+  nextCashiers[cIdx] = updated;
+
+  db.tenants[idx] = { ...tenant, cashiers: nextCashiers };
+  saveDb(db);
+  return updated;
+}
+
+export function deleteCashierServer(slug: string, cashierId: string): boolean {
+  const db = loadDb();
+  const idx = (db.tenants || []).findIndex(
+    (t) => t.slug.toLowerCase().trim() === slug.toLowerCase().trim()
+  );
+  if (idx === -1) return false;
+
+  const tenant = db.tenants[idx];
+  const cashiers = tenant.cashiers || [];
+  const filtered = cashiers.filter((c) => c.id !== cashierId);
+  if (filtered.length === cashiers.length) return false;
+
+  db.tenants[idx] = { ...tenant, cashiers: filtered };
+  saveDb(db);
+  return true;
 }
 
 // ─────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTenantBySlug, verifyCashierPinServer } from '@/lib/server-db';
+import { getTenantBySlug, resolveCashierByPinServer } from '@/lib/server-db';
 import { CASHIER_COOKIE_NAME, signSessionToken } from '@/lib/auth';
 import { AuthSession } from '@/lib/types';
 
@@ -32,18 +32,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isValid = verifyCashierPinServer(tenant.slug, String(pin));
-    if (!isValid) {
+    const resolved = resolveCashierByPinServer(tenant.slug, String(pin));
+    if (!resolved.valid || !resolved.cashier) {
       return NextResponse.json(
-        { success: false, error: 'PIN incorrecto. Revisa con el dueño del negocio.' },
+        { success: false, error: 'PIN incorrecto o cajero desactivado. Revisa con el dueño del negocio.' },
         { status: 401 }
       );
     }
 
     const cashierSession: AuthSession = {
-      userId: `cashier_${tenant.slug}`,
+      userId: `cashier_${tenant.slug}_${resolved.cashier.id}`,
       email: '',
-      fullName: `Caja (${tenant.name})`,
+      fullName: resolved.cashier.name,
       isPlatformSuperAdmin: false,
       role: 'cashier',
       tenantSlug: tenant.slug,
@@ -51,7 +51,11 @@ export async function POST(req: NextRequest) {
     };
 
     const cashierToken = await signSessionToken(cashierSession);
-    const res = NextResponse.json({ success: true, message: 'PIN verificado correctamente' });
+    const res = NextResponse.json({
+      success: true,
+      message: 'PIN verificado correctamente',
+      cashierName: resolved.cashier.name,
+    });
     res.cookies.set({
       name: CASHIER_COOKIE_NAME,
       value: cashierToken,

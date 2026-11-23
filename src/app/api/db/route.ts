@@ -15,7 +15,7 @@ function sanitizeConfig(cfg: StudioConfig): StudioConfig {
 }
 
 function sanitizeTenant(t: TenantBusiness): TenantBusiness {
-  const { adminPin: _a, cashierPin: _c, config, ...safe } = t;
+  const { adminPin: _a, cashierPin: _c, cashiers: _cashiers, config, ...safe } = t;
   return {
     ...safe,
     ...(config ? { config: sanitizeConfig(config) } : {}),

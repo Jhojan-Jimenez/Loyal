@@ -65,6 +65,14 @@ export type TenantPlan = 'starter' | 'pro' | 'enterprise';
 export type TenantStatus = 'active' | 'trial' | 'suspended';
 export type TenantRole = 'OWNER' | 'ADMIN' | 'MANAGER' | 'STAFF';
 
+export interface CashierProfile {
+  id: string;
+  name: string;
+  pin: string; // PIN de 4 dígitos único dentro del comercio
+  active: boolean;
+  createdAt: string;
+}
+
 export interface TenantBusiness {
   id: string;
   slug: string;
@@ -81,6 +89,7 @@ export interface TenantBusiness {
   totalStampsCount?: number;
   adminPin?: string;
   cashierPin?: string;
+  cashiers?: CashierProfile[];
   config?: StudioConfig;
 }
 

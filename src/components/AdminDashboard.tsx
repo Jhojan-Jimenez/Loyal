@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLoyal } from '@/context/LoyalContext';
-import { Student, StudioConfig, StampTransaction } from '@/lib/types';
+import { Student, StudioConfig, StampTransaction, CashierProfile } from '@/lib/types';
 import { generateStudentsCSV, generateTransactionsCSV } from '@/lib/store';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -34,6 +34,7 @@ import {
   Palette,
   Smartphone,
   Upload,
+  KeyRound,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -94,6 +95,12 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
 
+  // Cashiers (multi-cashier with individual 4-digit PINs)
+  const [cashiers, setCashiers] = useState<CashierProfile[]>([]);
+  const [newCashierName, setNewCashierName] = useState('');
+  const [newCashierPin, setNewCashierPin] = useState('');
+  const [savingCashier, setSavingCashier] = useState(false);
+
   const handleLogoUpload = async (file: File) => {
     setUploadingLogo(true);
     try {
@@ -148,6 +155,14 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
           }
           if (Array.isArray(data.transactions)) {
             setTenantTransactions(data.transactions);
+          }
+        }
+
+        const cRes = await fetch(`/api/admin/cashiers?tenantSlug=${encodeURIComponent(tenantSlug)}`);
+        if (cRes.ok) {
+          const cData = await cRes.json();
+          if (cData.success && Array.isArray(cData.cashiers)) {
+            setCashiers(cData.cashiers);
           }
         }
       } catch (err) {
@@ -1036,6 +1051,185 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
               </button>
             </div>
           </form>
+
+          {tenantSlug && (
+            <div className="mt-8 pt-8 border-t border-[#EAE4D5] space-y-5">
+              <div>
+                <h3 className="text-lg font-serif font-normal text-[#1C1917] flex items-center gap-2">
+                  <KeyRound className="w-5 h-5 text-[#5B6F00]" />
+                  Cajeros de Mostrador
+                </h3>
+                <p className="text-xs text-[#57534E] mt-1">
+                  Crea un PIN de 4 dígitos para cada cajero. Así sabrás exactamente quién otorgó cada sello o canjeó cada premio.
+                </p>
+              </div>
+
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!newCashierName.trim() || !/^\d{4}$/.test(newCashierPin.trim())) {
+                    toast.error('Ingresa un nombre y un PIN numérico de 4 dígitos.');
+                    return;
+                  }
+                  setSavingCashier(true);
+                  try {
+                    const res = await fetch('/api/admin/cashiers', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        tenantSlug,
+                        name: newCashierName.trim(),
+                        pin: newCashierPin.trim(),
+                      }),
+                    });
+                    const data = await res.json();
+                    if (data.success && data.cashier) {
+                      setCashiers((prev) => [data.cashier, ...prev]);
+                      setNewCashierName('');
+                      setNewCashierPin('');
+                      toast.success(`Cajero "${data.cashier.name}" creado.`);
+                    } else {
+                      toast.error(data.error || 'No se pudo crear el cajero.');
+                    }
+                  } catch {
+                    toast.error('Error de conexión al crear cajero.');
+                  } finally {
+                    setSavingCashier(false);
+                  }
+                }}
+                className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end bg-[#FAF7F2] p-4 rounded-2xl border border-[#EAE4D5]"
+              >
+                <div className="sm:col-span-6 space-y-1.5">
+                  <label className="text-[11px] font-bold text-[#1C1917] uppercase tracking-wider">
+                    Nombre del cajero
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej. María Gómez"
+                    value={newCashierName}
+                    onChange={(e) => setNewCashierName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#EAE4D5] text-sm text-[#1C1917] focus:outline-hidden focus:border-[#5B6F00]"
+                  />
+                </div>
+                <div className="sm:col-span-3 space-y-1.5">
+                  <label className="text-[11px] font-bold text-[#1C1917] uppercase tracking-wider">
+                    PIN (4 dígitos)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    inputMode="numeric"
+                    maxLength={4}
+                    placeholder="1234"
+                    value={newCashierPin}
+                    onChange={(e) => setNewCashierPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#EAE4D5] text-sm font-mono tracking-widest text-[#1C1917] focus:outline-hidden focus:border-[#5B6F00]"
+                  />
+                </div>
+                <div className="sm:col-span-3">
+                  <button
+                    type="submit"
+                    disabled={savingCashier}
+                    className="w-full h-[42px] px-4 rounded-full bg-[#5B6F00] hover:bg-[#4D5E00] text-white text-xs font-bold whitespace-nowrap transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {savingCashier ? 'Guardando...' : '+ Agregar Cajero'}
+                  </button>
+                </div>
+              </form>
+
+              {cashiers.length === 0 ? (
+                <p className="text-xs text-[#78716C] bg-[#FAF7F2] px-4 py-3 rounded-xl border border-[#EAE4D5]">
+                  Sin cajeros propios configurados aún (sigue activo el PIN general por defecto). Agrega el primero arriba para identificar cada sello por cajero.
+                </p>
+              ) : (
+                <div className="space-y-2.5">
+                  {cashiers.map((c) => (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-[#FFFDF9] border border-[#EAE4D5]"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span
+                          className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                            c.active ? 'bg-[#5B6F00]' : 'bg-[#A89F91]'
+                          }`}
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-[#1C1917] truncate">{c.name}</p>
+                          <p className="text-[11px] font-mono text-[#78716C]">
+                            PIN: <span className="font-bold text-[#1C1917]">{c.pin}</span> ·{' '}
+                            {c.active ? 'Activo' : 'Pausado'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const res = await fetch('/api/admin/cashiers', {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  tenantSlug,
+                                  cashierId: c.id,
+                                  active: !c.active,
+                                }),
+                              });
+                              const data = await res.json();
+                              if (data.success && data.cashier) {
+                                setCashiers((prev) =>
+                                  prev.map((item) => (item.id === c.id ? data.cashier : item))
+                                );
+                                toast.success(
+                                  data.cashier.active
+                                    ? `Cajero "${c.name}" activado.`
+                                    : `Cajero "${c.name}" pausado.`
+                                );
+                              } else {
+                                toast.error(data.error || 'No se pudo actualizar.');
+                              }
+                            } catch {
+                              toast.error('Error al actualizar cajero.');
+                            }
+                          }}
+                          className="px-3 py-1.5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[11px] font-semibold text-[#1C1917] cursor-pointer"
+                        >
+                          {c.active ? 'Pausar' : 'Activar'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const res = await fetch('/api/admin/cashiers', {
+                                method: 'DELETE',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ tenantSlug, cashierId: c.id }),
+                              });
+                              const data = await res.json();
+                              if (data.success) {
+                                setCashiers((prev) => prev.filter((item) => item.id !== c.id));
+                                toast.success(`Cajero "${c.name}" eliminado.`);
+                              } else {
+                                toast.error(data.error || 'No se pudo eliminar.');
+                              }
+                            } catch {
+                              toast.error('Error al eliminar cajero.');
+                            }
+                          }}
+                          className="p-2 rounded-full text-[#C26748] hover:bg-[#FBF4EE] cursor-pointer"
+                          title="Eliminar cajero"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

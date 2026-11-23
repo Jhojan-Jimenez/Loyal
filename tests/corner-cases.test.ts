@@ -15,6 +15,9 @@ const dbRoute = await import('@/app/api/db/route');
 const configRoute = await import('@/app/api/admin/config/route');
 const switchRoleRoute = await import('@/app/api/dev/switch-role/route');
 const deleteStudentRoute = await import('@/app/api/students/delete/route');
+const cashiersRoute = await import('@/app/api/admin/cashiers/route');
+const pinRoute = await import('@/app/api/auth/pin/route');
+const stampRoute = await import('@/app/api/students/stamp/route');
 
 describe('Loyal Multi-Tenant SaaS Corner Cases', () => {
   let tenantAUserEmail = 'owner-a@test.local';
@@ -196,8 +199,126 @@ describe('Loyal Multi-Tenant SaaS Corner Cases', () => {
       serverDb.registerStudentServer('Cliente Dos', '3009998877', undefined, undefined, 'cafe-alfa')
     ).toThrow();
 
-    // Restore active for subsequent deletion test
+    // Restore active for subsequent tests
     serverDb.updateTenantStatusServer('cafe-alfa', 'active');
+  });
+
+  it('supports per-cashier PINs, blocks duplicate/paused PINs, and attributes stamps to the cashier', async () => {
+    const userB = serverDb.findUserByEmail(tenantBUserEmail)!;
+    const tenantB = serverDb.getTenantBySlug('barber-beta')!;
+    const tokenB = await auth.signSessionToken({
+      userId: userB.id,
+      email: userB.email,
+      fullName: userB.fullName,
+      isPlatformSuperAdmin: false,
+      expiresAt: Date.now() + 3600_000,
+      activeTenant: { id: tenantB.id, slug: 'barber-beta', name: 'Barber Beta', role: 'OWNER' },
+    });
+
+    // 1. Create cashier "María Gómez" with PIN 4321
+    const createRes = await cashiersRoute.POST(
+      new NextRequest('http://localhost:3000/api/admin/cashiers', {
+        method: 'POST',
+        body: JSON.stringify({ tenantSlug: 'barber-beta', name: 'María Gómez', pin: '4321' }),
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: `${auth.AUTH_COOKIE_NAME}=${tokenB}`,
+        },
+      })
+    );
+    expect(createRes.status).toBe(201);
+    const created = await createRes.json();
+    expect(created.cashier.name).toBe('María Gómez');
+
+    // 2. Duplicate PIN in same tenant is rejected (400)
+    const dupRes = await cashiersRoute.POST(
+      new NextRequest('http://localhost:3000/api/admin/cashiers', {
+        method: 'POST',
+        body: JSON.stringify({ tenantSlug: 'barber-beta', name: 'Otro Cajero', pin: '4321' }),
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: `${auth.AUTH_COOKIE_NAME}=${tokenB}`,
+        },
+      })
+    );
+    expect(dupRes.status).toBe(400);
+
+    // 3. Default '0000' no longer unlocks once custom cashiers exist
+    const fallbackPinRes = await pinRoute.POST(
+      new NextRequest('http://localhost:3000/api/auth/pin', {
+        method: 'POST',
+        body: JSON.stringify({ slug: 'barber-beta', pin: '0000' }),
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+    expect(fallbackPinRes.status).toBe(401);
+
+    // 4. Cashier PIN 4321 unlocks and sets cashier cookie with cashier's name
+    const pinRes = await pinRoute.POST(
+      new NextRequest('http://localhost:3000/api/auth/pin', {
+        method: 'POST',
+        body: JSON.stringify({ slug: 'barber-beta', pin: '4321' }),
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+    expect(pinRes.status).toBe(200);
+    const pinJson = await pinRes.json();
+    expect(pinJson.cashierName).toBe('María Gómez');
+    const cashierCookie = pinRes.cookies.get(auth.CASHIER_COOKIE_NAME)?.value;
+    expect(cashierCookie).toBeTruthy();
+
+    // 5. Stamping attributes transaction to "María Gómez" (ignoring client-spoofed cashierName)
+    const studentB = serverDb.registerStudentServer(
+      'Cliente Beta',
+      '3007778899',
+      undefined,
+      undefined,
+      'barber-beta'
+    );
+    const stampRes = await stampRoute.POST(
+      new NextRequest('http://localhost:3000/api/students/stamp', {
+        method: 'POST',
+        body: JSON.stringify({
+          token: studentB.token,
+          note: 'Corte',
+          cashierName: 'Impostor',
+          tenantSlug: 'barber-beta',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: `${auth.CASHIER_COOKIE_NAME}=${cashierCookie}`,
+        },
+      })
+    );
+    expect(stampRes.status).toBe(200);
+    const stampJson = await stampRes.json();
+    expect(stampJson.transaction.cashierName).toBe('María Gómez');
+
+    // 6. Paused cashier cannot unlock
+    const pauseRes = await cashiersRoute.PATCH(
+      new NextRequest('http://localhost:3000/api/admin/cashiers', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          tenantSlug: 'barber-beta',
+          cashierId: created.cashier.id,
+          active: false,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: `${auth.AUTH_COOKIE_NAME}=${tokenB}`,
+        },
+      })
+    );
+    expect(pauseRes.status).toBe(200);
+
+    const pausedPinRes = await pinRoute.POST(
+      new NextRequest('http://localhost:3000/api/auth/pin', {
+        method: 'POST',
+        body: JSON.stringify({ slug: 'barber-beta', pin: '4321' }),
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+    expect(pausedPinRes.status).toBe(401);
   });
 
   it('denies login with HTTP 403 when tenant is suspended or deleted and cleans up orphan data', async () => {

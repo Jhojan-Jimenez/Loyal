@@ -51,7 +51,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const res = redeemRewardServer(token, notes, cashierName, tenantSlug);
+    const effectiveCashierName =
+      cashierSession?.fullName || session?.fullName || cashierName || 'Caja Mostrador';
+
+    const res = redeemRewardServer(token, notes, effectiveCashierName, tenantSlug);
     if (!res.success) {
       const status = res.error?.includes('sellos requeridos')
         ? 400

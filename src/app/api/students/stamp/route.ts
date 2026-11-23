@@ -51,7 +51,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const res = addStampServer(token, note, cashierName, tenantSlug);
+    const effectiveCashierName =
+      cashierSession?.fullName || session?.fullName || cashierName || 'Caja de Mostrador';
+
+    const res = addStampServer(token, note, effectiveCashierName, tenantSlug);
     if (!res.success) {
       const status = res.error?.includes('suspendido')
         ? 403

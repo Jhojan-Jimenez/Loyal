@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLoyal } from '@/context/LoyalContext';
 import { Student, StudioConfig, StampTransaction } from '@/lib/types';
 import confetti from 'canvas-confetti';
+import { toast } from 'sonner';
 import {
   Camera,
   Search,
@@ -52,6 +53,7 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
   const [pinInput, setPinInput] = useState<string>('');
   const [pinError, setPinError] = useState<string | null>(null);
   const [validatingPin, setValidatingPin] = useState<boolean>(false);
+  const [activeCashierName, setActiveCashierName] = useState<string>('');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>('');
@@ -74,6 +76,8 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
     const saved = sessionStorage.getItem(`loyal_cashier_${tenantSlug}`);
     if (saved === 'unlocked') {
       setIsUnlocked(true);
+      const savedName = sessionStorage.getItem(`loyal_cashier_name_${tenantSlug}`);
+      if (savedName) setActiveCashierName(savedName);
     }
 
     // Check if current user is an admin or superadmin
@@ -85,6 +89,10 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
           (d.session?.isPlatformSuperAdmin || d.session?.activeTenant?.slug === tenantSlug)
         ) {
           sessionStorage.setItem(`loyal_cashier_${tenantSlug}`, 'unlocked');
+          if (d.session?.fullName) {
+            sessionStorage.setItem(`loyal_cashier_name_${tenantSlug}`, d.session.fullName);
+            setActiveCashierName(d.session.fullName);
+          }
           setIsUnlocked(true);
         }
       })
@@ -368,6 +376,10 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
         if (data.success) {
           if (tenantSlug) {
             sessionStorage.setItem(`loyal_cashier_${tenantSlug}`, 'unlocked');
+            if (data.cashierName) {
+              sessionStorage.setItem(`loyal_cashier_name_${tenantSlug}`, data.cashierName);
+              setActiveCashierName(data.cashierName);
+            }
             // Reload scoped tenant students/transactions now that cashier cookie is set
             fetch(`/api/db?tenantSlug=${encodeURIComponent(tenantSlug)}`)
               .then((r) => r.json())
@@ -381,6 +393,9 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
           }
           setIsUnlocked(true);
           playChime(true);
+          toast.success(
+            data.cashierName ? `Caja desbloqueada · ${data.cashierName}` : 'Caja desbloqueada'
+          );
           setPinInput('');
         } else {
           setPinError(data.error || 'PIN incorrecto');
@@ -526,6 +541,11 @@ export function FusionScannerTerminal({ tenantSlug }: { tenantSlug?: string } = 
               {tenantSlug && (
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6F00] bg-[#F1F5DC] px-2 py-0.5 rounded-full border border-[#D9E2B3]">
                   /{tenantSlug}
+                </span>
+              )}
+              {activeCashierName && (
+                <span className="hidden md:inline-flex text-[11px] font-sans font-semibold text-[#57534E] bg-[#FAF7F2] px-2.5 py-0.5 rounded-full border border-[#EAE4D5]">
+                  Cajero: {activeCashierName}
                 </span>
               )}
             </h1>
