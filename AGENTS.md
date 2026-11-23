@@ -67,6 +67,22 @@ git commit -m "feat(scope): descripción siguiendo la spec"
 git push origin main
 ```
 
+---
+
+## 🧪 Pruebas Automatizadas (Vitest Gate en Build)
+
+El proyecto cuenta con una suite de pruebas de *corner cases* y seguridad multi-tenant con **Vitest** (`vitest.config.mts`).
+
+* **Ejecución manual en local:** `pnpm test`
+* **Gate automático en producción:** El script `"build"` en `package.json` ejecuta **`vitest run && next build`**. Tanto en local como en la etapa `builder` del `Dockerfile` en Coolify, si alguna prueba falla, el despliegue se aborta automáticamente antes de reemplazar el contenedor en producción.
+* **Aislamiento de BD:** Las pruebas crean un directorio temporal en `/tmp` y asignan `process.env.DATA_DIR` antes de importar `server-db.ts`, por lo que **nunca modifican** `data/loyal-db.json` ni la base de producción.
+
+### Cómo agregar nuevos tests en el futuro
+1. Crea un archivo `tests/<modulo>.test.ts` (o agrega casos `it(...)` dentro de `tests/corner-cases.test.ts`).
+2. **Importante:** Define `process.env.DATA_DIR = fs.mkdtempSync(...)` **antes** de hacer `await import('@/lib/server-db')` o importar los Route Handlers (`/api/...`), y limpia la carpeta temporal en `afterAll(...)`.
+3. Para probar rutas de API directamente sin levantar servidor HTTP, construye peticiones con `new NextRequest('http://localhost:3000/api/...', { method: 'POST', body: ..., headers: ... })` y firma cookies de prueba con `signSessionToken` de `@/lib/auth`.
+4. Verifica ejecutando `pnpm test && pnpm build`.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know
