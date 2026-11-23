@@ -363,5 +363,20 @@ describe('Loyal Multi-Tenant SaaS Corner Cases', () => {
     const delRes = await loginRoute.POST(delLoginReq);
     expect(delRes.ok).toBe(false);
     expect(delRes.cookies.get(auth.AUTH_COOKIE_NAME)).toBeUndefined();
+
+    // 5. Recreating a business with the exact same name/slug starts with 0 old students/transactions
+    const linkReborn = serverDb.createBlankOnboardingLinkServer({ plan: 'pro' });
+    const reborn = serverDb.completeSelfOnboardingServer({
+      token: linkReborn.onboardingToken.token,
+      businessName: 'Cafe Alfa',
+      ownerName: 'Nuevo Dueño',
+      ownerPhone: '3005556677',
+      ownerEmail: 'nuevo-alfa@test.local',
+      password,
+    });
+    expect(reborn.success).toBe(true);
+    expect(reborn.tenant?.slug).toBe('cafe-alfa');
+    expect(serverDb.getTenantStudents('cafe-alfa')).toHaveLength(0);
+    expect(serverDb.getTenantTransactions('cafe-alfa')).toHaveLength(0);
   });
 });

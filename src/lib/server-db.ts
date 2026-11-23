@@ -743,16 +743,18 @@ export function deleteCashierServer(slug: string, cashierId: string): boolean {
 export function getTenantStudents(slug?: string): Student[] {
   const db = loadDb();
   if (!slug) return db.students || [];
+  const cleanSlug = slug.toLowerCase().trim();
   return (db.students || []).filter(
-    (s) => s.tenantSlug === slug || (!s.tenantSlug && (db.tenants || []).length <= 1)
+    (s) => s.tenantSlug?.toLowerCase().trim() === cleanSlug
   );
 }
 
 export function getTenantTransactions(slug?: string): StampTransaction[] {
   const db = loadDb();
   if (!slug) return db.transactions || [];
+  const cleanSlug = slug.toLowerCase().trim();
   return (db.transactions || []).filter(
-    (t) => t.tenantSlug === slug || (!t.tenantSlug && (db.tenants || []).length <= 1)
+    (t) => t.tenantSlug?.toLowerCase().trim() === cleanSlug
   );
 }
 
@@ -1201,6 +1203,17 @@ export function completeSelfOnboardingServer(data: {
       walletProgramName: 'Pase Digital de Fidelización',
     },
   };
+
+  // Ensure a brand-new tenant never inherits orphaned records from a previously deleted tenant with the same slug
+  db.students = (db.students || []).filter(
+    (s) => s.tenantSlug?.toLowerCase().trim() !== slug
+  );
+  db.transactions = (db.transactions || []).filter(
+    (tx) => tx.tenantSlug?.toLowerCase().trim() !== slug
+  );
+  db.invitations = (db.invitations || []).filter(
+    (inv) => inv.tenantSlug.toLowerCase().trim() !== slug
+  );
 
   db.tenants = [tenant, ...db.tenants];
 
