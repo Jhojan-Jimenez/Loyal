@@ -35,6 +35,7 @@ import {
   Smartphone,
   Upload,
   KeyRound,
+  MessageCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -60,6 +61,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentPhone, setNewStudentPhone] = useState('');
   const [newStudentEmail, setNewStudentEmail] = useState('');
+  const [createdStudent, setCreatedStudent] = useState<Student | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 
   // Tenant-scoped states
@@ -67,6 +69,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
     id: string;
     slug: string;
     name: string;
+    plan?: 'starter' | 'pro' | 'enterprise';
     category?: string;
     ownerName?: string;
     ownerPhone?: string;
@@ -298,7 +301,25 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
     setNewStudentName('');
     setNewStudentPhone('');
     setNewStudentEmail('');
-    setShowAddModal(false);
+    setCreatedStudent(newStudent);
+  };
+
+  const getStudentCardUrl = (token: string) => {
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : 'https://loyal.jhojan.cloud';
+    return `${origin}/card/${token}`;
+  };
+
+  const buildStudentWhatsAppUrl = (student: Student) => {
+    const rawDigits = (student.phone || '').replace(/\D/g, '');
+    const waPhone =
+      rawDigits.length === 10 && rawDigits.startsWith('3') ? `57${rawDigits}` : rawDigits;
+    const businessName = tenantInfo?.name || config.studioName || 'nuestro programa';
+    const cardUrl = getStudentCardUrl(student.token);
+    const text = `¡Hola ${student.name}! Ya tienes tu tarjeta digital de ${businessName}. Ábrela aquí para ver tus sellos y guardarla en Google Wallet: ${cardUrl}`;
+    return waPhone
+      ? `https://wa.me/${waPhone}?text=${encodeURIComponent(text)}`
+      : `https://wa.me/?text=${encodeURIComponent(text)}`;
   };
 
   // Download QR Code as PNG image
@@ -387,20 +408,25 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
             </Link>
 
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={() => {
+                setCreatedStudent(null);
+                setShowAddModal(true);
+              }}
               className="flex items-center gap-2 h-11 px-5 rounded-full bg-[#5B6F00] text-white text-xs font-bold shadow-md hover:bg-[#4D5E00] active:scale-95 transition-all cursor-pointer"
             >
               <UserPlus className="w-4 h-4 text-[#B2C248]" />
               <span>+ Registrar Cliente</span>
             </button>
 
-            <button
-              onClick={handleExportStudents}
-              className="flex items-center gap-2 h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-white/90 text-xs font-semibold hover:bg-[#3E3832] active:scale-95 transition-all cursor-pointer"
-            >
-              <Download className="w-4 h-4 text-[#A89F91]" />
-              <span className="hidden sm:inline">CSV</span>
-            </button>
+            {tenantInfo?.plan === 'enterprise' && (
+              <button
+                onClick={handleExportStudents}
+                className="flex items-center gap-2 h-11 px-4 rounded-full bg-[#292524] border border-[#3E3832] text-white/90 text-xs font-semibold hover:bg-[#3E3832] active:scale-95 transition-all cursor-pointer"
+              >
+                <Download className="w-4 h-4 text-[#A89F91]" />
+                <span className="hidden sm:inline">CSV</span>
+              </button>
+            )}
 
            
           </div>
@@ -1243,18 +1269,78 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                   <UserPlus className="w-5 h-5 text-[#5B6F00]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-serif font-normal text-[#1C1917]">Inscribir Nuevo Alumno</h3>
-                  <p className="text-xs text-[#78716C]">Genera su pase digital de inmediato</p>
+                  <h3 className="text-lg font-serif font-normal text-[#1C1917]">
+                    {createdStudent ? 'Pase Digital Listo' : 'Registrar Nuevo Cliente'}
+                  </h3>
+                  <p className="text-xs text-[#78716C]">
+                    {createdStudent
+                      ? 'Envíale su tarjeta para que la guarde en su celular'
+                      : 'Genera su pase digital de inmediato'}
+                  </p>
                 </div>
               </div>
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={() => {
+                  setCreatedStudent(null);
+                  setShowAddModal(false);
+                }}
                 className="p-2 rounded-full hover:bg-[#FAF7F2] text-[#78716C] hover:text-[#1C1917] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
+            {createdStudent ? (
+              <div className="space-y-4 mt-5">
+                <div className="p-4 rounded-2xl bg-[#F1F5DC] border border-[#D9E2B3] space-y-1">
+                  <p className="text-xs font-bold text-[#5B6F00]">
+                    ✓ Tarjeta creada para {createdStudent.name}
+                  </p>
+                  <p className="text-[11px] text-[#57534E]">
+                    Comparte este enlace para que abra su tarjeta y la agregue a Google Wallet.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 bg-[#FAF7F2] p-2.5 rounded-2xl border border-[#EAE4D5]">
+                  <code className="text-[11px] font-mono text-[#1C1917] truncate flex-1 select-all px-1">
+                    {getStudentCardUrl(createdStudent.token)}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(getStudentCardUrl(createdStudent.token));
+                      toast.success('Enlace copiado al portapapeles.');
+                    }}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white hover:bg-[#F3EFE6] border border-[#EAE4D5] text-[11px] font-semibold text-[#1C1917] shrink-0 cursor-pointer"
+                  >
+                    <Copy className="w-3.5 h-3.5 text-[#5B6F00]" />
+                    <span>Copiar</span>
+                  </button>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                  <a
+                    href={buildStudentWhatsAppUrl(createdStudent)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 h-11 px-5 rounded-full bg-[#25D366] hover:bg-[#1FB857] text-white text-xs font-bold shadow-md flex items-center justify-center gap-2 transition-all"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Enviar por WhatsApp</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreatedStudent(null);
+                      setShowAddModal(false);
+                    }}
+                    className="h-11 px-5 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE4D5] text-xs font-semibold text-[#1C1917] cursor-pointer"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            ) : (
             <form onSubmit={handleCreateStudent} className="space-y-4 mt-5">
               <div>
                 <label className="block text-xs font-bold text-[#1C1917] uppercase tracking-wider mb-1">
@@ -1313,6 +1399,7 @@ export function AdminDashboard({ tenantSlug }: { tenantSlug?: string } = {}) {
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       )}
