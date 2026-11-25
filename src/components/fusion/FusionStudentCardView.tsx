@@ -67,6 +67,15 @@ export function FusionStudentCardView({
     }
   }, [studentFromContext, refreshFromServer]);
 
+  // Remember this card in localStorage per tenant so NFC taps auto-open it
+  useEffect(() => {
+    if (student?.tenantSlug && student?.token) {
+      try {
+        localStorage.setItem(`loyal_card_${student.tenantSlug}`, student.token);
+      } catch {}
+    }
+  }, [student?.tenantSlug, student?.token]);
+
   // Load tenant specific config if student belongs to a tenant
   useEffect(() => {
     if (student?.tenantSlug && !tenantConfig) {
@@ -527,6 +536,23 @@ export function FusionStudentCardView({
                 </p>
               </div>
             </div>
+          </div>
+        )}
+
+        {student.tenantSlug && (
+          <div className="pt-4 pb-2 flex justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  localStorage.removeItem(`loyal_card_${student.tenantSlug}`);
+                } catch {}
+                window.location.href = `/${student.tenantSlug}/join?switch=1`;
+              }}
+              className="text-[11px] font-medium text-[#78716C] hover:text-[#1C1917] underline underline-offset-4 transition-colors cursor-pointer"
+            >
+              Cambiar de cuenta / Salir
+            </button>
           </div>
         )}
       </div>

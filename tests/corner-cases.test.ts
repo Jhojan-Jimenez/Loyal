@@ -18,6 +18,7 @@ const deleteStudentRoute = await import('@/app/api/students/delete/route');
 const cashiersRoute = await import('@/app/api/admin/cashiers/route');
 const pinRoute = await import('@/app/api/auth/pin/route');
 const stampRoute = await import('@/app/api/students/stamp/route');
+const findStudentRoute = await import('@/app/api/students/find/route');
 
 describe('Loyal Multi-Tenant SaaS Corner Cases', () => {
   let tenantAUserEmail = 'owner-a@test.local';
@@ -378,5 +379,39 @@ describe('Loyal Multi-Tenant SaaS Corner Cases', () => {
     expect(reborn.tenant?.slug).toBe('cafe-alfa');
     expect(serverDb.getTenantStudents('cafe-alfa')).toHaveLength(0);
     expect(serverDb.getTenantTransactions('cafe-alfa')).toHaveLength(0);
+  });
+
+  it('verifies saved NFC card token per tenant and rejects cross-tenant or deleted tokens', async () => {
+    const studentB = serverDb.registerStudentServer(
+      'Cliente NFC',
+      '3008889900',
+      undefined,
+      undefined,
+      'barber-beta'
+    );
+
+    const validRes = await findStudentRoute.GET(
+      new NextRequest(
+        `http://localhost:3000/api/students/find?token=${encodeURIComponent(studentB.token)}&tenantSlug=barber-beta`
+      )
+    );
+    expect(validRes.status).toBe(200);
+    const validJson = await validRes.json();
+    expect(validJson.student.token).toBe(studentB.token);
+
+    const crossTenantRes = await findStudentRoute.GET(
+      new NextRequest(
+        `http://localhost:3000/api/students/find?token=${encodeURIComponent(studentB.token)}&tenantSlug=cafe-alfa`
+      )
+    );
+    expect(crossTenantRes.status).toBe(404);
+
+    serverDb.deleteStudentServer(studentB.token);
+    const deletedRes = await findStudentRoute.GET(
+      new NextRequest(
+        `http://localhost:3000/api/students/find?token=${encodeURIComponent(studentB.token)}&tenantSlug=barber-beta`
+      )
+    );
+    expect(deletedRes.status).toBe(404);
   });
 });

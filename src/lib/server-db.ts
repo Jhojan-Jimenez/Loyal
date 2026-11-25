@@ -368,7 +368,7 @@ export function createTenantServer(data: {
   };
 
   const tenant: TenantBusiness = {
-    id: `ten_${Date.now()}`,
+    id: `ten_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
     slug,
     name: data.name.trim(),
     category: data.category?.trim() || 'Comercio Local',
@@ -456,7 +456,7 @@ export function acceptInvitationServer(
   }
   if (!user) {
     user = {
-      id: `usr_${Date.now()}`,
+      id: `usr_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
       email: invitation.email.toLowerCase(),
       fullName: fullName?.trim() || tenant.ownerName,
       passwordHash: hashPassword(password),
@@ -1179,7 +1179,7 @@ export function completeSelfOnboardingServer(data: {
   const now = new Date().toISOString();
 
   const tenant: TenantBusiness = {
-    id: `ten_${Date.now()}`,
+    id: `ten_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
     slug,
     name: data.businessName.trim(),
     category: data.category?.trim() || 'Comercio Local',
@@ -1222,7 +1222,7 @@ export function completeSelfOnboardingServer(data: {
 
   if (!user) {
     user = {
-      id: `usr_${Date.now()}`,
+      id: `usr_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
       email: cleanEmail,
       fullName: data.ownerName.trim(),
       passwordHash,
@@ -1238,7 +1238,7 @@ export function completeSelfOnboardingServer(data: {
   }
 
   const membership: TenantMembership = {
-    id: `mem_${Date.now()}`,
+    id: `mem_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
     userId: user.id,
     tenantId: tenant.id,
     role: 'OWNER',

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { TenantBusiness, StudioConfig } from '@/lib/types';
 import { isLightHexColor } from '@/lib/color-utils';
@@ -42,6 +42,48 @@ export function FusionCustomerJoinView({ tenant, config }: FusionCustomerJoinVie
   const [lookupPhone, setLookupPhone] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [checkingSavedCard, setCheckingSavedCard] = useState(true);
+
+  const storageKey = `loyal_card_${tenant.slug}`;
+
+  // Auto-redirect returning customer when tapping NFC / scanning QR unless ?switch=1
+  useEffect(() => {
+    let active = true;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('switch') === '1') {
+      setCheckingSavedCard(false);
+      return;
+    }
+
+    const savedToken = localStorage.getItem(storageKey);
+    if (!savedToken) {
+      setCheckingSavedCard(false);
+      return;
+    }
+
+    fetch(
+      `/api/students/find?token=${encodeURIComponent(savedToken)}&tenantSlug=${encodeURIComponent(tenant.slug)}`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        if (!active) return;
+        if (data.success && data.student?.token) {
+          router.replace(`/card/${data.student.token}`);
+        } else {
+          localStorage.removeItem(storageKey);
+          setCheckingSavedCard(false);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        // Offline fallback: redirect to saved card directly
+        router.replace(`/card/${savedToken}`);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [storageKey, tenant.slug, router]);
 
   const businessName = config.studioName || tenant.name || 'Comercio Local';
   const totalStamps = config.totalStampsRequired || 10;
@@ -76,7 +118,10 @@ export function FusionCustomerJoinView({ tenant, config }: FusionCustomerJoinVie
         throw new Error(data.error || 'No se pudo crear tu tarjeta. Intenta de nuevo.');
       }
 
-      // Redirect directly to the student's loyalty card
+      // Remember card for future NFC taps & redirect
+      try {
+        localStorage.setItem(storageKey, data.student.token);
+      } catch {}
       router.push(`/card/${data.student.token}`);
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -108,7 +153,10 @@ export function FusionCustomerJoinView({ tenant, config }: FusionCustomerJoinVie
         return;
       }
 
-      // Redirect directly to existing card
+      // Remember card for future NFC taps & redirect
+      try {
+        localStorage.setItem(storageKey, data.student.token);
+      } catch {}
       router.push(`/card/${data.student.token}`);
     } catch (err: any) {
       console.error('Lookup error:', err);
@@ -116,6 +164,17 @@ export function FusionCustomerJoinView({ tenant, config }: FusionCustomerJoinVie
       setIsLookingUp(false);
     }
   };
+
+  if (checkingSavedCard) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] text-[#1C1917] font-sans flex flex-col items-center justify-center p-6">
+        <Loader2 className="w-8 h-8 text-[#5B6F00] animate-spin" />
+        <p className="text-xs text-[#78716C] mt-3 font-semibold">
+          Abriendo tu tarjeta de {businessName}...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#1C1917] font-sans flex flex-col justify-between selection:bg-[#5B6F00] selection:text-white">

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findStudentByPhoneServer } from '@/lib/server-db';
+import { findStudentByPhoneServer, getStudentByToken } from '@/lib/server-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,11 +7,36 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const phone = searchParams.get('phone');
-    const tenantSlug = searchParams.get('tenantSlug') || undefined;
+    const token = searchParams.get('token');
+    const tenantSlug = searchParams.get('tenantSlug')?.toLowerCase().trim() || undefined;
+
+    if (token && token.trim()) {
+      const byToken = getStudentByToken(token.trim());
+      if (
+        !byToken ||
+        (tenantSlug && byToken.tenantSlug?.toLowerCase().trim() !== tenantSlug)
+      ) {
+        return NextResponse.json(
+          { success: false, error: 'Tarjeta no encontrada para este comercio' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        student: {
+          token: byToken.token,
+          name: byToken.name,
+          stamps: byToken.stamps,
+          totalVisits: byToken.totalVisits,
+          tenantSlug: byToken.tenantSlug,
+        },
+      });
+    }
 
     if (!phone || !phone.trim()) {
       return NextResponse.json(
-        { success: false, error: 'Phone parameter is required' },
+        { success: false, error: 'Phone or token parameter is required' },
         { status: 400 }
       );
     }
